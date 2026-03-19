@@ -1,20 +1,13 @@
 {
   "sourceLanguage" : "en",
   "strings" : {
-    "%@ %@ ×%lld" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "%1$@ %2$@ ×%3$lld"
-          }
-        }
-      }
-    },
     "%lld" : {
 
     },
     "%lld items" : {
+
+    },
+    "×%lld" : {
 
     },
     "🧺" : {
@@ -2128,6 +2121,17 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Recent Baskets"
+          }
+        }
+      }
+    },
+    "recent_baskets.load_more_format" : {
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Show %lld more carts"
           }
         }
       }

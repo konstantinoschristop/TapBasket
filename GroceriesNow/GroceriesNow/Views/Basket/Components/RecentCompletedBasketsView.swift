@@ -9,10 +9,16 @@ struct RecentCompletedBasketsView: View {
     let onHideBasket: (RecentBasketSummary) -> Void
 
     @State private var expandedBasketIDs = Set<UUID>()
+    @State private var showAll = false
+
+    private var visibleBaskets: [RecentBasketSummary] {
+        showAll ? baskets : Array(baskets.prefix(3))
+    }
 
     var body: some View {
         VStack(alignment: .leading, spacing: 14) {
             header
+                .padding(.horizontal)
 
             if baskets.isEmpty {
                 emptyState
@@ -22,44 +28,82 @@ struct RecentCompletedBasketsView: View {
                     .transition(.opacity.combined(with: .move(edge: .bottom)))
             }
         }
-        .padding(16)
-        .background(sectionBackground)
-        .clipShape(RoundedRectangle(cornerRadius: 24, style: .continuous))
-        .overlay(sectionBorder)
-        .overlay(sectionHighlight)
-        .shadow(color: .black.opacity(0.08), radius: 20, y: 10)
-        .padding(.horizontal)
         .padding(.top, 18)
         .animation(.easeInOut(duration: 0.22), value: baskets.count)
     }
 
     private var header: some View {
-        VStack(alignment: .leading, spacing: 5) {
-            Label {
-                Text("recent_baskets.header.title")
-                    .font(.headline)
-            } icon: {
-                Image(systemName: "clock.arrow.trianglehead.counterclockwise.rotate.90")
-                    .foregroundStyle(Color.accentColor)
+        HStack(alignment: .center) {
+            VStack(alignment: .leading, spacing: 4) {
+                Label {
+                    Text("recent_baskets.header.title")
+                        .font(.headline)
+                } icon: {
+                    Image(systemName: "clock.arrow.trianglehead.counterclockwise.rotate.90")
+                        .foregroundStyle(Color.accentColor)
+                }
+
+                Text("recent_baskets.header.subtitle")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
             }
 
-            Text("recent_baskets.header.subtitle")
-                .font(.caption)
-                .foregroundStyle(.secondary)
+            Spacer()
+
+            if !baskets.isEmpty {
+                Text("\(baskets.count)")
+                    .font(.caption.weight(.bold))
+                    .foregroundStyle(Color.accentColor)
+                    .padding(.horizontal, 8)
+                    .padding(.vertical, 4)
+                    .background(Color.accentColor.opacity(0.12))
+                    .clipShape(Capsule())
+            }
         }
     }
 
     @ViewBuilder
     private var basketCards: some View {
         LazyVStack(spacing: 10) {
-            ForEach(baskets) { basket in
+            ForEach(visibleBaskets) { basket in
                 basketCard(for: basket)
                     .transition(.asymmetric(
                         insertion: .opacity.combined(with: .move(edge: .bottom)),
                         removal: .opacity.combined(with: .scale(scale: 0.98))
                     ))
             }
+
+            if !showAll && baskets.count > 3 {
+                loadMoreButton
+                    .transition(.opacity)
+            }
         }
+        .padding(.horizontal)
+        .animation(.spring(response: 0.32, dampingFraction: 0.82), value: showAll)
+    }
+
+    private var loadMoreButton: some View {
+        Button {
+            withAnimation(.spring(response: 0.32, dampingFraction: 0.82)) {
+                showAll = true
+            }
+        } label: {
+            HStack(spacing: 6) {
+                Image(systemName: "clock.fill")
+                    .font(.caption.weight(.semibold))
+                Text(
+                    String(localized: "recent_baskets.load_more_format", defaultValue: "Show %lld more carts", locale: locale)
+                        .replacingOccurrences(of: "%lld", with: "\(baskets.count - 3)")
+                )
+                .font(.caption.weight(.semibold))
+            }
+            .foregroundStyle(Color.accentColor)
+            .frame(maxWidth: .infinity)
+            .padding(.vertical, 11)
+            .background(Color.accentColor.opacity(0.10))
+            .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
+        }
+        .buttonStyle(.plain)
     }
 
     private var emptyState: some View {
@@ -70,54 +114,42 @@ struct RecentCompletedBasketsView: View {
         )
     }
 
-    private var sectionBackground: some View {
-        LinearGradient(
-            colors: [
-                Color(.secondarySystemBackground),
-                Color(.systemBackground).opacity(0.98)
-            ],
-            startPoint: .topLeading,
-            endPoint: .bottomTrailing
-        )
-    }
-
-    private var sectionBorder: some View {
-        RoundedRectangle(cornerRadius: 24, style: .continuous)
-            .stroke(Color(.separator).opacity(0.18), lineWidth: 1)
-    }
-
-    private var sectionHighlight: some View {
-        RoundedRectangle(cornerRadius: 24, style: .continuous)
-            .stroke(Color.white.opacity(0.32), lineWidth: 1)
-            .padding(0.5)
-    }
+    // MARK: - Card
 
     private func basketCard(for basket: RecentBasketSummary) -> some View {
-        VStack(alignment: .leading, spacing: 10) {
+        VStack(alignment: .leading, spacing: 0) {
             cardHeader(for: basket)
+                .padding(.horizontal, 12)
+                .padding(.top, 12)
+                .padding(.bottom, 10)
+
+            Divider()
+                .padding(.horizontal, 12)
+
             itemsList(for: basket)
+                .padding(.horizontal, 12)
+                .padding(.vertical, 10)
         }
         .frame(maxWidth: .infinity, alignment: .leading)
-        .padding(12)
         .background(
             RoundedRectangle(cornerRadius: 16, style: .continuous)
                 .fill(.ultraThinMaterial)
         )
         .overlay(
             RoundedRectangle(cornerRadius: 16, style: .continuous)
-                .stroke(Color.white.opacity(0.24), lineWidth: 1)
+                .stroke(Color.white.opacity(0.22), lineWidth: 1)
         )
         .shadow(color: .black.opacity(0.05), radius: 12, y: 5)
     }
 
     private func cardHeader(for basket: RecentBasketSummary) -> some View {
-        HStack(alignment: .top, spacing: 10) {
-            VStack(alignment: .leading, spacing: 4) {
-                Text(basket.completedAt, style: .date)
-                    .font(.caption.weight(.semibold))
+        HStack(alignment: .center, spacing: 10) {
+            VStack(alignment: .leading, spacing: 3) {
+                Text(relativeDateString(basket.completedAt))
+                    .font(.subheadline.weight(.semibold))
                     .foregroundStyle(.primary)
                 Text(basket.completedAt, style: .time)
-                    .font(.caption2)
+                    .font(.caption)
                     .foregroundStyle(.secondary)
             }
 
@@ -163,12 +195,18 @@ struct RecentCompletedBasketsView: View {
     private func itemsList(for basket: RecentBasketSummary) -> some View {
         let visibleItems = visibleItems(for: basket)
 
-        return LazyVStack(alignment: .leading, spacing: 6) {
-            ForEach(visibleItems) { item in
+        return VStack(alignment: .leading, spacing: 0) {
+            ForEach(Array(visibleItems.enumerated()), id: \.element.id) { index, item in
+                if index > 0 {
+                    Divider()
+                        .padding(.leading, 32)
+                }
                 itemRow(item)
             }
 
             if basket.items.count > 4 {
+                Divider()
+                    .padding(.leading, 32)
                 expandButton(for: basket)
             }
         }
@@ -185,31 +223,44 @@ struct RecentCompletedBasketsView: View {
             }
             .font(.caption.weight(.semibold))
             .foregroundStyle(Color.accentColor)
+            .frame(maxWidth: .infinity)
+            .padding(.vertical, 8)
         }
         .buttonStyle(.plain)
     }
 
     private func itemRow(_ item: RecentBasketItem) -> some View {
-        HStack(spacing: 8) {
-            Text("\(item.emoji) \(ProductDisplayNameProvider.displayName(for: item.name)) ×\(item.quantity)")
-                .font(.subheadline)
-                .lineLimit(1)
-                .padding(.vertical, 6)
-                .padding(.horizontal, 10)
-                .background(Color(.tertiarySystemBackground))
-                .clipShape(Capsule())
+        HStack(spacing: 10) {
+            Text(item.emoji)
+                .font(.body)
+                .frame(width: 24)
 
-            Spacer(minLength: 8)
+            Text(ProductDisplayNameProvider.displayName(for: item.name))
+                .font(.subheadline)
+                .foregroundStyle(.primary)
+                .lineLimit(1)
+
+            if item.quantity > 1 {
+                Text("×\(item.quantity)")
+                    .font(.caption.weight(.semibold))
+                    .foregroundStyle(.secondary)
+            }
+
+            Spacer(minLength: 4)
 
             Button {
                 onAddItem(item)
             } label: {
-                Image(systemName: "plus.circle")
+                Image(systemName: "plus.circle.fill")
                     .font(.subheadline)
+                    .foregroundStyle(Color.accentColor)
             }
             .buttonStyle(.plain)
         }
+        .padding(.vertical, 7)
     }
+
+    // MARK: - Helpers
 
     private func isExpanded(_ basket: RecentBasketSummary) -> Bool {
         expandedBasketIDs.contains(basket.id)
@@ -233,9 +284,17 @@ struct RecentCompletedBasketsView: View {
         if isExpanded(basket) {
             return String(localized: "recent_baskets.show_less")
         }
-
         let hiddenCount = max(0, basket.items.count - 4)
         return String(localized: "recent_baskets.show_more_format", defaultValue: "See %lld more", locale: locale)
             .replacingOccurrences(of: "%lld", with: "\(hiddenCount)")
+    }
+
+    private func relativeDateString(_ date: Date) -> String {
+        let formatter = DateFormatter()
+        formatter.locale = locale
+        formatter.dateStyle = .medium
+        formatter.timeStyle = .none
+        formatter.doesRelativeDateFormatting = true
+        return formatter.string(from: date)
     }
 }

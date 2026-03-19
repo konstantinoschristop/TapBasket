@@ -152,8 +152,7 @@ struct MainGridView: View {
         NavigationStack {
             ZStack(alignment: .bottom) {
                 scrollContent
-
-                popupBackdrop
+                    .opacity(isShowingPopupOverlay ? 0.5 : 1)
 
                 overlayControls
             }
@@ -173,18 +172,6 @@ struct MainGridView: View {
             .onChange(of: basketItems.map(\.name)) { _, _ in
                 clearInvalidContextualSuggestion()
             }
-        }
-    }
-
-    @ViewBuilder
-    private var popupBackdrop: some View {
-        if isShowingPopupOverlay {
-            Color.black
-                .opacity(0.08)
-                .ignoresSafeArea()
-                .allowsHitTesting(false)
-                .transition(.opacity)
-                .animation(.easeOut(duration: 0.14), value: isShowingPopupOverlay)
         }
     }
 
@@ -234,14 +221,27 @@ struct MainGridView: View {
         }
     }
 
+    @ViewBuilder
     private var searchResultsSection: some View {
-        LazyVGrid(columns: columns, spacing: 12) {
-            ForEach(filteredQuickItems) { item in
-                itemTile(for: item)
+        if #available(iOS 26, *) {
+            GlassEffectContainer {
+                LazyVGrid(columns: columns, spacing: 12) {
+                    ForEach(filteredQuickItems) { item in
+                        itemTile(for: item)
+                    }
+                }
             }
+            .padding(.horizontal)
+            .padding(.top, 16)
+        } else {
+            LazyVGrid(columns: columns, spacing: 12) {
+                ForEach(filteredQuickItems) { item in
+                    itemTile(for: item)
+                }
+            }
+            .padding(.horizontal)
+            .padding(.top, 16)
         }
-        .padding(.horizontal)
-        .padding(.top, 16)
     }
 
     private var browseSections: some View {
@@ -276,9 +276,19 @@ struct MainGridView: View {
                 toggleSection(section.category)
             }
         ) {
-            LazyVGrid(columns: columns, spacing: 12) {
-                ForEach(section.items) { item in
-                    itemTile(for: item)
+            if #available(iOS 26, *) {
+                GlassEffectContainer {
+                    LazyVGrid(columns: columns, spacing: 12) {
+                        ForEach(section.items) { item in
+                            itemTile(for: item)
+                        }
+                    }
+                }
+            } else {
+                LazyVGrid(columns: columns, spacing: 12) {
+                    ForEach(section.items) { item in
+                        itemTile(for: item)
+                    }
                 }
             }
         }
@@ -329,24 +339,21 @@ struct MainGridView: View {
         .disabled(trimmedSearch.isEmpty)
     }
 
+    @ViewBuilder
     private var basketButton: some View {
+        let label = HStack(spacing: 8) {
+            Text("🧺")
+            Text(String(localized: "home.basket_button_format", defaultValue: "Basket (%lld)", locale: locale).replacingOccurrences(of: "%lld", with: "\(basketManager.totalItemCount(from: basketItems))"))
+                .fontWeight(.semibold)
+        }
+        .font(.headline)
+        .padding(.horizontal, 22)
+        .padding(.vertical, 16)
+
         Button {
             showBasket = true
         } label: {
-            HStack(spacing: 8) {
-                Text("🧺")
-                Text(String(localized: "home.basket_button_format", defaultValue: "Basket (%lld)", locale: locale).replacingOccurrences(of: "%lld", with: "\(basketManager.totalItemCount(from: basketItems))"))
-                    .fontWeight(.semibold)
-            }
-            .font(.headline)
-            .padding(.horizontal, 18)
-            .padding(.vertical, 14)
-            .background(.ultraThinMaterial)
-            .clipShape(Capsule())
-            .overlay(
-                Capsule().stroke(Color(.separator).opacity(0.25), lineWidth: 1)
-            )
-            .shadow(color: .black.opacity(0.1), radius: 8, y: 2)
+            label.adaptiveGlass(in: Capsule())
         }
     }
 

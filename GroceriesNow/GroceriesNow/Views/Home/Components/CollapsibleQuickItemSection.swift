@@ -23,52 +23,53 @@ struct CollapsibleQuickItemSection<Content: View>: View {
 
     private var headerButton: some View {
         Button(action: onToggle) {
-            HStack(spacing: 12) {
-                Image(systemName: systemImageName)
-                    .font(.subheadline.weight(.bold))
-                    .foregroundStyle(headerTint)
-                    .frame(width: 32, height: 32)
-                    .background(headerTint.opacity(0.14))
-                    .clipShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
-
-                VStack(alignment: .leading, spacing: 3) {
-                    Text(title)
-                        .font(.headline)
-                        .fontWeight(.semibold)
-                        .foregroundStyle(.primary)
-
-                    Text("\(itemCount) items")
-                        .font(.caption)
-                        .foregroundStyle(.secondary)
-                }
-
-                Spacer()
-
-                if usageCount > 0 {
-                    Text("Top \(usageCount)x")
-                        .font(.caption2.weight(.semibold))
-                        .foregroundStyle(headerTint)
-                        .padding(.horizontal, 8)
-                        .padding(.vertical, 5)
-                        .background(headerTint.opacity(0.12))
-                        .clipShape(Capsule())
-                }
-
-                Image(systemName: isExpanded ? "chevron.up.circle.fill" : "chevron.down.circle.fill")
-                    .font(.title3)
-                    .foregroundStyle(.secondary)
-            }
-            .padding(.horizontal, 12)
-            .padding(.vertical, 10)
-            .background(Color(.secondarySystemBackground))
-            .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
-            .overlay(
-                RoundedRectangle(cornerRadius: 16, style: .continuous)
-                    .stroke(Color(.separator).opacity(0.18), lineWidth: 1)
-            )
-            .contentShape(Rectangle())
+            headerContent
+                .contentShape(Rectangle())
         }
         .buttonStyle(.plain)
+    }
+
+    @ViewBuilder
+    private var headerContent: some View {
+        let base = HStack(spacing: 12) {
+            Image(systemName: systemImageName)
+                .font(.subheadline.weight(.bold))
+                .foregroundStyle(headerTint)
+                .frame(width: 32, height: 32)
+                .background(headerTint.opacity(0.14))
+                .clipShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
+
+            VStack(alignment: .leading, spacing: 3) {
+                Text(title)
+                    .font(.headline)
+                    .fontWeight(.semibold)
+                    .foregroundStyle(.primary)
+
+                Text("\(itemCount) items")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+            }
+
+            Spacer()
+
+            if usageCount > 0 {
+                Text("Top \(usageCount)x")
+                    .font(.caption2.weight(.semibold))
+                    .foregroundStyle(headerTint)
+                    .padding(.horizontal, 8)
+                    .padding(.vertical, 5)
+                    .background(headerTint.opacity(0.12))
+                    .clipShape(Capsule())
+            }
+
+            Image(systemName: isExpanded ? "chevron.up.circle.fill" : "chevron.down.circle.fill")
+                .font(.title3)
+                .foregroundStyle(.secondary)
+        }
+        .padding(.horizontal, 12)
+        .padding(.vertical, 10)
+
+        base.adaptiveGlass(in: RoundedRectangle(cornerRadius: 16, style: .continuous))
     }
 
     private var headerTint: Color {

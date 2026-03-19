@@ -28,32 +28,10 @@ struct QuickItemTile: View {
                 }
             }
         } label: {
-            VStack(spacing: 8) {
-                hintBadge
-                Text(item.emoji)
-                    .font(.system(size: 36))
-                    .scaleEffect(isPressed ? 0.96 : 1)
-                Text(displayName)
-                    .font(.subheadline)
-                    .fontWeight(.medium)
-                    .foregroundStyle(.primary)
-                    .lineLimit(1)
-                    .minimumScaleFactor(0.8)
-            }
-            .frame(maxWidth: .infinity)
-            .frame(height: 118)
-            .background(
-                RoundedRectangle(cornerRadius: 16, style: .continuous)
-                    .fill(Color(.secondarySystemBackground))
-            )
-            .overlay(
-                RoundedRectangle(cornerRadius: 16, style: .continuous)
-                    .stroke(Color(.separator).opacity(isPressed ? 0.3 : 0.2), lineWidth: 1)
-            )
-            .shadow(color: .black.opacity(isPressed ? 0.04 : 0.08), radius: isPressed ? 4 : 8, y: isPressed ? 1 : 4)
-            .opacity(isPressed ? 0.96 : 1)
-            .scaleEffect(isPressed ? 0.955 : 1.0)
-            .animation(.spring(response: 0.25, dampingFraction: 0.78), value: isPressed)
+            tileContent
+                .opacity(isPressed ? 0.96 : 1)
+                .scaleEffect(isPressed ? 0.955 : 1.0)
+                .animation(.spring(response: 0.25, dampingFraction: 0.78), value: isPressed)
         }
         .buttonStyle(.plain)
         .contextMenu {
@@ -63,6 +41,26 @@ struct QuickItemTile: View {
                 }
             }
         }
+    }
+
+    @ViewBuilder
+    private var tileContent: some View {
+        let base = VStack(spacing: 8) {
+            hintBadge
+            Text(item.emoji)
+                .font(.system(size: 36))
+                .scaleEffect(isPressed ? 0.96 : 1)
+            Text(displayName)
+                .font(.subheadline)
+                .fontWeight(.medium)
+                .foregroundStyle(.primary)
+                .lineLimit(1)
+                .minimumScaleFactor(0.8)
+        }
+        .frame(maxWidth: .infinity)
+        .frame(height: 118)
+
+        base.adaptiveGlass(in: RoundedRectangle(cornerRadius: 16, style: .continuous))
     }
 
     @ViewBuilder

@@ -29,9 +29,22 @@
 		8A6CE3002F674E4000C69470 /* GroceriesNowUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = GroceriesNowUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
+/* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
+		8A85AD8E2F6C4ED400C720DC /* Exceptions for "GroceriesNow" folder in "GroceriesNow" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				Info.plist,
+			);
+			target = 8A6CE2E62F674E3E00C69470 /* GroceriesNow */;
+		};
+/* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
+
 /* Begin PBXFileSystemSynchronizedRootGroup section */
 		8A6CE2E92F674E3E00C69470 /* GroceriesNow */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				8A85AD8E2F6C4ED400C720DC /* Exceptions for "GroceriesNow" folder in "GroceriesNow" target */,
+			);
 			path = GroceriesNow;
 			sourceTree = "<group>";
 		};
@@ -401,11 +414,11 @@
 				DEVELOPMENT_TEAM = YC87BA998K;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = GroceriesNow/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = TapBasket;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.food-and-drink";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
-				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations = UIInterfaceOrientationPortrait;
 				IPHONEOS_DEPLOYMENT_TARGET = 18;
 				LD_RUNPATH_SEARCH_PATHS = (
@@ -440,11 +453,11 @@
 				DEVELOPMENT_TEAM = YC87BA998K;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = GroceriesNow/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = TapBasket;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.food-and-drink";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
-				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations = UIInterfaceOrientationPortrait;
 				IPHONEOS_DEPLOYMENT_TARGET = 18;
 				LD_RUNPATH_SEARCH_PATHS = (

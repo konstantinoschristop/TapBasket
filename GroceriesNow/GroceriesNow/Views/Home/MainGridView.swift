@@ -30,6 +30,10 @@ struct MainGridView: View {
     @State private var queuedSnackBarStates: [SnackBarState] = []
     @State private var snackBarTask: Task<Void, Never>?
     @State private var snackBarDisplayDuration: TimeInterval = 2.6
+    @State private var basketButtonScale: CGFloat = 1
+    @State private var activeJumpCategory: QuickItemCategory?
+    @State private var isManuallyScrolling = false
+    @State private var manualScrollTask: Task<Void, Never>?
 
     private let columns = [
         GridItem(.flexible(), spacing: 12),
@@ -81,6 +85,10 @@ struct MainGridView: View {
 
     private var visibleCategories: [QuickItemCategory] {
         sectionedQuickItems.map(\.category)
+    }
+
+    private var jumpBarSections: [QuickItemSection] {
+        sectionedQuickItems.filter { expandedCategories.contains($0.category) }
     }
 
     private var hasExactNameMatch: Bool {
@@ -202,22 +210,80 @@ struct MainGridView: View {
 
     @ViewBuilder
     private var scrollContent: some View {
-        ScrollView {
-            if filteredQuickItems.isEmpty, isSearching {
-                emptySearchContent
-            } else if isSearching {
-                searchResultsSection
-            } else {
-                browseSections
-            }
+        ScrollViewReader { proxy in
+            ScrollView {
+                if filteredQuickItems.isEmpty, isSearching {
+                    emptySearchContent
+                } else if isSearching {
+                    searchResultsSection
+                } else {
+                    browseSections(proxy: proxy)
+                }
 
-            if shouldShowManualAddButton {
-                manualAddButton
-                    .padding(.top, 12)
-                    .padding(.horizontal)
-            }
+                if shouldShowManualAddButton {
+                    manualAddButton
+                        .padding(.top, 12)
+                        .padding(.horizontal)
+                }
 
-            Spacer(minLength: 100)
+                Spacer(minLength: 100)
+            }
+            .onPreferenceChange(SectionMinYKey.self) { positions in
+                guard !isManuallyScrolling else { return }
+                let category = positions
+                    .filter { $0.value <= 160 }
+                    .max { $0.value < $1.value }?.key
+                if category != activeJumpCategory {
+                    activeJumpCategory = category
+                }
+            }
+        }
+    }
+
+    private func categoryJumpBar(proxy: ScrollViewProxy) -> some View {
+        ScrollViewReader { hProxy in
+            ScrollView(.horizontal, showsIndicators: false) {
+                HStack(spacing: 6) {
+                    ForEach(jumpBarSections) { section in
+                        let isActive = activeJumpCategory == section.category
+                        Button {
+                            activeJumpCategory = section.category
+                            isManuallyScrolling = true
+                            manualScrollTask?.cancel()
+                            manualScrollTask = Task {
+                                try? await Task.sleep(for: .milliseconds(600))
+                                await MainActor.run { isManuallyScrolling = false }
+                            }
+                            withAnimation(.easeInOut(duration: 0.3)) {
+                                proxy.scrollTo(section.category, anchor: .top)
+                            }
+                        } label: {
+                            Label(section.category.title, systemImage: section.category.systemImageName)
+                                .font(.caption.weight(.semibold))
+                                .foregroundStyle(isActive ? Color.accentColor : .secondary)
+                                .padding(.horizontal, 10)
+                                .padding(.vertical, 6)
+                                .background(
+                                    Capsule().fill(isActive ? Color.accentColor.opacity(0.15) : Color.clear)
+                                )
+                                .animation(.easeInOut(duration: 0.18), value: isActive)
+                        }
+                        .buttonStyle(.plain)
+                        .id(section.category.rawValue)
+                    }
+                }
+                .padding(.horizontal, 14)
+                .padding(.vertical, 10)
+            }
+            .adaptiveGlass(in: RoundedRectangle(cornerRadius: 24, style: .continuous))
+            .padding(.horizontal, 16)
+            .padding(.vertical, 8)
+            .onChange(of: activeJumpCategory) { _, category in
+                guard let category else { return }
+                withAnimation(.easeInOut(duration: 0.25)) {
+                    hProxy.scrollTo(category.rawValue, anchor: .center)
+                }
+            }
         }
     }
 
@@ -244,15 +310,20 @@ struct MainGridView: View {
         }
     }
 
-    private var browseSections: some View {
-        LazyVStack(alignment: .leading, spacing: 20) {
-            if !topShortcutItems.isEmpty {
-                TopUsedShortcutsView(items: topShortcutItems, onTapItem: addShortcutItemToBasket)
-            }
+    private func browseSections(proxy: ScrollViewProxy) -> some View {
+        LazyVStack(alignment: .leading, spacing: 20, pinnedViews: [.sectionHeaders]) {
+            Section {
+                if !topShortcutItems.isEmpty {
+                    TopUsedShortcutsView(items: topShortcutItems, onTapItem: addShortcutItemToBasket)
+                }
 
-            ForEach(sectionedQuickItems) { section in
-                sectionView(for: section)
-
+                ForEach(sectionedQuickItems) { section in
+                    sectionView(for: section)
+                }
+            } header: {
+                if jumpBarSections.count > 1 {
+                    categoryJumpBar(proxy: proxy)
+                }
             }
         }
         .padding(.top, 16)
@@ -293,12 +364,22 @@ struct MainGridView: View {
             }
         }
         .padding(.horizontal)
+        .id(section.category)
+        .background(
+            GeometryReader { geo in
+                Color.clear.preference(
+                    key: SectionMinYKey.self,
+                    value: [section.category: geo.frame(in: .global).minY]
+                )
+            }
+        )
     }
 
     private func itemTile(for item: QuickItem) -> some View {
         QuickItemTile(
             item: item,
             hintText: hintText(for: item),
+            isInBasket: basketItems.contains { $0.name.caseInsensitiveCompare(item.name) == .orderedSame },
             action: {
                 addQuickItemToBasket(item)
             },
@@ -355,6 +436,7 @@ struct MainGridView: View {
         } label: {
             label.adaptiveGlass(in: Capsule())
         }
+        .scaleEffect(basketButtonScale)
     }
 
     private var shouldShowManualAddButton: Bool {
@@ -441,9 +523,20 @@ struct MainGridView: View {
     }
 
     private func addQuickItemToBasket(_ item: QuickItem) {
+        UIApplication.shared.sendAction(#selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil)
         let previousQuantity = basketManager.addItem(item, in: modelContext, basketItems: basketItems)
         showSingleItemSnackBar(for: item, previousQuantity: previousQuantity)
         updateContextualSuggestions(for: item.name)
+        pulseBasketButton()
+    }
+
+    private func pulseBasketButton() {
+        withAnimation(.spring(response: 0.2, dampingFraction: 0.45)) {
+            basketButtonScale = 1.1
+        }
+        withAnimation(.spring(response: 0.3, dampingFraction: 0.65).delay(0.15)) {
+            basketButtonScale = 1
+        }
     }
 
     private func addShortcutItemToBasket(_ shortcut: TopUsedShortcutItem) {
@@ -669,6 +762,13 @@ struct MainGridView: View {
         try? modelContext.save()
 
         clearInvalidContextualSuggestion()
+    }
+}
+
+private struct SectionMinYKey: PreferenceKey {
+    static var defaultValue: [QuickItemCategory: CGFloat] = [:]
+    static func reduce(value: inout [QuickItemCategory: CGFloat], nextValue: () -> [QuickItemCategory: CGFloat]) {
+        value.merge(nextValue()) { $1 }
     }
 }
 

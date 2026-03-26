@@ -26,6 +26,22 @@ struct BasketView: View {
         recentBaskets.count >= minimumRecentBasketCount
     }
 
+    private var regularItems: [BasketItem] {
+        basketItems.filter { $0.recipeName == nil }
+    }
+
+    /// Recipe groups in insertion order (first seen name comes first).
+    private var recipeGroups: [(name: String, items: [BasketItem])] {
+        var dict: [String: [BasketItem]] = [:]
+        var order: [String] = []
+        for item in basketItems {
+            guard let name = item.recipeName else { continue }
+            if dict[name] == nil { order.append(name) }
+            dict[name, default: []].append(item)
+        }
+        return order.map { (name: $0, items: dict[$0]!) }
+    }
+
     var body: some View {
         NavigationStack {
             listContent
@@ -101,17 +117,30 @@ struct BasketView: View {
 
     @ViewBuilder
     private var basketSection: some View {
-        Section(String(localized: "basket.section.current")) {
-            if basketItems.isEmpty {
+        if basketItems.isEmpty {
+            Section(String(localized: "basket.section.current")) {
                 ContentUnavailableView(
                     String(localized: "basket.empty.title"),
                     systemImage: "basket",
                     description: Text("basket.empty.description")
                 )
                 .transition(.opacity)
-            } else {
-                basketRows
-                    .transition(.opacity.combined(with: .move(edge: .top)))
+            }
+        } else {
+            if !regularItems.isEmpty {
+                Section(String(localized: "basket.section.current")) {
+                    rows(for: regularItems)
+                        .transition(.opacity.combined(with: .move(edge: .top)))
+                }
+            }
+
+            ForEach(recipeGroups, id: \.name) { group in
+                Section {
+                    rows(for: group.items)
+                        .transition(.opacity.combined(with: .move(edge: .top)))
+                } header: {
+                    Label(group.name.capitalized, systemImage: "sparkles")
+                }
             }
         }
     }
@@ -129,9 +158,8 @@ struct BasketView: View {
         }
     }
 
-    @ViewBuilder
-    private var basketRows: some View {
-        ForEach(basketItems) { item in
+    private func rows(for items: [BasketItem]) -> some View {
+        ForEach(items) { item in
             BasketRowView(
                 item: item,
                 onToggleChecked: { manager.toggle(item, in: modelContext) },
@@ -140,7 +168,11 @@ struct BasketView: View {
                 onEditNote: { noteEditorItem = item }
             )
         }
-        .onDelete(perform: deleteItems)
+        .onDelete { offsets in
+            for index in offsets {
+                manager.delete(items[index], in: modelContext)
+            }
+        }
     }
 
     @ToolbarContentBuilder
@@ -208,11 +240,6 @@ struct BasketView: View {
         }
     }
 
-    private func deleteItems(at offsets: IndexSet) {
-        for index in offsets {
-            manager.delete(basketItems[index], in: modelContext)
-        }
-    }
 
     private func addRecentItem(_ item: RecentBasketItem) {
         manager.addRecentItem(item, in: modelContext, basketItems: basketItems)

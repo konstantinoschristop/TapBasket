@@ -34,6 +34,9 @@ struct MainGridView: View {
     @State private var activeJumpCategory: QuickItemCategory?
     @State private var isManuallyScrolling = false
     @State private var manualScrollTask: Task<Void, Never>?
+    @State private var cachedCategoryUsage: [QuickItemCategory: Int] = [:]
+    @State private var showRecipeSheet = false
+    @State private var isRecipeAvailable = false
 
     private let columns = [
         GridItem(.flexible(), spacing: 12),
@@ -60,24 +63,22 @@ struct MainGridView: View {
         }
     }
 
-    private var categoryUsage: [QuickItemCategory: Int] {
-        let quickItemByName = Dictionary(uniqueKeysWithValues: quickItems.map { ($0.name.lowercased(), $0) })
-
-        return completedEntries.reduce(into: [QuickItemCategory: Int]()) { result, entry in
-            guard let item = quickItemByName[entry.name.lowercased()] else { return }
-            result[item.category, default: 0] += entry.quantity
-        }
+    private var basketItemNames: Set<String> {
+        Set(basketItems.map { $0.name.lowercased() })
     }
 
     private var sectionedQuickItems: [QuickItemSection] {
-        QuickItemCategory.orderedBrowseCategories
-            .compactMap { category in
-                let items = quickItems.filter { $0.category == category }
-                guard !items.isEmpty else { return nil }
+        var byCategory: [QuickItemCategory: [QuickItem]] = [:]
+        for item in quickItems {
+            byCategory[item.category, default: []].append(item)
+        }
+        return QuickItemCategory.orderedBrowseCategories
+            .compactMap { category -> QuickItemSection? in
+                guard let items = byCategory[category], !items.isEmpty else { return nil }
                 return QuickItemSection(
                     category: category,
                     items: items,
-                    usageCount: categoryUsage[category, default: 0]
+                    usageCount: cachedCategoryUsage[category, default: 0]
                 )
             }
             .sorted(by: sectionSort)
@@ -102,14 +103,15 @@ struct MainGridView: View {
 
     private var topShortcutItems: [TopUsedShortcutItem] {
         let shortcuts = basketManager.topUsedShortcuts(from: completedEntries)
+        guard !shortcuts.isEmpty else { return [] }
+
+        let itemsByName = Dictionary(
+            quickItems.map { ($0.name.lowercased(), $0) },
+            uniquingKeysWith: { first, _ in first }
+        )
 
         return shortcuts.compactMap { shortcut in
-            guard let item = quickItems.first(where: {
-                $0.name.caseInsensitiveCompare(shortcut.itemName) == .orderedSame
-            }) else {
-                return nil
-            }
-
+            guard let item = itemsByName[shortcut.itemName.lowercased()] else { return nil }
             return TopUsedShortcutItem(
                 id: item.id,
                 name: ProductDisplayNameProvider.displayName(for: item.name),
@@ -129,14 +131,19 @@ struct MainGridView: View {
             limit: 2
         )
 
+        let itemsByName = Dictionary(
+            quickItems.map { ($0.name.lowercased(), $0) },
+            uniquingKeysWith: { first, _ in first }
+        )
+        let inBasket = basketItemNames
+
         return suggestions.compactMap { suggestion in
             guard suggestion.id == activeContextualSuggestionID else { return nil }
 
-            let remainingItems = suggestion.itemNames.compactMap { name in
-                quickItems.first { quickItem in
-                    quickItem.name.caseInsensitiveCompare(name) == .orderedSame &&
-                    !basketItems.contains(where: { $0.name.caseInsensitiveCompare(name) == .orderedSame })
-                }
+            let remainingItems = suggestion.itemNames.compactMap { name -> QuickItem? in
+                let key = name.lowercased()
+                guard let item = itemsByName[key], !inBasket.contains(key) else { return nil }
+                return item
             }
 
             guard !remainingItems.isEmpty else { return nil }
@@ -165,15 +172,45 @@ struct MainGridView: View {
                 overlayControls
             }
             .navigationTitle(Text("home.navigation_title"))
-            .navigationBarTitleDisplayMode(.large)
+            .toolbarTitleDisplayMode(.inlineLarge)
             .searchable(text: $searchText, prompt: Text("home.search_prompt"))
+            .scrollDismissesKeyboard(.immediately)
+            .toolbar {
+                if isRecipeAvailable {
+                    ToolbarItem(placement: .topBarTrailing) {
+                        Button {
+                            showRecipeSheet = true
+                        } label: {
+                            Label(String(localized: "recipe.toolbar_button"), systemImage: "sparkles")
+                        }
+                    }
+                }
+            }
             .sheet(isPresented: $showBasket) {
                 BasketView(manager: basketManager)
             }
             .sheet(isPresented: $showManualAddSheet) {
                 ManualQuickItemSheet(initialName: trimmedSearch, onSave: saveManualQuickItem)
             }
+            #if canImport(FoundationModels)
+            .sheet(isPresented: $showRecipeSheet) {
+                if #available(iOS 26.0, macOS 26.0, *) {
+                    RecipeBasketSheet(quickItems: quickItems) { recipeName, ingredients in
+                        addRecipeIngredients(ingredients, recipeName: recipeName)
+                    }
+                }
+            }
+            #endif
             .onAppear(perform: syncExpandedCategories)
+            .onAppear {
+                #if canImport(FoundationModels)
+                if #available(iOS 26.0, macOS 26.0, *) {
+                    isRecipeAvailable = true
+                }
+                #endif
+            }
+            .onChange(of: completedEntries, initial: true) { _, _ in recomputeCategoryUsage() }
+            .onChange(of: quickItems) { _, _ in recomputeCategoryUsage() }
             .onChange(of: visibleCategories, initial: true) { _, _ in
                 syncExpandedCategories()
             }
@@ -367,10 +404,9 @@ struct MainGridView: View {
         .id(section.category)
         .background(
             GeometryReader { geo in
-                Color.clear.preference(
-                    key: SectionMinYKey.self,
-                    value: [section.category: geo.frame(in: .global).minY]
-                )
+                Color.clear.transformPreference(SectionMinYKey.self) { dict in
+                    dict[section.category] = geo.frame(in: .global).minY
+                }
             }
         )
     }
@@ -379,7 +415,7 @@ struct MainGridView: View {
         QuickItemTile(
             item: item,
             hintText: hintText(for: item),
-            isInBasket: basketItems.contains { $0.name.caseInsensitiveCompare(item.name) == .orderedSame },
+            isInBasket: basketItemNames.contains(item.name.lowercased()),
             action: {
                 addQuickItemToBasket(item)
             },
@@ -443,6 +479,17 @@ struct MainGridView: View {
         isSearching && !hasExactNameMatch && !filteredQuickItems.isEmpty
     }
 
+    private func recomputeCategoryUsage() {
+        let itemsByName = Dictionary(
+            quickItems.map { ($0.name.lowercased(), $0) },
+            uniquingKeysWith: { first, _ in first }
+        )
+        cachedCategoryUsage = completedEntries.reduce(into: [:]) { result, entry in
+            guard let item = itemsByName[entry.name.lowercased()] else { return }
+            result[item.category, default: 0] += entry.quantity
+        }
+    }
+
     private func sectionSort(lhs: QuickItemSection, rhs: QuickItemSection) -> Bool {
         if lhs.category == .custom, rhs.category != .custom {
             return true
@@ -490,6 +537,35 @@ struct MainGridView: View {
         if expandedCategories.isEmpty {
             expandedCategories = defaults
         }
+    }
+
+    private func addRecipeIngredients(_ ingredients: [RecipeIngredient], recipeName: String) {
+        guard !ingredients.isEmpty else { return }
+
+        let itemsByName = Dictionary(
+            quickItems.map { ($0.name.lowercased(), $0) },
+            uniquingKeysWith: { first, _ in first }
+        )
+
+        for ingredient in ingredients {
+            let key = ingredient.name.lowercased()
+            let resolvedName = itemsByName[key]?.name.capitalized ?? ingredient.name.capitalized
+            let resolvedEmoji = itemsByName[key]?.emoji ?? ingredient.emoji
+
+            if let existing = basketItems.first(where: { $0.name.caseInsensitiveCompare(resolvedName) == .orderedSame }) {
+                existing.quantity += ingredient.quantity
+                if existing.recipeName == nil { existing.recipeName = recipeName }
+            } else {
+                modelContext.insert(BasketItem(
+                    name: resolvedName,
+                    emoji: resolvedEmoji,
+                    quantity: ingredient.quantity,
+                    recipeName: recipeName
+                ))
+            }
+        }
+
+        try? modelContext.save()
     }
 
     private func saveManualQuickItem(_ name: String, _ emoji: String, _ category: QuickItemCategory, _ addToBasket: Bool) {

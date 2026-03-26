@@ -1,5 +1,17 @@
 import SwiftUI
 
+private let _sectionTintColors: [String: Color] = [
+    "green": .green,
+    "red": .red,
+    "orange": .orange,
+    "cyan": .cyan,
+    "indigo": .indigo,
+    "teal": .teal,
+    "pink": .pink,
+    "gray": .gray,
+    "purple": .purple
+]
+
 struct CollapsibleQuickItemSection<Content: View>: View {
     let title: String
     let systemImageName: String
@@ -73,17 +85,6 @@ struct CollapsibleQuickItemSection<Content: View>: View {
     }
 
     private var headerTint: Color {
-        switch tintName {
-        case "green": .green
-        case "red": .red
-        case "orange": .orange
-        case "cyan": .cyan
-        case "indigo": .indigo
-        case "teal": .teal
-        case "pink": .pink
-        case "gray": .gray
-        case "purple": .purple
-        default: .blue
-        }
+        _sectionTintColors[tintName] ?? .blue
     }
 }

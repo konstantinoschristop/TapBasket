@@ -9,6 +9,7 @@ final class BasketItem {
     var quantity: Int
     var isChecked: Bool
     var note: String?
+    var recipeName: String?
 
     init(
         id: UUID = UUID(),
@@ -16,7 +17,8 @@ final class BasketItem {
         emoji: String,
         quantity: Int = 1,
         isChecked: Bool = false,
-        note: String? = nil
+        note: String? = nil,
+        recipeName: String? = nil
     ) {
         self.id = id
         self.name = name
@@ -24,5 +26,6 @@ final class BasketItem {
         self.quantity = quantity
         self.isChecked = isChecked
         self.note = note
+        self.recipeName = recipeName
     }
 }

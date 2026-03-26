@@ -25,8 +25,8 @@ struct TopUsedShortcutsView: View {
 
             ScrollView(.horizontal, showsIndicators: false) {
                 HStack(spacing: 10) {
-                    ForEach(Array(items.enumerated()), id: \.element.id) { index, item in
-                        shortcutChip(for: item, isPrimary: index == 0)
+                    ForEach(items) { item in
+                        shortcutChip(for: item, isPrimary: item.id == items.first?.id)
                     }
                 }
                 .padding(.horizontal)

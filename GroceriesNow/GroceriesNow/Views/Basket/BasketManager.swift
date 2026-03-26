@@ -104,7 +104,7 @@ final class BasketManager {
     }
 
     func totalItemCount(from items: [BasketItem]) -> Int {
-        items.reduce(0) { $0 + $1.quantity }
+        items.count
     }
 
     func increment(_ item: BasketItem, in modelContext: ModelContext) {

@@ -8,82 +8,68 @@ struct TopUsedShortcutItem: Identifiable {
 }
 
 struct TopUsedShortcutsView: View {
-    @Environment(\.locale) private var locale
-
     let items: [TopUsedShortcutItem]
     let onTapItem: (TopUsedShortcutItem) -> Void
+    let onAddAll: () -> Void
 
     var body: some View {
-        widgetContainer
-    }
-
-    @ViewBuilder
-    private var widgetContainer: some View {
-        let base = VStack(alignment: .leading, spacing: 12) {
-            headerContent
-
-            ScrollView(.horizontal, showsIndicators: false) {
-                HStack(spacing: 10) {
-                    ForEach(items) { item in
-                        shortcutChip(for: item, isPrimary: item.id == items.first?.id)
-                    }
-                }
-                .padding(.horizontal)
-                .padding(.vertical, 2)
-            }
+        VStack(alignment: .leading, spacing: 12) {
+            header
+            grid
         }
-        .padding(.vertical, 14)
-
-        base.adaptiveGlass(in: RoundedRectangle(cornerRadius: 24, style: .continuous))
+        .padding(16)
+        .background(Color(.secondarySystemGroupedBackground), in: RoundedRectangle(cornerRadius: 20, style: .continuous))
     }
 
-    private var headerContent: some View {
-        VStack(alignment: .leading, spacing: 3) {
-            Text("regulars.header.title")
-                .font(.headline)
-                .fontWeight(.semibold)
-
-            Text("regulars.header.subtitle")
-                .font(.caption)
-                .foregroundStyle(.secondary)
-        }
-        .padding(.horizontal)
-    }
-
-    private func shortcutChip(for item: TopUsedShortcutItem, isPrimary: Bool) -> some View {
-        Button {
-            onTapItem(item)
-        } label: {
-            chipContent(for: item, isPrimary: isPrimary)
-        }
-        .buttonStyle(.plain)
-    }
-
-    @ViewBuilder
-    private func chipContent(for item: TopUsedShortcutItem, isPrimary: Bool) -> some View {
-        let base = HStack(spacing: 10) {
-            Text(item.emoji)
-                .font(.title3)
-                .frame(width: 34, height: 34)
-                .background(Color.accentColor.opacity(isPrimary ? 0.2 : 0.16))
-                .clipShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
-
+    private var header: some View {
+        HStack(alignment: .top) {
             VStack(alignment: .leading, spacing: 2) {
-                Text(ProductDisplayNameProvider.displayName(for: item.name))
-                    .font(.subheadline)
-                    .fontWeight(.semibold)
-                    .foregroundStyle(.primary)
-                    .lineLimit(1)
+                Text("regulars.header.title")
+                    .font(.subheadline.weight(.semibold))
 
-                Text(String(localized: "regulars.bought_count_format", defaultValue: "Bought %lldx", locale: locale).replacingOccurrences(of: "%lld", with: "\(item.totalQuantity)"))
-                    .font(.caption2)
+                Text("regulars.header.subtitle")
+                    .font(.caption)
                     .foregroundStyle(.secondary)
             }
-        }
-        .padding(.horizontal, 12)
-        .padding(.vertical, 10)
-        .scaleEffect(isPrimary ? 1.01 : 1)
 
-        base.adaptiveGlass(in: RoundedRectangle(cornerRadius: 18, style: .continuous))
+            Spacer()
+
+            Button(action: onAddAll) {
+                Text("Add all")
+                    .font(.subheadline.weight(.medium))
+            }
+            .buttonStyle(.plain)
+        }
+    }
+
+    private var grid: some View {
+        LazyVGrid(
+            columns: [GridItem(.flexible()), GridItem(.flexible()), GridItem(.flexible()), GridItem(.flexible())],
+            spacing: 10
+        ) {
+            ForEach(items.prefix(4)) { item in
+                tile(for: item)
+            }
+        }
+    }
+
+    private func tile(for item: TopUsedShortcutItem) -> some View {
+        Button { onTapItem(item) } label: {
+            VStack(spacing: 6) {
+                Text(item.emoji)
+                    .font(.title2)
+                    .frame(maxWidth: .infinity)
+                    .frame(height: 52)
+                    .background(Color(.systemGroupedBackground), in: RoundedRectangle(cornerRadius: 14, style: .continuous))
+
+                Text(ProductDisplayNameProvider.displayName(for: item.name))
+                    .font(.caption2)
+                    .fontWeight(.medium)
+                    .foregroundStyle(.secondary)
+                    .lineLimit(1)
+                    .minimumScaleFactor(0.8)
+            }
+        }
+        .buttonStyle(.plain)
     }
 }

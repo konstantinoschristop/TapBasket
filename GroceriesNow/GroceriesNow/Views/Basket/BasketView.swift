@@ -15,6 +15,8 @@ struct BasketView: View {
     @State private var noteEditorItem: BasketItem?
     @State private var isCompletingBasket = false
     @State private var showCompletionBadge = false
+    @State private var isPreparingShare = false
+    @State private var shareImage: UIImage?
 
     private let minimumRecentBasketCount = 3
 
@@ -66,6 +68,7 @@ struct BasketView: View {
                 }
                 .animation(.spring(response: 0.24, dampingFraction: 0.9), value: isCompletingBasket)
                 .animation(.spring(response: 0.3, dampingFraction: 0.82), value: showCompletionBadge)
+                .task(id: basketItems.count) { await prepareShareImage() }
         }
     }
 
@@ -183,6 +186,24 @@ struct BasketView: View {
             }
         }
         ToolbarItemGroup(placement: .topBarTrailing) {
+            Group {
+                if let image = shareImage, !isPreparingShare {
+                    let swiftUIImage = Image(uiImage: image)
+                    ShareLink(
+                        item: swiftUIImage,
+                        preview: SharePreview(
+                            String(localized: "basket.share.title", defaultValue: "Shopping List"),
+                            image: swiftUIImage
+                        )
+                    ) {
+                        shareButtonIcon(loading: false)
+                    }
+                } else {
+                    shareButtonIcon(loading: isPreparingShare)
+                }
+            }
+            .disabled(basketItems.isEmpty || isCompletingBasket)
+
             Button {
                 completeCurrentBasket()
             } label: {
@@ -209,6 +230,37 @@ struct BasketView: View {
             .disabled(basketItems.isEmpty || isCompletingBasket)
             .accessibilityLabel(Text("action.clear_basket"))
         }
+    }
+
+    private func shareButtonIcon(loading: Bool) -> some View {
+        ZStack {
+            Color.green.clipShape(Circle())
+            if loading {
+                ProgressView().tint(.white).scaleEffect(0.8)
+            } else {
+                Image(systemName: "square.and.arrow.up")
+                    .font(.caption.weight(.bold))
+                    .foregroundStyle(.white)
+            }
+        }
+        .frame(width: 28, height: 28)
+    }
+
+    @MainActor
+    private func prepareShareImage() async {
+        guard !basketItems.isEmpty else { shareImage = nil; return }
+        isPreparingShare = true
+        await Task.yield()
+
+        let regular = regularItems.map { BasketItemSnapshot(name: $0.name, emoji: $0.emoji, quantity: $0.quantity, note: $0.note) }
+        let groups = recipeGroups.map { group in
+            RecipeGroupSnapshot(name: group.name, items: group.items.map {
+                BasketItemSnapshot(name: $0.name, emoji: $0.emoji, quantity: $0.quantity, note: $0.note)
+            })
+        }
+
+        shareImage = BasketExporter.renderImage(regularItems: regular, recipeGroups: groups)
+        isPreparingShare = false
     }
 
     private var isShowingFeedbackAlert: Binding<Bool> {

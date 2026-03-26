@@ -4,6 +4,16 @@
     "%lld" : {
 
     },
+    "%lld %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$lld %2$@"
+          }
+        }
+      }
+    },
     "%lld ingredients" : {
       "localizations" : {
         "el" : {
@@ -40,6 +50,9 @@
       }
     },
     "🧺" : {
+
+    },
+    "🛒 Shopping List" : {
 
     },
     "action.add" : {
@@ -169,6 +182,9 @@
           }
         }
       }
+    },
+    "Add all" : {
+
     },
     "Add to basket now" : {
 
@@ -329,6 +345,17 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Current Basket"
+          }
+        }
+      }
+    },
+    "basket.share.title" : {
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Shopping List"
           }
         }
       }
@@ -535,6 +562,9 @@
 
     },
     "Emoji" : {
+
+    },
+    "GroceriesNow" : {
 
     },
     "home.basket_button_format" : {
@@ -3755,6 +3785,7 @@
       }
     },
     "regulars.bought_count_format" : {
+      "extractionState" : "stale",
       "localizations" : {
         "el" : {
           "stringUnit" : {

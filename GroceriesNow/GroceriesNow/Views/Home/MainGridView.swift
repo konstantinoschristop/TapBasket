@@ -99,8 +99,9 @@ private var hasExactNameMatch: Bool {
             uniquingKeysWith: { first, _ in first }
         )
 
-        return shortcuts.compactMap { shortcut in
+        return shortcuts.compactMap { shortcut -> TopUsedShortcutItem? in
             guard let item = itemsByName[shortcut.itemName.lowercased()] else { return nil }
+            guard !basketItemNames.contains(item.name.lowercased()) else { return nil }
             return TopUsedShortcutItem(
                 id: item.id,
                 name: ProductDisplayNameProvider.displayName(for: item.name),
@@ -258,7 +259,11 @@ private var hasExactNameMatch: Bool {
             } else {
                 if !topShortcutItems.isEmpty {
                     Section {
-                        TopUsedShortcutsView(items: topShortcutItems, onTapItem: addShortcutItemToBasket)
+                        TopUsedShortcutsView(
+                            items: topShortcutItems,
+                            onTapItem: addShortcutItemToBasket,
+                            onAddAll: { topShortcutItems.forEach { addShortcutItemToBasket($0) } }
+                        )
                             .listRowInsets(EdgeInsets())
                             .listRowBackground(Color.clear)
                     }
@@ -715,11 +720,10 @@ private var hasExactNameMatch: Bool {
             progress: 1
         )
 
-        if activeSnackBarState == nil {
-            presentSnackBar(newState)
-        } else {
-            queuedSnackBarStates.append(newState)
-        }
+        // Always present immediately, replacing any active or queued snackbar.
+        // This prevents toast buildup when items are added rapidly.
+        queuedSnackBarStates = []
+        presentSnackBar(newState)
     }
 
     private func presentSnackBar(_ state: SnackBarState) {

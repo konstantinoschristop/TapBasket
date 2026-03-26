@@ -45,21 +45,31 @@ struct QuickItemTile: View {
     }
 
     private var tileContent: some View {
-        VStack(spacing: 8) {
+        VStack(spacing: 6) {
             hintBadge
             Text(item.emoji)
-                .font(.system(size: 36))
+                .font(.system(size: 34))
                 .scaleEffect(isPressed ? 0.96 : 1)
             Text(displayName)
-                .font(.subheadline)
-                .fontWeight(.medium)
+                .font(.caption)
+                .fontWeight(.semibold)
                 .foregroundStyle(.primary)
-                .lineLimit(1)
+                .lineLimit(2)
+                .multilineTextAlignment(.center)
                 .minimumScaleFactor(0.8)
         }
         .frame(maxWidth: .infinity)
-        .frame(height: 118)
-        .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 16, style: .continuous))
+        .frame(height: 100)
+        .padding(.horizontal, 4)
+        .background(
+            RoundedRectangle(cornerRadius: 16, style: .continuous)
+                .fill(Color(.secondarySystemGroupedBackground))
+                .shadow(color: .black.opacity(0.06), radius: 4, y: 2)
+        )
+        .overlay(
+            RoundedRectangle(cornerRadius: 16, style: .continuous)
+                .stroke(Color(.separator).opacity(0.25), lineWidth: 0.5)
+        )
         .overlay(alignment: .topTrailing) {
             if isInBasket {
                 Image(systemName: "basket.fill")

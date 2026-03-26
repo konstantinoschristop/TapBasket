@@ -18,13 +18,14 @@ struct BasketItemNoteEditorView: View {
 
     var body: some View {
         NavigationStack {
-            Form {
+            List {
                 Section(itemName) {
                     TextField(String(localized: "basket_item_note.add_note"), text: $noteText, axis: .vertical)
                         .lineLimit(3...5)
                         .textInputAutocapitalization(.sentences)
                 }
             }
+            .listStyle(.insetGrouped)
             .navigationTitle(Text("basket_item_note.title"))
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {

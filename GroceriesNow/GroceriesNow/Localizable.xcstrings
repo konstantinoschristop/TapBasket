@@ -1,3882 +1,3915 @@
 {
-  "sourceLanguage": "en",
-  "strings": {
-    "%lld": {},
-    "%lld ingredients": {
-      "localizations": {
-        "el": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "%lld υλικά"
+  "sourceLanguage" : "en",
+  "strings" : {
+    "%lld" : {
+
+    },
+    "%lld ingredients" : {
+      "localizations" : {
+        "el" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld υλικά"
           }
         },
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "%lld ingredients"
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld ingredients"
           }
         }
       }
+    },
+    "%lld items" : {
+
     },
-    "%lld items": {},
-    "×%lld": {
-      "localizations": {
-        "el": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "×%lld"
+    "×%lld" : {
+      "localizations" : {
+        "el" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "×%lld"
           }
         },
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "×%lld"
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "×%lld"
           }
         }
       }
     },
-    "🧺": {},
-    "action.add": {
-      "localizations": {
-        "el": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Προσθήκη"
+    "🧺" : {
+
+    },
+    "action.add" : {
+      "localizations" : {
+        "el" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Προσθήκη"
           }
         },
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Add"
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Add"
           }
         }
       }
     },
-    "action.add_all": {
-      "localizations": {
-        "el": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Προσθήκη όλων"
+    "action.add_all" : {
+      "localizations" : {
+        "el" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Προσθήκη όλων"
           }
         },
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Add all"
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Add all"
           }
         }
       }
     },
-    "action.cancel": {
-      "localizations": {
-        "el": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Ακύρωση"
+    "action.cancel" : {
+      "localizations" : {
+        "el" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ακύρωση"
           }
         },
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Cancel"
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cancel"
           }
         }
       }
     },
-    "action.clear_basket": {
-      "localizations": {
-        "el": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Καθαρισμός καλαθιού"
+    "action.clear_basket" : {
+      "localizations" : {
+        "el" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Καθαρισμός καλαθιού"
           }
         },
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Clear Basket"
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Clear Basket"
           }
         }
       }
     },
-    "action.complete": {
-      "localizations": {
-        "el": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Ολοκλήρωση"
+    "action.complete" : {
+      "localizations" : {
+        "el" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ολοκλήρωση"
           }
         },
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Complete"
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Complete"
           }
         }
       }
     },
-    "action.create_format": {
-      "localizations": {
-        "el": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Δημιουργία \"%@\""
+    "action.create_format" : {
+      "localizations" : {
+        "el" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Δημιουργία \"%@\""
           }
         },
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Create \"%@\""
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Create \"%@\""
           }
         }
       }
     },
-    "action.done": {
-      "localizations": {
-        "el": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Τέλος"
+    "action.done" : {
+      "localizations" : {
+        "el" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Τέλος"
           }
         },
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Done"
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Done"
           }
         }
       }
     },
-    "action.save": {
-      "localizations": {
-        "el": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Αποθήκευση"
+    "action.save" : {
+      "localizations" : {
+        "el" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Αποθήκευση"
           }
         },
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Save"
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Save"
           }
         }
       }
+    },
+    "Add to basket now" : {
+
     },
-    "Add to basket now": {},
-    "basket_item_note.add_note": {
-      "localizations": {
-        "el": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Προσθήκη σημείωσης"
+    "basket_item_note.add_note" : {
+      "localizations" : {
+        "el" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Προσθήκη σημείωσης"
           }
         },
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Add a note"
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Add a note"
           }
         }
       }
     },
-    "basket_item_note.title": {
-      "localizations": {
-        "el": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Σημείωση προϊόντος"
+    "basket_item_note.title" : {
+      "localizations" : {
+        "el" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Σημείωση προϊόντος"
           }
         },
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Product Note"
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Product Note"
           }
         }
       }
     },
-    "basket.empty.description": {
-      "localizations": {
-        "el": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Πάτησε τα προϊόντα για να τα προσθέσεις γρήγορα."
+    "basket.empty.description" : {
+      "localizations" : {
+        "el" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Πάτησε τα προϊόντα για να τα προσθέσεις γρήγορα."
           }
         },
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Tap grocery tiles to add items quickly."
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tap grocery tiles to add items quickly."
           }
         }
       }
     },
-    "basket.empty.title": {
-      "localizations": {
-        "el": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Το καλάθι είναι άδειο"
+    "basket.empty.title" : {
+      "localizations" : {
+        "el" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Το καλάθι είναι άδειο"
           }
         },
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Basket is empty"
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Basket is empty"
           }
         }
       }
     },
-    "basket.feedback.added_items_format": {
-      "localizations": {
-        "el": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Προστέθηκαν %lld είδη στο καλάθι σου."
+    "basket.feedback.added_items_format" : {
+      "localizations" : {
+        "el" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Προστέθηκαν %lld είδη στο καλάθι σου."
           }
         },
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Added %lld items to your basket."
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Added %lld items to your basket."
           }
         }
       }
     },
-    "basket.feedback.added_updated_format": {
-      "localizations": {
-        "el": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Προστέθηκαν %lld νέα είδη. Ενημερώθηκαν %lld είδη που υπήρχαν ήδη στο καλάθι σου."
+    "basket.feedback.added_updated_format" : {
+      "localizations" : {
+        "el" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Προστέθηκαν %lld νέα είδη. Ενημερώθηκαν %lld είδη που υπήρχαν ήδη στο καλάθι σου."
           }
         },
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Added %lld new items. Updated %lld items already in your basket."
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Added %lld new items. Updated %lld items already in your basket."
           }
         }
       }
     },
-    "basket.feedback.all_updated": {
-      "localizations": {
-        "el": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Όλα τα είδη ήταν ήδη στο καλάθι σου, οπότε οι ποσότητες ενημερώθηκαν."
+    "basket.feedback.all_updated" : {
+      "localizations" : {
+        "el" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Όλα τα είδη ήταν ήδη στο καλάθι σου, οπότε οι ποσότητες ενημερώθηκαν."
           }
         },
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "All items were already in your basket, so their quantities were updated."
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "All items were already in your basket, so their quantities were updated."
           }
         }
       }
     },
-    "basket.feedback.updated_title": {
-      "localizations": {
-        "el": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Ενημερωμένο καλάθι"
+    "basket.feedback.updated_title" : {
+      "localizations" : {
+        "el" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ενημερωμένο καλάθι"
           }
         },
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Updated Basket"
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Updated Basket"
           }
         }
       }
     },
-    "basket.screen_title": {
-      "localizations": {
-        "el": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Καλάθι"
+    "basket.screen_title" : {
+      "localizations" : {
+        "el" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Καλάθι"
           }
         },
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Basket"
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Basket"
           }
         }
       }
     },
-    "basket.section.current": {
-      "localizations": {
-        "el": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Τρέχον καλάθι"
+    "basket.section.current" : {
+      "localizations" : {
+        "el" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Τρέχον καλάθι"
           }
         },
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Current Basket"
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Current Basket"
           }
         }
       }
     },
-    "Cancel": {},
-    "Category": {},
-    "category.custom": {
-      "localizations": {
-        "el": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Δικά μου"
+    "Cancel" : {
+
+    },
+    "Category" : {
+
+    },
+    "category.custom" : {
+      "localizations" : {
+        "el" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Δικά μου"
           }
         },
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "My Items"
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "My Items"
           }
         }
       }
     },
-    "category.drinks": {
-      "localizations": {
-        "el": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Ποτά"
+    "category.drinks" : {
+      "localizations" : {
+        "el" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ποτά"
           }
         },
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Drinks"
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Drinks"
           }
         }
       }
     },
-    "category.essentials": {
-      "localizations": {
-        "el": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Βασικά"
+    "category.essentials" : {
+      "localizations" : {
+        "el" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Βασικά"
           }
         },
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Essentials"
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Essentials"
           }
         }
       }
     },
-    "category.frozen": {
-      "localizations": {
-        "el": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Κατεψυγμένα"
+    "category.frozen" : {
+      "localizations" : {
+        "el" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Κατεψυγμένα"
           }
         },
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Frozen"
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Frozen"
           }
         }
       }
     },
-    "category.home_care": {
-      "localizations": {
-        "el": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Καθαριότητα"
+    "category.home_care" : {
+      "localizations" : {
+        "el" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Καθαριότητα"
           }
         },
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Household"
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Household"
           }
         }
       }
     },
-    "category.more": {
-      "localizations": {
-        "el": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Αρτοπωλείο"
+    "category.more" : {
+      "localizations" : {
+        "el" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Αρτοπωλείο"
           }
         },
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Bakery"
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bakery"
           }
         }
       }
     },
-    "category.pantry": {
-      "localizations": {
-        "el": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Τρόφιμα"
+    "category.pantry" : {
+      "localizations" : {
+        "el" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Τρόφιμα"
           }
         },
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Pantry"
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pantry"
           }
         }
       }
     },
-    "category.produce": {
-      "localizations": {
-        "el": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Φρέσκα"
+    "category.produce" : {
+      "localizations" : {
+        "el" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Φρέσκα"
           }
         },
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Fresh"
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Fresh"
           }
         }
       }
     },
-    "category.proteins": {
-      "localizations": {
-        "el": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Κρέατα & Ψάρια"
+    "category.proteins" : {
+      "localizations" : {
+        "el" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Κρέατα & Ψάρια"
           }
         },
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Meat & Fish"
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Meat & Fish"
           }
         }
       }
     },
-    "category.treats": {
-      "localizations": {
-        "el": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Λιχουδιές"
+    "category.treats" : {
+      "localizations" : {
+        "el" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Λιχουδιές"
           }
         },
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Treats"
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Treats"
           }
         }
       }
     },
-    "contextual_pair.header.subtitle": {
-      "localizations": {
-        "el": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Με βάση αυτό που μόλις πρόσθεσες"
+    "contextual_pair.header.subtitle" : {
+      "localizations" : {
+        "el" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Με βάση αυτό που μόλις πρόσθεσες"
           }
         },
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Based on what you just added"
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Based on what you just added"
           }
         }
       }
     },
-    "contextual_pair.header.title": {
-      "localizations": {
-        "el": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Πρόσθεσε το συνηθισμένο ζευγάρι"
+    "contextual_pair.header.title" : {
+      "localizations" : {
+        "el" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Πρόσθεσε το συνηθισμένο ζευγάρι"
           }
         },
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Add the Usual Pair"
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Add the Usual Pair"
           }
         }
       }
+    },
+    "Delete Product" : {
+
+    },
+    "Emoji" : {
+
     },
-    "Delete Product": {},
-    "Emoji": {},
-    "home.basket_button_format": {
-      "localizations": {
-        "el": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Καλάθι (%lld)"
+    "home.basket_button_format" : {
+      "localizations" : {
+        "el" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Καλάθι (%lld)"
           }
         },
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Basket (%lld)"
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Basket (%lld)"
           }
         }
       }
     },
-    "home.empty_search.description": {
-      "localizations": {
-        "el": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Δημιούργησε νέο προϊόν με το δικό σου emoji και κατηγορία."
+    "home.empty_search.description" : {
+      "localizations" : {
+        "el" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Δημιούργησε νέο προϊόν με το δικό σου emoji και κατηγορία."
           }
         },
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Create a new grocery with your own emoji and category."
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Create a new grocery with your own emoji and category."
           }
         }
       }
     },
-    "home.empty_search.title": {
-      "localizations": {
-        "el": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Καμία αντιστοιχία"
+    "home.empty_search.title" : {
+      "localizations" : {
+        "el" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Καμία αντιστοιχία"
           }
         },
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "No matches"
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No matches"
           }
         }
       }
     },
-    "home.hint.top_count_format": {
-      "localizations": {
-        "el": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Top %lldx"
+    "home.hint.top_count_format" : {
+      "localizations" : {
+        "el" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Top %lldx"
           }
         },
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Top %lldx"
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Top %lldx"
           }
         }
       }
     },
-    "home.navigation_title": {
-      "localizations": {
-        "el": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Tap Basket"
+    "home.navigation_title" : {
+      "localizations" : {
+        "el" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tap Basket"
           }
         },
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Tap Basket"
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tap Basket"
           }
         }
       }
     },
-    "home.search_prompt": {
-      "localizations": {
-        "el": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Αναζήτηση προϊόντων"
+    "home.search_prompt" : {
+      "localizations" : {
+        "el" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Αναζήτηση προϊόντων"
           }
         },
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Search groceries"
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Search groceries"
           }
         }
       }
     },
-    "Name": {},
-    "New Product": {},
-    "Product": {},
-    "product.almond_milk": {
-      "extractionState": "stale",
-      "localizations": {
-        "el": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Γάλα αμυγδάλου"
+    "Name" : {
+
+    },
+    "New Product" : {
+
+    },
+    "Product" : {
+
+    },
+    "product.almond_milk" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "el" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Γάλα αμυγδάλου"
           }
         },
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Almond Milk"
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Almond Milk"
           }
         }
       }
     },
-    "product.almonds": {
-      "extractionState": "stale",
-      "localizations": {
-        "el": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Αμύγδαλα"
+    "product.almonds" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "el" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Αμύγδαλα"
           }
         },
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Almonds"
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Almonds"
           }
         }
       }
     },
-    "product.aluminum_foil": {
-      "extractionState": "stale",
-      "localizations": {
-        "el": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Αλουμινόχαρτο"
+    "product.aluminum_foil" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "el" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Αλουμινόχαρτο"
           }
         },
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Aluminum Foil"
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Aluminum Foil"
           }
         }
       }
     },
-    "product.apples": {
-      "extractionState": "stale",
-      "localizations": {
-        "el": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Μήλα"
+    "product.apples" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "el" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Μήλα"
           }
         },
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Apples"
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Apples"
           }
         }
       }
     },
-    "product.apricot": {
-      "extractionState": "stale",
-      "localizations": {
-        "el": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Βερίκοκο"
+    "product.apricot" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "el" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Βερίκοκο"
           }
         },
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Apricot"
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Apricot"
           }
         }
       }
     },
-    "product.artichoke": {
-      "extractionState": "stale",
-      "localizations": {
-        "el": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Αγκινάρα"
+    "product.artichoke" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "el" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Αγκινάρα"
           }
         },
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Artichoke"
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Artichoke"
           }
         }
       }
     },
-    "product.avocado": {
-      "extractionState": "stale",
-      "localizations": {
-        "el": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Αβοκάντο"
+    "product.avocado" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "el" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Αβοκάντο"
           }
         },
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Avocado"
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Avocado"
           }
         }
       }
     },
-    "product.bacon": {
-      "extractionState": "stale",
-      "localizations": {
-        "el": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Μπέικον"
+    "product.bacon" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "el" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Μπέικον"
           }
         },
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Bacon"
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bacon"
           }
         }
       }
     },
-    "product.bagel": {
-      "extractionState": "stale",
-      "localizations": {
-        "el": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Μπέιγκελ"
+    "product.bagel" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "el" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Μπέιγκελ"
           }
         },
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Bagel"
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bagel"
           }
         }
       }
     },
-    "product.baguette": {
-      "extractionState": "stale",
-      "localizations": {
-        "el": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Μπαγκέτ"
+    "product.baguette" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "el" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Μπαγκέτ"
           }
         },
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Baguette"
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Baguette"
           }
         }
       }
     },
-    "product.baking_paper": {
-      "extractionState": "stale",
-      "localizations": {
-        "el": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Λαδόκολλα"
+    "product.baking_paper" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "el" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Λαδόκολλα"
           }
         },
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Baking Paper"
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Baking Paper"
           }
         }
       }
     },
-    "product.baking_powder": {
-      "extractionState": "stale",
-      "localizations": {
-        "el": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Μπέικιν πάουντερ"
+    "product.baking_powder" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "el" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Μπέικιν πάουντερ"
           }
         },
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Baking Powder"
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Baking Powder"
           }
         }
       }
     },
-    "product.bananas": {
-      "extractionState": "stale",
-      "localizations": {
-        "el": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Μπανάνες"
+    "product.bananas" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "el" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Μπανάνες"
           }
         },
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Bananas"
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bananas"
           }
         }
       }
     },
-    "product.beans": {
-      "extractionState": "stale",
-      "localizations": {
-        "el": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Φασόλια"
+    "product.beans" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "el" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Φασόλια"
           }
         },
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Beans"
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Beans"
           }
         }
       }
     },
-    "product.beer": {
-      "extractionState": "stale",
-      "localizations": {
-        "el": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Μπύρα"
+    "product.beer" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "el" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Μπύρα"
           }
         },
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Beer"
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Beer"
           }
         }
       }
     },
-    "product.beetroot": {
-      "extractionState": "stale",
-      "localizations": {
-        "el": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Παντζάρι"
+    "product.beetroot" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "el" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Παντζάρι"
           }
         },
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Beetroot"
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Beetroot"
           }
         }
       }
     },
-    "product.biscuits": {
-      "extractionState": "stale",
-      "localizations": {
-        "el": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Μπισκότα"
+    "product.biscuits" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "el" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Μπισκότα"
           }
         },
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Biscuits"
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Biscuits"
           }
         }
       }
     },
-    "product.black_pepper": {
-      "extractionState": "stale",
-      "localizations": {
-        "el": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Μαύρο πιπέρι"
+    "product.black_pepper" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "el" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Μαύρο πιπέρι"
           }
         },
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Black Pepper"
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Black Pepper"
           }
         }
       }
     },
-    "product.bleach": {
-      "extractionState": "stale",
-      "localizations": {
-        "el": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Χλωρίνη"
+    "product.bleach" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "el" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Χλωρίνη"
           }
         },
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Bleach"
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bleach"
           }
         }
       }
     },
-    "product.blueberries": {
-      "extractionState": "stale",
-      "localizations": {
-        "el": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Μύρτιλα"
+    "product.blueberries" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "el" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Μύρτιλα"
           }
         },
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Blueberries"
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Blueberries"
           }
         }
       }
     },
-    "product.body_wash": {
-      "extractionState": "stale",
-      "localizations": {
-        "el": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Αφρόλουτρο"
+    "product.body_wash" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "el" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Αφρόλουτρο"
           }
         },
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Body Wash"
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Body Wash"
           }
         }
       }
     },
-    "product.bread": {
-      "extractionState": "stale",
-      "localizations": {
-        "el": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Ψωμί"
+    "product.bread" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "el" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ψωμί"
           }
         },
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Bread"
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bread"
           }
         }
       }
     },
-    "product.breadcrumbs": {
-      "extractionState": "stale",
-      "localizations": {
-        "el": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Τριμμένη φρυγανιά"
+    "product.breadcrumbs" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "el" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Τριμμένη φρυγανιά"
           }
         },
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Breadcrumbs"
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Breadcrumbs"
           }
         }
       }
     },
-    "product.breadsticks": {
-      "extractionState": "stale",
-      "localizations": {
-        "el": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Κριτσίνια"
+    "product.breadsticks" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "el" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Κριτσίνια"
           }
         },
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Breadsticks"
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Breadsticks"
           }
         }
       }
     },
-    "product.broccoli": {
-      "extractionState": "stale",
-      "localizations": {
-        "el": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Μπρόκολο"
+    "product.broccoli" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "el" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Μπρόκολο"
           }
         },
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Broccoli"
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Broccoli"
           }
         }
       }
     },
-    "product.butter": {
-      "extractionState": "stale",
-      "localizations": {
-        "el": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Βούτυρο"
+    "product.butter" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "el" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Βούτυρο"
           }
         },
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Butter"
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Butter"
           }
         }
       }
     },
-    "product.cabbage": {
-      "extractionState": "stale",
-      "localizations": {
-        "el": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Λάχανο"
+    "product.cabbage" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "el" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Λάχανο"
           }
         },
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Cabbage"
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cabbage"
           }
         }
       }
     },
-    "product.cake": {
-      "extractionState": "stale",
-      "localizations": {
-        "el": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Κέικ"
+    "product.cake" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "el" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Κέικ"
           }
         },
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Cake"
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cake"
           }
         }
       }
     },
-    "product.carrots": {
-      "extractionState": "stale",
-      "localizations": {
-        "el": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Καρότα"
+    "product.carrots" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "el" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Καρότα"
           }
         },
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Carrots"
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Carrots"
           }
         }
       }
     },
-    "product.cauliflower": {
-      "extractionState": "stale",
-      "localizations": {
-        "el": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Κουνουπίδι"
+    "product.cauliflower" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "el" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Κουνουπίδι"
           }
         },
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Cauliflower"
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cauliflower"
           }
         }
       }
     },
-    "product.celery": {
-      "extractionState": "stale",
-      "localizations": {
-        "el": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Σέλινο"
+    "product.celery" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "el" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Σέλινο"
           }
         },
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Celery"
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Celery"
           }
         }
       }
     },
-    "product.cereal": {
-      "extractionState": "stale",
-      "localizations": {
-        "el": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Δημητριακά"
+    "product.cereal" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "el" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Δημητριακά"
           }
         },
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Cereal"
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cereal"
           }
         }
       }
     },
-    "product.cheese": {
-      "extractionState": "stale",
-      "localizations": {
-        "el": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Τυρί"
+    "product.cheese" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "el" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Τυρί"
           }
         },
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Cheese"
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cheese"
           }
         }
       }
     },
-    "product.cherry": {
-      "extractionState": "stale",
-      "localizations": {
-        "el": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Κεράσι"
+    "product.cherry" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "el" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Κεράσι"
           }
         },
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Cherry"
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cherry"
           }
         }
       }
     },
-    "product.cherry_tomatoes": {
-      "extractionState": "stale",
-      "localizations": {
-        "el": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Ντοματίνια"
+    "product.cherry_tomatoes" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "el" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ντοματίνια"
           }
         },
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Cherry Tomatoes"
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cherry Tomatoes"
           }
         }
       }
     },
-    "product.chicken": {
-      "extractionState": "stale",
-      "localizations": {
-        "el": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Κοτόπουλο"
+    "product.chicken" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "el" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Κοτόπουλο"
           }
         },
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Chicken"
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Chicken"
           }
         }
       }
     },
-    "product.chickpeas": {
-      "extractionState": "stale",
-      "localizations": {
-        "el": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Ρεβίθια"
+    "product.chickpeas" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "el" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ρεβίθια"
           }
         },
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Chickpeas"
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Chickpeas"
           }
         }
       }
     },
-    "product.chips": {
-      "extractionState": "stale",
-      "localizations": {
-        "el": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Πατατάκια"
+    "product.chips" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "el" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Πατατάκια"
           }
         },
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Chips"
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Chips"
           }
         }
       }
     },
-    "product.chocolate": {
-      "extractionState": "stale",
-      "localizations": {
-        "el": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Σοκολάτα"
+    "product.chocolate" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "el" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Σοκολάτα"
           }
         },
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Chocolate"
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Chocolate"
           }
         }
       }
     },
-    "product.cinnamon": {
-      "extractionState": "stale",
-      "localizations": {
-        "el": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Κανέλα"
+    "product.cinnamon" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "el" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Κανέλα"
           }
         },
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Cinnamon"
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cinnamon"
           }
         }
       }
     },
-    "product.cocoa": {
-      "extractionState": "stale",
-      "localizations": {
-        "el": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Κακάο"
+    "product.cocoa" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "el" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Κακάο"
           }
         },
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Cocoa"
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cocoa"
           }
         }
       }
     },
-    "product.coconut": {
-      "extractionState": "stale",
-      "localizations": {
-        "el": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Καρύδα"
+    "product.coconut" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "el" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Καρύδα"
           }
         },
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Coconut"
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Coconut"
           }
         }
       }
     },
-    "product.coffee": {
-      "extractionState": "stale",
-      "localizations": {
-        "el": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Καφές"
+    "product.coffee" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "el" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Καφές"
           }
         },
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Coffee"
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Coffee"
           }
         }
       }
     },
-    "product.conditioner": {
-      "extractionState": "stale",
-      "localizations": {
-        "el": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Μαλακτική κρέμα μαλλιών"
+    "product.conditioner" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "el" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Μαλακτική κρέμα μαλλιών"
           }
         },
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Conditioner"
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Conditioner"
           }
         }
       }
     },
-    "product.cookies": {
-      "extractionState": "stale",
-      "localizations": {
-        "el": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Μπισκοτάκια"
+    "product.cookies" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "el" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Μπισκοτάκια"
           }
         },
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Cookies"
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cookies"
           }
         }
       }
     },
-    "product.corn": {
-      "extractionState": "stale",
-      "localizations": {
-        "el": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Καλαμπόκι"
+    "product.corn" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "el" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Καλαμπόκι"
           }
         },
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Corn"
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Corn"
           }
         }
       }
     },
-    "product.cotton_pads": {
-      "extractionState": "stale",
-      "localizations": {
-        "el": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Βαμβακερά στρογγυλά"
+    "product.cotton_pads" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "el" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Βαμβακερά στρογγυλά"
           }
         },
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Cotton Pads"
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cotton Pads"
           }
         }
       }
     },
-    "product.cream": {
-      "extractionState": "stale",
-      "localizations": {
-        "el": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Κρέμα γάλακτος"
+    "product.cream" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "el" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Κρέμα γάλακτος"
           }
         },
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Cream"
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cream"
           }
         }
       }
     },
-    "product.cream_cheese": {
-      "extractionState": "stale",
-      "localizations": {
-        "el": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Τυρί κρέμα"
+    "product.cream_cheese" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "el" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Τυρί κρέμα"
           }
         },
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Cream Cheese"
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cream Cheese"
           }
         }
       }
     },
-    "product.croissant": {
-      "extractionState": "stale",
-      "localizations": {
-        "el": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Κρουασάν"
+    "product.croissant" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "el" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Κρουασάν"
           }
         },
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Croissant"
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Croissant"
           }
         }
       }
     },
-    "product.cucumber": {
-      "extractionState": "stale",
-      "localizations": {
-        "el": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Αγγούρι"
+    "product.cucumber" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "el" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Αγγούρι"
           }
         },
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Cucumber"
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cucumber"
           }
         }
       }
     },
-    "product.cupcake": {
-      "extractionState": "stale",
-      "localizations": {
-        "el": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Κάπκεϊκ"
+    "product.cupcake" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "el" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Κάπκεϊκ"
           }
         },
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Cupcake"
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cupcake"
           }
         }
       }
     },
-    "product.dates": {
-      "extractionState": "stale",
-      "localizations": {
-        "el": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Χουρμάδες"
+    "product.dates" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "el" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Χουρμάδες"
           }
         },
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Dates"
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dates"
           }
         }
       }
     },
-    "product.deodorant": {
-      "extractionState": "stale",
-      "localizations": {
-        "el": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Αποσμητικό"
+    "product.deodorant" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "el" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Αποσμητικό"
           }
         },
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Deodorant"
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Deodorant"
           }
         }
       }
     },
-    "product.dish_soap": {
-      "extractionState": "stale",
-      "localizations": {
-        "el": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Υγρό πιάτων"
+    "product.dish_soap" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "el" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Υγρό πιάτων"
           }
         },
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Dish Soap"
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dish Soap"
           }
         }
       }
     },
-    "product.doughnut": {
-      "extractionState": "stale",
-      "localizations": {
-        "el": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Ντόνατ"
+    "product.doughnut" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "el" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ντόνατ"
           }
         },
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Doughnut"
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Doughnut"
           }
         }
       }
     },
-    "product.eggplant": {
-      "extractionState": "stale",
-      "localizations": {
-        "el": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Μελιτζάνα"
+    "product.eggplant" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "el" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Μελιτζάνα"
           }
         },
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Eggplant"
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Eggplant"
           }
         }
       }
     },
-    "product.eggs": {
-      "extractionState": "stale",
-      "localizations": {
-        "el": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Αυγά"
+    "product.eggs" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "el" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Αυγά"
           }
         },
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Eggs"
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Eggs"
           }
         }
       }
     },
-    "product.energy_drink": {
-      "extractionState": "stale",
-      "localizations": {
-        "el": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Ενεργειακό ποτό"
+    "product.energy_drink" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "el" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ενεργειακό ποτό"
           }
         },
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Energy Drink"
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Energy Drink"
           }
         }
       }
     },
-    "product.espresso": {
-      "extractionState": "stale",
-      "localizations": {
-        "el": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Εσπρέσο"
+    "product.espresso" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "el" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Εσπρέσο"
           }
         },
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Espresso"
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Espresso"
           }
         }
       }
     },
-    "product.fabric_softener": {
-      "extractionState": "stale",
-      "localizations": {
-        "el": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Μαλακτικό ρούχων"
+    "product.fabric_softener" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "el" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Μαλακτικό ρούχων"
           }
         },
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Fabric Softener"
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Fabric Softener"
           }
         }
       }
     },
-    "product.feta": {
-      "extractionState": "stale",
-      "localizations": {
-        "el": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Φέτα"
+    "product.feta" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "el" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Φέτα"
           }
         },
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Feta"
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Feta"
           }
         }
       }
     },
-    "product.fig": {
-      "extractionState": "stale",
-      "localizations": {
-        "el": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Σύκο"
+    "product.fig" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "el" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Σύκο"
           }
         },
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Fig"
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Fig"
           }
         }
       }
     },
-    "product.fish": {
-      "extractionState": "stale",
-      "localizations": {
-        "el": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Ψάρι"
+    "product.fish" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "el" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ψάρι"
           }
         },
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Fish"
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Fish"
           }
         }
       }
     },
-    "product.flour": {
-      "extractionState": "stale",
-      "localizations": {
-        "el": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Αλεύρι"
+    "product.flour" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "el" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Αλεύρι"
           }
         },
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Flour"
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Flour"
           }
         }
       }
     },
-    "product.frappe": {
-      "extractionState": "stale",
-      "localizations": {
-        "el": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Φραπέ"
+    "product.frappe" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "el" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Φραπέ"
           }
         },
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Frappé"
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Frappé"
           }
         }
       }
     },
-    "product.frozen_chicken": {
-      "extractionState": "stale",
-      "localizations": {
-        "el": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Κατεψυγμένο κοτόπουλο"
+    "product.frozen_chicken" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "el" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Κατεψυγμένο κοτόπουλο"
           }
         },
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Frozen Chicken"
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Frozen Chicken"
           }
         }
       }
     },
-    "product.frozen_fish": {
-      "extractionState": "stale",
-      "localizations": {
-        "el": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Κατεψυγμένο ψάρι"
+    "product.frozen_fish" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "el" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Κατεψυγμένο ψάρι"
           }
         },
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Frozen Fish"
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Frozen Fish"
           }
         }
       }
     },
-    "product.frozen_fries": {
-      "extractionState": "stale",
-      "localizations": {
-        "el": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Κατεψυγμένες τηγανιτές πατάτες"
+    "product.frozen_fries" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "el" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Κατεψυγμένες τηγανιτές πατάτες"
           }
         },
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Frozen Fries"
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Frozen Fries"
           }
         }
       }
     },
-    "product.frozen_pizza": {
-      "extractionState": "stale",
-      "localizations": {
-        "el": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Κατεψυγμένη πίτσα"
+    "product.frozen_pizza" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "el" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Κατεψυγμένη πίτσα"
           }
         },
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Frozen Pizza"
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Frozen Pizza"
           }
         }
       }
     },
-    "product.frozen_vegetables": {
-      "extractionState": "stale",
-      "localizations": {
-        "el": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Κατεψυγμένα λαχανικά"
+    "product.frozen_vegetables" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "el" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Κατεψυγμένα λαχανικά"
           }
         },
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Frozen Vegetables"
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Frozen Vegetables"
           }
         }
       }
     },
-    "product.garlic": {
-      "extractionState": "stale",
-      "localizations": {
-        "el": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Σκόρδο"
+    "product.garlic" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "el" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Σκόρδο"
           }
         },
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Garlic"
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Garlic"
           }
         }
       }
     },
-    "product.glass_cleaner": {
-      "extractionState": "stale",
-      "localizations": {
-        "el": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Καθαριστικό τζαμιών"
+    "product.glass_cleaner" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "el" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Καθαριστικό τζαμιών"
           }
         },
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Glass Cleaner"
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Glass Cleaner"
           }
         }
       }
     },
-    "product.grapefruit": {
-      "extractionState": "stale",
-      "localizations": {
-        "el": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Γκρέιπφρουτ"
+    "product.grapefruit" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "el" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Γκρέιπφρουτ"
           }
         },
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Grapefruit"
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Grapefruit"
           }
         }
       }
     },
-    "product.grapes": {
-      "extractionState": "stale",
-      "localizations": {
-        "el": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Σταφύλια"
+    "product.grapes" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "el" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Σταφύλια"
           }
         },
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Grapes"
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Grapes"
           }
         }
       }
     },
-    "product.ground_meat": {
-      "extractionState": "stale",
-      "localizations": {
-        "el": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Κιμάς"
+    "product.ground_meat" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "el" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Κιμάς"
           }
         },
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Ground Meat"
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ground Meat"
           }
         }
       }
     },
-    "product.ham": {
-      "extractionState": "stale",
-      "localizations": {
-        "el": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Ζαμπόν"
+    "product.ham" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "el" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ζαμπόν"
           }
         },
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Ham"
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ham"
           }
         }
       }
     },
-    "product.hand_soap": {
-      "extractionState": "stale",
-      "localizations": {
-        "el": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Κρεμοσάπουνο"
+    "product.hand_soap" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "el" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Κρεμοσάπουνο"
           }
         },
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Hand Soap"
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Hand Soap"
           }
         }
       }
     },
-    "product.honey": {
-      "extractionState": "stale",
-      "localizations": {
-        "el": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Μέλι"
+    "product.honey" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "el" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Μέλι"
           }
         },
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Honey"
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Honey"
           }
         }
       }
     },
-    "product.ice_cream": {
-      "extractionState": "stale",
-      "localizations": {
-        "el": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Παγωτό"
+    "product.ice_cream" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "el" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Παγωτό"
           }
         },
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Ice Cream"
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ice Cream"
           }
         }
       }
     },
-    "product.jam": {
-      "extractionState": "stale",
-      "localizations": {
-        "el": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Μαρμελάδα"
+    "product.jam" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "el" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Μαρμελάδα"
           }
         },
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Jam"
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Jam"
           }
         }
       }
     },
-    "product.juice": {
-      "extractionState": "stale",
-      "localizations": {
-        "el": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Χυμός"
+    "product.juice" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "el" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Χυμός"
           }
         },
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Juice"
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Juice"
           }
         }
       }
     },
-    "product.ketchup": {
-      "extractionState": "stale",
-      "localizations": {
-        "el": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Κέτσαπ"
+    "product.ketchup" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "el" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Κέτσαπ"
           }
         },
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Ketchup"
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ketchup"
           }
         }
       }
     },
-    "product.kiwi": {
-      "extractionState": "stale",
-      "localizations": {
-        "el": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Ακτινίδιο"
+    "product.kiwi" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "el" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ακτινίδιο"
           }
         },
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Kiwi"
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Kiwi"
           }
         }
       }
     },
-    "product.lamb": {
-      "extractionState": "stale",
-      "localizations": {
-        "el": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Αρνί"
+    "product.lamb" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "el" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Αρνί"
           }
         },
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Lamb"
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Lamb"
           }
         }
       }
     },
-    "product.laundry_detergent": {
-      "extractionState": "stale",
-      "localizations": {
-        "el": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Απορρυπαντικό ρούχων"
+    "product.laundry_detergent" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "el" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Απορρυπαντικό ρούχων"
           }
         },
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Laundry Detergent"
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Laundry Detergent"
           }
         }
       }
     },
-    "product.leek": {
-      "extractionState": "stale",
-      "localizations": {
-        "el": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Πράσο"
+    "product.leek" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "el" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Πράσο"
           }
         },
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Leek"
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Leek"
           }
         }
       }
     },
-    "product.lemon": {
-      "extractionState": "stale",
-      "localizations": {
-        "el": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Λεμόνι"
+    "product.lemon" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "el" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Λεμόνι"
           }
         },
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Lemon"
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Lemon"
           }
         }
       }
     },
-    "product.lentils": {
-      "extractionState": "stale",
-      "localizations": {
-        "el": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Φακές"
+    "product.lentils" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "el" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Φακές"
           }
         },
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Lentils"
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Lentils"
           }
         }
       }
     },
-    "product.lettuce": {
-      "extractionState": "stale",
-      "localizations": {
-        "el": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Μαρούλι"
+    "product.lettuce" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "el" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Μαρούλι"
           }
         },
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Lettuce"
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Lettuce"
           }
         }
       }
     },
-    "product.mandarin": {
-      "extractionState": "stale",
-      "localizations": {
-        "el": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Μανταρίνι"
+    "product.mandarin" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "el" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Μανταρίνι"
           }
         },
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Mandarin"
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mandarin"
           }
         }
       }
     },
-    "product.mango": {
-      "extractionState": "stale",
-      "localizations": {
-        "el": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Μάνγκο"
+    "product.mango" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "el" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Μάνγκο"
           }
         },
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Mango"
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mango"
           }
         }
       }
     },
-    "product.mayonnaise": {
-      "extractionState": "stale",
-      "localizations": {
-        "el": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Μαγιονέζα"
+    "product.mayonnaise" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "el" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Μαγιονέζα"
           }
         },
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Mayonnaise"
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mayonnaise"
           }
         }
       }
     },
-    "product.melon": {
-      "extractionState": "stale",
-      "localizations": {
-        "el": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Πεπόνι"
+    "product.melon" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "el" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Πεπόνι"
           }
         },
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Melon"
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Melon"
           }
         }
       }
     },
-    "product.milk": {
-      "extractionState": "stale",
-      "localizations": {
-        "el": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Γάλα"
+    "product.milk" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "el" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Γάλα"
           }
         },
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Milk"
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Milk"
           }
         }
       }
     },
-    "product.moisturizer": {
-      "extractionState": "stale",
-      "localizations": {
-        "el": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Ενυδατική κρέμα"
+    "product.moisturizer" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "el" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ενυδατική κρέμα"
           }
         },
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Moisturizer"
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Moisturizer"
           }
         }
       }
     },
-    "product.multi_surface_cleaner": {
-      "extractionState": "stale",
-      "localizations": {
-        "el": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Καθαριστικό πολλαπλών χρήσεων"
+    "product.multi_surface_cleaner" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "el" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Καθαριστικό πολλαπλών χρήσεων"
           }
         },
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Multi-Surface Cleaner"
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Multi-Surface Cleaner"
           }
         }
       }
     },
-    "product.mushrooms": {
-      "extractionState": "stale",
-      "localizations": {
-        "el": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Μανιτάρια"
+    "product.mushrooms" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "el" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Μανιτάρια"
           }
         },
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Mushrooms"
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mushrooms"
           }
         }
       }
     },
-    "product.mustard": {
-      "extractionState": "stale",
-      "localizations": {
-        "el": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Μουστάρδα"
+    "product.mustard" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "el" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Μουστάρδα"
           }
         },
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Mustard"
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mustard"
           }
         }
       }
     },
-    "product.nuts": {
-      "extractionState": "stale",
-      "localizations": {
-        "el": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Ξηροί καρποί"
+    "product.nuts" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "el" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ξηροί καρποί"
           }
         },
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Nuts"
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nuts"
           }
         }
       }
     },
-    "product.oat_milk": {
-      "extractionState": "stale",
-      "localizations": {
-        "el": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Γάλα βρώμης"
+    "product.oat_milk" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "el" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Γάλα βρώμης"
           }
         },
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Oat Milk"
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Oat Milk"
           }
         }
       }
     },
-    "product.oats": {
-      "extractionState": "stale",
-      "localizations": {
-        "el": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Βρώμη"
+    "product.oats" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "el" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Βρώμη"
           }
         },
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Oats"
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Oats"
           }
         }
       }
     },
-    "product.olive_oil": {
-      "extractionState": "stale",
-      "localizations": {
-        "el": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Ελαιόλαδο"
+    "product.olive_oil" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "el" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ελαιόλαδο"
           }
         },
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Olive Oil"
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Olive Oil"
           }
         }
       }
     },
-    "product.onions": {
-      "extractionState": "stale",
-      "localizations": {
-        "el": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Κρεμμύδια"
+    "product.onions" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "el" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Κρεμμύδια"
           }
         },
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Onions"
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Onions"
           }
         }
       }
     },
-    "product.orange": {
-      "extractionState": "stale",
-      "localizations": {
-        "el": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Πορτοκάλι"
+    "product.orange" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "el" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Πορτοκάλι"
           }
         },
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Orange"
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Orange"
           }
         }
       }
     },
-    "product.oregano": {
-      "extractionState": "stale",
-      "localizations": {
-        "el": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Ρίγανη"
+    "product.oregano" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "el" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ρίγανη"
           }
         },
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Oregano"
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Oregano"
           }
         }
       }
     },
-    "product.pancakes": {
-      "extractionState": "stale",
-      "localizations": {
-        "el": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Τηγανίτες"
+    "product.pancakes" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "el" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Τηγανίτες"
           }
         },
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Pancakes"
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pancakes"
           }
         }
       }
     },
-    "product.paper_towels": {
-      "extractionState": "stale",
-      "localizations": {
-        "el": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Χαρτί κουζίνας"
+    "product.paper_towels" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "el" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Χαρτί κουζίνας"
           }
         },
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Paper Towels"
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Paper Towels"
           }
         }
       }
     },
-    "product.pasta": {
-      "extractionState": "stale",
-      "localizations": {
-        "el": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Μακαρόνια"
+    "product.pasta" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "el" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Μακαρόνια"
           }
         },
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Pasta"
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pasta"
           }
         }
       }
     },
-    "product.peach": {
-      "extractionState": "stale",
-      "localizations": {
-        "el": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Ροδάκινο"
+    "product.peach" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "el" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ροδάκινο"
           }
         },
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Peach"
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Peach"
           }
         }
       }
     },
-    "product.peanut_butter": {
-      "extractionState": "stale",
-      "localizations": {
-        "el": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Φυστικοβούτυρο"
+    "product.peanut_butter" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "el" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Φυστικοβούτυρο"
           }
         },
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Peanut Butter"
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Peanut Butter"
           }
         }
       }
     },
-    "product.pear": {
-      "extractionState": "stale",
-      "localizations": {
-        "el": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Αχλάδι"
+    "product.pear" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "el" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Αχλάδι"
           }
         },
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Pear"
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pear"
           }
         }
       }
     },
-    "product.peas": {
-      "extractionState": "stale",
-      "localizations": {
-        "el": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Αρακάς"
+    "product.peas" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "el" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Αρακάς"
           }
         },
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Peas"
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Peas"
           }
         }
       }
     },
-    "product.peppers": {
-      "extractionState": "stale",
-      "localizations": {
-        "el": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Πιπεριές"
+    "product.peppers" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "el" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Πιπεριές"
           }
         },
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Peppers"
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Peppers"
           }
         }
       }
     },
-    "product.pie": {
-      "extractionState": "stale",
-      "localizations": {
-        "el": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Πίτα"
+    "product.pie" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "el" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Πίτα"
           }
         },
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Pie"
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pie"
           }
         }
       }
     },
-    "product.pineapple": {
-      "extractionState": "stale",
-      "localizations": {
-        "el": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Ανανάς"
+    "product.pineapple" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "el" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ανανάς"
           }
         },
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Pineapple"
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pineapple"
           }
         }
       }
     },
-    "product.pita": {
-      "extractionState": "stale",
-      "localizations": {
-        "el": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Πίτα"
+    "product.pita" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "el" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Πίτα"
           }
         },
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Pita"
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pita"
           }
         }
       }
     },
-    "product.plum": {
-      "extractionState": "stale",
-      "localizations": {
-        "el": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Δαμάσκηνο"
+    "product.plum" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "el" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Δαμάσκηνο"
           }
         },
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Plum"
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Plum"
           }
         }
       }
     },
-    "product.pomegranate": {
-      "extractionState": "stale",
-      "localizations": {
-        "el": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Ρόδι"
+    "product.pomegranate" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "el" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ρόδι"
           }
         },
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Pomegranate"
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pomegranate"
           }
         }
       }
     },
-    "product.popcorn": {
-      "extractionState": "stale",
-      "localizations": {
-        "el": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Ποπ κορν"
+    "product.popcorn" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "el" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ποπ κορν"
           }
         },
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Popcorn"
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Popcorn"
           }
         }
       }
     },
-    "product.pork": {
-      "extractionState": "stale",
-      "localizations": {
-        "el": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Χοιρινό"
+    "product.pork" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "el" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Χοιρινό"
           }
         },
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Pork"
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pork"
           }
         }
       }
     },
-    "product.potatoes": {
-      "extractionState": "stale",
-      "localizations": {
-        "el": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Πατάτες"
+    "product.potatoes" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "el" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Πατάτες"
           }
         },
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Potatoes"
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Potatoes"
           }
         }
       }
     },
-    "product.raspberries": {
-      "extractionState": "stale",
-      "localizations": {
-        "el": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Βατόμουρα"
+    "product.raspberries" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "el" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Βατόμουρα"
           }
         },
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Raspberries"
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Raspberries"
           }
         }
       }
     },
-    "product.razors": {
-      "extractionState": "stale",
-      "localizations": {
-        "el": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Ξυραφάκια"
+    "product.razors" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "el" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ξυραφάκια"
           }
         },
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Razors"
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Razors"
           }
         }
       }
     },
-    "product.rice": {
-      "extractionState": "stale",
-      "localizations": {
-        "el": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Ρύζι"
+    "product.rice" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "el" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ρύζι"
           }
         },
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Rice"
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Rice"
           }
         }
       }
     },
-    "product.rusks": {
-      "extractionState": "stale",
-      "localizations": {
-        "el": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Παξιμάδια"
+    "product.rusks" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "el" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Παξιμάδια"
           }
         },
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Rusks"
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Rusks"
           }
         }
       }
     },
-    "product.salmon": {
-      "extractionState": "stale",
-      "localizations": {
-        "el": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Σολομός"
+    "product.salmon" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "el" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Σολομός"
           }
         },
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Salmon"
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Salmon"
           }
         }
       }
     },
-    "product.salt": {
-      "extractionState": "stale",
-      "localizations": {
-        "el": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Αλάτι"
+    "product.salt" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "el" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Αλάτι"
           }
         },
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Salt"
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Salt"
           }
         }
       }
     },
-    "product.sausage": {
-      "extractionState": "stale",
-      "localizations": {
-        "el": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Λουκάνικο"
+    "product.sausage" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "el" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Λουκάνικο"
           }
         },
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Sausage"
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sausage"
           }
         }
       }
     },
-    "product.shampoo": {
-      "extractionState": "stale",
-      "localizations": {
-        "el": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Σαμπουάν"
+    "product.shampoo" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "el" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Σαμπουάν"
           }
         },
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Shampoo"
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Shampoo"
           }
         }
       }
     },
-    "product.shrimp": {
-      "extractionState": "stale",
-      "localizations": {
-        "el": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Γαρίδες"
+    "product.shrimp" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "el" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Γαρίδες"
           }
         },
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Shrimp"
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Shrimp"
           }
         }
       }
     },
-    "product.soda": {
-      "extractionState": "stale",
-      "localizations": {
-        "el": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Αναψυκτικό"
+    "product.soda" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "el" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Αναψυκτικό"
           }
         },
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Soda"
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Soda"
           }
         }
       }
     },
-    "product.sour_cream": {
-      "extractionState": "stale",
-      "localizations": {
-        "el": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Ξινή κρέμα"
+    "product.sour_cream" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "el" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ξινή κρέμα"
           }
         },
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Sour Cream"
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sour Cream"
           }
         }
       }
     },
-    "product.soy_sauce": {
-      "extractionState": "stale",
-      "localizations": {
-        "el": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Σάλτσα σόγιας"
+    "product.soy_sauce" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "el" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Σάλτσα σόγιας"
           }
         },
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Soy Sauce"
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Soy Sauce"
           }
         }
       }
     },
-    "product.sparkling_water": {
-      "extractionState": "stale",
-      "localizations": {
-        "el": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Ανθρακούχο νερό"
+    "product.sparkling_water" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "el" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ανθρακούχο νερό"
           }
         },
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Sparkling Water"
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sparkling Water"
           }
         }
       }
     },
-    "product.spinach": {
-      "extractionState": "stale",
-      "localizations": {
-        "el": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Σπανάκι"
+    "product.spinach" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "el" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Σπανάκι"
           }
         },
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Spinach"
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Spinach"
           }
         }
       }
     },
-    "product.sponges": {
-      "extractionState": "stale",
-      "localizations": {
-        "el": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Σφουγγάρια"
+    "product.sponges" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "el" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Σφουγγάρια"
           }
         },
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Sponges"
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sponges"
           }
         }
       }
     },
-    "product.steak": {
-      "extractionState": "stale",
-      "localizations": {
-        "el": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Μπριζόλα"
+    "product.steak" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "el" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Μπριζόλα"
           }
         },
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Steak"
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Steak"
           }
         }
       }
     },
-    "product.stock": {
-      "extractionState": "stale",
-      "localizations": {
-        "el": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Ζωμός"
+    "product.stock" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "el" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ζωμός"
           }
         },
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Stock"
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Stock"
           }
         }
       }
     },
-    "product.strawberries": {
-      "extractionState": "stale",
-      "localizations": {
-        "el": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Φράουλες"
+    "product.strawberries" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "el" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Φράουλες"
           }
         },
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Strawberries"
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Strawberries"
           }
         }
       }
     },
-    "product.sugar": {
-      "extractionState": "stale",
-      "localizations": {
-        "el": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Ζάχαρη"
+    "product.sugar" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "el" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ζάχαρη"
           }
         },
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Sugar"
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sugar"
           }
         }
       }
     },
-    "product.sunflower_oil": {
-      "extractionState": "stale",
-      "localizations": {
-        "el": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Ηλιέλαιο"
+    "product.sunflower_oil" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "el" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ηλιέλαιο"
           }
         },
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Sunflower Oil"
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sunflower Oil"
           }
         }
       }
     },
-    "product.sunscreen": {
-      "extractionState": "stale",
-      "localizations": {
-        "el": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Αντηλιακό"
+    "product.sunscreen" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "el" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Αντηλιακό"
           }
         },
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Sunscreen"
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sunscreen"
           }
         }
       }
     },
-    "product.sweet_potato": {
-      "extractionState": "stale",
-      "localizations": {
-        "el": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Γλυκοπατάτα"
+    "product.sweet_potato" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "el" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Γλυκοπατάτα"
           }
         },
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Sweet Potato"
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sweet Potato"
           }
         }
       }
     },
-    "product.tahini": {
-      "extractionState": "stale",
-      "localizations": {
-        "el": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Ταχίνι"
+    "product.tahini" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "el" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ταχίνι"
           }
         },
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Tahini"
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tahini"
           }
         }
       }
     },
-    "product.tea": {
-      "extractionState": "stale",
-      "localizations": {
-        "el": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Τσάι"
+    "product.tea" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "el" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Τσάι"
           }
         },
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Tea"
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tea"
           }
         }
       }
     },
-    "product.tissues": {
-      "extractionState": "stale",
-      "localizations": {
-        "el": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Χαρτομάντιλα"
+    "product.tissues" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "el" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Χαρτομάντιλα"
           }
         },
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Tissues"
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tissues"
           }
         }
       }
     },
-    "product.toast": {
-      "extractionState": "stale",
-      "localizations": {
-        "el": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Φρυγανιά"
+    "product.toast" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "el" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Φρυγανιά"
           }
         },
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Toast"
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Toast"
           }
         }
       }
     },
-    "product.toilet_paper": {
-      "extractionState": "stale",
-      "localizations": {
-        "el": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Χαρτί υγείας"
+    "product.toilet_paper" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "el" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Χαρτί υγείας"
           }
         },
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Toilet Paper"
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Toilet Paper"
           }
         }
       }
     },
-    "product.tomato_sauce": {
-      "extractionState": "stale",
-      "localizations": {
-        "el": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Σάλτσα ντομάτας"
+    "product.tomato_sauce" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "el" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Σάλτσα ντομάτας"
           }
         },
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Tomato Sauce"
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tomato Sauce"
           }
         }
       }
     },
-    "product.tomatoes": {
-      "extractionState": "stale",
-      "localizations": {
-        "el": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Ντομάτες"
+    "product.tomatoes" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "el" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ντομάτες"
           }
         },
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Tomatoes"
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tomatoes"
           }
         }
       }
     },
-    "product.toothpaste": {
-      "extractionState": "stale",
-      "localizations": {
-        "el": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Οδοντόκρεμα"
+    "product.toothpaste" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "el" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Οδοντόκρεμα"
           }
         },
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Toothpaste"
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Toothpaste"
           }
         }
       }
     },
-    "product.tortilla": {
-      "extractionState": "stale",
-      "localizations": {
-        "el": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Τορτίγια"
+    "product.tortilla" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "el" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Τορτίγια"
           }
         },
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Tortilla"
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tortilla"
           }
         }
       }
     },
-    "product.trash_bags": {
-      "extractionState": "stale",
-      "localizations": {
-        "el": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Σακούλες σκουπιδιών"
+    "product.trash_bags" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "el" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Σακούλες σκουπιδιών"
           }
         },
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Trash Bags"
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Trash Bags"
           }
         }
       }
     },
-    "product.tuna": {
-      "extractionState": "stale",
-      "localizations": {
-        "el": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Τόνος"
+    "product.tuna" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "el" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Τόνος"
           }
         },
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Tuna"
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tuna"
           }
         }
       }
     },
-    "product.turkey": {
-      "extractionState": "stale",
-      "localizations": {
-        "el": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Γαλοπούλα"
+    "product.turkey" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "el" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Γαλοπούλα"
           }
         },
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Turkey"
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Turkey"
           }
         }
       }
     },
-    "product.vinegar": {
-      "extractionState": "stale",
-      "localizations": {
-        "el": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Ξύδι"
+    "product.vinegar" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "el" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ξύδι"
           }
         },
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Vinegar"
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Vinegar"
           }
         }
       }
     },
-    "product.waffle": {
-      "extractionState": "stale",
-      "localizations": {
-        "el": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Βάφλα"
+    "product.waffle" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "el" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Βάφλα"
           }
         },
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Waffle"
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Waffle"
           }
         }
       }
     },
-    "product.walnuts": {
-      "extractionState": "stale",
-      "localizations": {
-        "el": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Καρύδια"
+    "product.walnuts" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "el" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Καρύδια"
           }
         },
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Walnuts"
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Walnuts"
           }
         }
       }
     },
-    "product.water": {
-      "extractionState": "stale",
-      "localizations": {
-        "el": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Νερό"
+    "product.water" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "el" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Νερό"
           }
         },
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Water"
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Water"
           }
         }
       }
     },
-    "product.watermelon": {
-      "extractionState": "stale",
-      "localizations": {
-        "el": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Καρπούζι"
+    "product.watermelon" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "el" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Καρπούζι"
           }
         },
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Watermelon"
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Watermelon"
           }
         }
       }
     },
-    "product.wine": {
-      "extractionState": "stale",
-      "localizations": {
-        "el": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Κρασί"
+    "product.wine" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "el" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Κρασί"
           }
         },
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Wine"
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Wine"
           }
         }
       }
     },
-    "product.yogurt": {
-      "extractionState": "stale",
-      "localizations": {
-        "el": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Γιαούρτι"
+    "product.yogurt" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "el" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Γιαούρτι"
           }
         },
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Yogurt"
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Yogurt"
           }
         }
       }
     },
-    "product.zucchini": {
-      "extractionState": "stale",
-      "localizations": {
-        "el": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Κολοκυθάκι"
+    "product.zucchini" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "el" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Κολοκυθάκι"
           }
         },
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Zucchini"
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Zucchini"
           }
         }
       }
+    },
+    "Quick emoji" : {
+
     },
-    "Quick emoji": {},
-    "recent_baskets.empty.description": {
-      "localizations": {
-        "el": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Ολοκλήρωσε ένα καλάθι για να δημιουργήσεις πρόσφατο ιστορικό."
+    "recent_baskets.empty.description" : {
+      "localizations" : {
+        "el" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ολοκλήρωσε ένα καλάθι για να δημιουργήσεις πρόσφατο ιστορικό."
           }
         },
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Complete a basket to build your recent history."
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Complete a basket to build your recent history."
           }
         }
       }
     },
-    "recent_baskets.empty.title": {
-      "localizations": {
-        "el": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Δεν υπάρχουν ολοκληρωμένα καλάθια ακόμη"
+    "recent_baskets.empty.title" : {
+      "localizations" : {
+        "el" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Δεν υπάρχουν ολοκληρωμένα καλάθια ακόμη"
           }
         },
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "No completed baskets yet"
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No completed baskets yet"
           }
         }
       }
     },
-    "recent_baskets.header.subtitle": {
-      "localizations": {
-        "el": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Τα 10 τελευταία ολοκληρωμένα ψώνια σου"
+    "recent_baskets.header.subtitle" : {
+      "localizations" : {
+        "el" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Τα 10 τελευταία ολοκληρωμένα ψώνια σου"
           }
         },
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Your last 10 completed trips"
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Your last 10 completed trips"
           }
         }
       }
     },
-    "recent_baskets.header.title": {
-      "localizations": {
-        "el": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Πρόσφατα καλάθια"
+    "recent_baskets.header.title" : {
+      "localizations" : {
+        "el" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Πρόσφατα καλάθια"
           }
         },
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Recent Baskets"
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Recent Baskets"
           }
         }
       }
     },
-    "recent_baskets.load_more_format": {
-      "extractionState": "extracted_with_value",
-      "localizations": {
-        "el": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Εμφάνιση %lld ακόμα καλαθιών"
+    "recent_baskets.load_more_format" : {
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "el" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Εμφάνιση %lld ακόμα καλαθιών"
           }
         },
-        "en": {
-          "stringUnit": {
-            "state": "new",
-            "value": "Show %lld more carts"
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Show %lld more carts"
           }
         }
       }
     },
-    "recent_baskets.show_less": {
-      "localizations": {
-        "el": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Λιγότερα"
+    "recent_baskets.show_less" : {
+      "localizations" : {
+        "el" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Λιγότερα"
           }
         },
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Show less"
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Show less"
           }
         }
       }
     },
-    "recent_baskets.show_more_format": {
-      "localizations": {
-        "el": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Δες ακόμη %lld"
+    "recent_baskets.show_more_format" : {
+      "localizations" : {
+        "el" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Δες ακόμη %lld"
           }
         },
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "See %lld more"
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "See %lld more"
           }
         }
       }
     },
-    "recipe.error.generation_failed": {
-      "localizations": {
-        "el": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Δεν ήταν δυνατή η δημιουργία προτάσεων. Δοκίμασε ξανά."
+    "recipe.error.generation_failed" : {
+      "localizations" : {
+        "el" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Δεν ήταν δυνατή η δημιουργία προτάσεων. Δοκίμασε ξανά."
           }
         },
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Couldn't generate suggestions. Please try again."
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Couldn't generate suggestions. Please try again."
           }
         }
       }
     },
-    "recipe.sheet.add_disabled": {
-      "localizations": {
-        "el": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Επίλεξε αντικείμενα"
+    "recipe.sheet.add_disabled" : {
+      "localizations" : {
+        "el" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Επίλεξε αντικείμενα"
           }
         },
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Select items to add"
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Select items to add"
           }
         }
       }
     },
-    "recipe.sheet.add_items_format": {
-      "localizations": {
-        "el": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Πρόσθεσε %lld αντικείμενα στο καλάθι"
+    "recipe.sheet.add_items_format" : {
+      "localizations" : {
+        "el" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Πρόσθεσε %lld αντικείμενα στο καλάθι"
           }
         },
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Add %lld items to basket"
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Add %lld items to basket"
           }
         }
       }
     },
-    "recipe.sheet.add_one_item": {
-      "localizations": {
-        "el": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Πρόσθεσε 1 αντικείμενο στο καλάθι"
+    "recipe.sheet.add_one_item" : {
+      "localizations" : {
+        "el" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Πρόσθεσε 1 αντικείμενο στο καλάθι"
           }
         },
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Add 1 item to basket"
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Add 1 item to basket"
           }
         }
       }
     },
-    "recipe.sheet.ai_unavailable": {
-      "localizations": {
-        "el": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Το Apple Intelligence δεν είναι διαθέσιμο σε αυτή τη συσκευή."
+    "recipe.sheet.ai_unavailable" : {
+      "localizations" : {
+        "el" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Το Apple Intelligence δεν είναι διαθέσιμο σε αυτή τη συσκευή."
           }
         },
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Apple Intelligence is not available on this device."
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Apple Intelligence is not available on this device."
           }
         }
       }
     },
-    "recipe.sheet.deselect_all": {
-      "localizations": {
-        "el": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Αποεπιλογή όλων"
+    "recipe.sheet.deselect_all" : {
+      "localizations" : {
+        "el" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Αποεπιλογή όλων"
           }
         },
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Deselect all"
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Deselect all"
           }
         }
       }
     },
-    "recipe.sheet.input_placeholder": {
-      "localizations": {
-        "el": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "π.χ. μακαρόνια μπολονέζ, χωριάτικη…"
+    "recipe.sheet.empty" : {
+      "localizations" : {
+        "el" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Δεν βρέθηκαν υλικά. Δοκίμασε διαφορετική συνταγή."
           }
         },
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "e.g. pasta carbonara, Greek salad…"
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No ingredients found. Try a different recipe."
           }
         }
       }
     },
-    "recipe.sheet.loading": {
-      "localizations": {
-        "el": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Αναζήτηση υλικών…"
+    "recipe.sheet.input_placeholder" : {
+      "localizations" : {
+        "el" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "π.χ. μακαρόνια μπολονέζ, χωριάτικη…"
           }
         },
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Finding ingredients…"
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "e.g. pasta carbonara, Greek salad…"
           }
         }
       }
     },
-    "recipe.sheet.select_all": {
-      "localizations": {
-        "el": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Επιλογή όλων"
+    "recipe.sheet.loading" : {
+      "localizations" : {
+        "el" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Αναζήτηση υλικών…"
           }
         },
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Select all"
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Finding ingredients…"
           }
         }
       }
     },
-    "recipe.sheet.title": {
-      "localizations": {
-        "el": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Τι μαγειρεύεις;"
+    "recipe.sheet.recent" : {
+      "localizations" : {
+        "el" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Πρόσφατα"
           }
         },
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "What are you cooking?"
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Recent"
           }
         }
       }
     },
-    "recipe.toolbar_button": {
-      "localizations": {
-        "el": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Συνταγή"
+    "recipe.sheet.select_all" : {
+      "localizations" : {
+        "el" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Επιλογή όλων"
           }
         },
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Recipe"
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Select all"
           }
         }
       }
     },
-    "regulars.bought_count_format": {
-      "localizations": {
-        "el": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Αγοράστηκε %lld φορές"
+    "recipe.sheet.title" : {
+      "localizations" : {
+        "el" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Τι μαγειρεύεις;"
           }
         },
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Bought %lldx"
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "What are you cooking?"
           }
         }
       }
     },
-    "regulars.header.subtitle": {
-      "localizations": {
-        "el": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Γρήγορη προσθήκη των προϊόντων που αγοράζεις πιο συχνά"
+    "recipe.toolbar_button" : {
+      "localizations" : {
+        "el" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Συνταγή"
           }
         },
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Quick add the items you buy the most"
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Recipe"
           }
         }
       }
     },
-    "regulars.header.title": {
-      "localizations": {
-        "el": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Τα συνηθισμένα σου"
+    "regulars.bought_count_format" : {
+      "localizations" : {
+        "el" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Αγοράστηκε %lld φορές"
           }
         },
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Your Regulars"
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bought %lldx"
           }
         }
       }
     },
-    "Save": {},
-    "snackbar.added_item_format": {
-      "localizations": {
-        "el": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Προστέθηκε %@ %@"
+    "regulars.header.subtitle" : {
+      "localizations" : {
+        "el" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Γρήγορη προσθήκη των προϊόντων που αγοράζεις πιο συχνά"
           }
         },
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Added %@ %@"
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Quick add the items you buy the most"
           }
         }
       }
     },
-    "snackbar.bulk_added_default_format": {
-      "localizations": {
-        "el": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Προστέθηκαν %@"
+    "regulars.header.title" : {
+      "localizations" : {
+        "el" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Τα συνηθισμένα σου"
           }
         },
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Added %@"
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Your Regulars"
           }
         }
       }
     },
-    "snackbar.bulk_added_some_updated_format": {
-      "localizations": {
-        "el": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Προστέθηκαν μερικά. Ενημερώθηκαν %lld ήδη στο καλάθι"
+    "Save" : {
+
+    },
+    "snackbar.added_item_format" : {
+      "localizations" : {
+        "el" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Προστέθηκε %@ %@"
           }
         },
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Added some. Updated %lld already in basket"
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Added %@ %@"
           }
         }
       }
     },
-    "snackbar.bulk_already_in_basket_updated_format": {
-      "localizations": {
-        "el": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Υπήρχαν ήδη στο καλάθι. Ενημερώθηκαν %lld"
+    "snackbar.bulk_added_default_format" : {
+      "localizations" : {
+        "el" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Προστέθηκαν %@"
           }
         },
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Already in basket. Updated %lld"
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Added %@"
           }
         }
       }
     },
-    "suggestion.subtitle.multiple": {
-      "localizations": {
-        "el": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Συνήθως τα αγοράζεις μαζί"
+    "snackbar.bulk_added_some_updated_format" : {
+      "localizations" : {
+        "el" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Προστέθηκαν μερικά. Ενημερώθηκαν %lld ήδη στο καλάθι"
           }
         },
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "You often buy these together"
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Added some. Updated %lld already in basket"
           }
         }
       }
     },
-    "suggestion.subtitle.single": {
-      "localizations": {
-        "el": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Συνήθως αγοράζεις και το άλλο"
+    "snackbar.bulk_already_in_basket_updated_format" : {
+      "localizations" : {
+        "el" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Υπήρχαν ήδη στο καλάθι. Ενημερώθηκαν %lld"
           }
         },
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "You often buy the other one too"
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Already in basket. Updated %lld"
           }
         }
       }
     },
-    "Top %lldx": {},
-    "Undo": {},
-    "recipe.sheet.empty": {
-      "localizations": {
-        "el": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Δεν βρέθηκαν υλικά. Δοκίμασε διαφορετική συνταγή."
+    "suggestion.subtitle.multiple" : {
+      "localizations" : {
+        "el" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Συνήθως τα αγοράζεις μαζί"
           }
         },
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "No ingredients found. Try a different recipe."
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "You often buy these together"
           }
         }
       }
     },
-    "recipe.sheet.recent": {
-      "localizations": {
-        "el": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Πρόσφατα"
+    "suggestion.subtitle.single" : {
+      "localizations" : {
+        "el" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Συνήθως αγοράζεις και το άλλο"
           }
         },
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Recent"
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "You often buy the other one too"
           }
         }
       }
+    },
+    "Top %lld×" : {
+
+    },
+    "Top %lldx" : {
+
+    },
+    "Undo" : {
+
     }
   },
-  "version": "1.0"
+  "version" : "1.0"
 }

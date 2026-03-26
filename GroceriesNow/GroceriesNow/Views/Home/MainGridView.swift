@@ -31,18 +31,11 @@ struct MainGridView: View {
     @State private var snackBarTask: Task<Void, Never>?
     @State private var snackBarDisplayDuration: TimeInterval = 2.6
     @State private var basketButtonScale: CGFloat = 1
-    @State private var activeJumpCategory: QuickItemCategory?
-    @State private var isManuallyScrolling = false
-    @State private var manualScrollTask: Task<Void, Never>?
     @State private var cachedCategoryUsage: [QuickItemCategory: Int] = [:]
     @State private var showRecipeSheet = false
     @State private var isRecipeAvailable = false
 
-    private let columns = [
-        GridItem(.flexible(), spacing: 12),
-        GridItem(.flexible(), spacing: 12),
-        GridItem(.flexible(), spacing: 12)
-    ]
+    private let gridColumns = Array(repeating: GridItem(.flexible(), spacing: 10), count: 3)
 
     private var trimmedSearch: String {
         searchText.trimmingCharacters(in: .whitespacesAndNewlines)
@@ -88,11 +81,7 @@ struct MainGridView: View {
         sectionedQuickItems.map(\.category)
     }
 
-    private var jumpBarSections: [QuickItemSection] {
-        sectionedQuickItems.filter { expandedCategories.contains($0.category) }
-    }
-
-    private var hasExactNameMatch: Bool {
+private var hasExactNameMatch: Bool {
         guard isSearching else { return false }
         return quickItems.contains { $0.name.caseInsensitiveCompare(trimmedSearch) == .orderedSame }
     }
@@ -247,168 +236,60 @@ struct MainGridView: View {
 
     @ViewBuilder
     private var scrollContent: some View {
-        ScrollViewReader { proxy in
-            ScrollView {
-                if filteredQuickItems.isEmpty, isSearching {
-                    emptySearchContent
-                } else if isSearching {
-                    searchResultsSection
+        List {
+            if isSearching {
+                if filteredQuickItems.isEmpty {
+                    Section {
+                        emptySearchContent
+                            .listRowBackground(Color.clear)
+                            .listRowInsets(EdgeInsets())
+                    }
                 } else {
-                    browseSections(proxy: proxy)
-                }
-
-                if shouldShowManualAddButton {
-                    manualAddButton
-                        .padding(.top, 12)
-                        .padding(.horizontal)
-                }
-
-                Spacer(minLength: 100)
-            }
-            .onPreferenceChange(SectionMinYKey.self) { positions in
-                guard !isManuallyScrolling else { return }
-                let category = positions
-                    .filter { $0.value <= 160 }
-                    .max { $0.value < $1.value }?.key
-                if category != activeJumpCategory {
-                    activeJumpCategory = category
-                }
-            }
-        }
-    }
-
-    private func categoryJumpBar(proxy: ScrollViewProxy) -> some View {
-        ScrollViewReader { hProxy in
-            ScrollView(.horizontal, showsIndicators: false) {
-                HStack(spacing: 6) {
-                    ForEach(jumpBarSections) { section in
-                        let isActive = activeJumpCategory == section.category
-                        Button {
-                            activeJumpCategory = section.category
-                            isManuallyScrolling = true
-                            manualScrollTask?.cancel()
-                            manualScrollTask = Task {
-                                try? await Task.sleep(for: .milliseconds(600))
-                                await MainActor.run { isManuallyScrolling = false }
-                            }
-                            withAnimation(.easeInOut(duration: 0.3)) {
-                                proxy.scrollTo(section.category, anchor: .top)
-                            }
-                        } label: {
-                            Label(section.category.title, systemImage: section.category.systemImageName)
-                                .font(.caption.weight(.semibold))
-                                .foregroundStyle(isActive ? Color.accentColor : .secondary)
-                                .padding(.horizontal, 10)
-                                .padding(.vertical, 6)
-                                .background(
-                                    Capsule().fill(isActive ? Color.accentColor.opacity(0.15) : Color.clear)
-                                )
-                                .animation(.easeInOut(duration: 0.18), value: isActive)
+                    Section {
+                        ForEach(filteredQuickItems) { item in
+                            itemRow(for: item)
                         }
-                        .buttonStyle(.plain)
-                        .id(section.category.rawValue)
+                    }
+                    if shouldShowManualAddButton {
+                        Section { manualAddButton }
+                            .listRowBackground(Color.clear)
                     }
                 }
-                .padding(.horizontal, 14)
-                .padding(.vertical, 10)
-            }
-            .adaptiveGlass(in: RoundedRectangle(cornerRadius: 24, style: .continuous))
-            .padding(.horizontal, 16)
-            .padding(.vertical, 8)
-            .onChange(of: activeJumpCategory) { _, category in
-                guard let category else { return }
-                withAnimation(.easeInOut(duration: 0.25)) {
-                    hProxy.scrollTo(category.rawValue, anchor: .center)
-                }
-            }
-        }
-    }
-
-    @ViewBuilder
-    private var searchResultsSection: some View {
-        if #available(iOS 26, *) {
-            GlassEffectContainer {
-                LazyVGrid(columns: columns, spacing: 12) {
-                    ForEach(filteredQuickItems) { item in
-                        itemTile(for: item)
-                    }
-                }
-            }
-            .padding(.horizontal)
-            .padding(.top, 16)
-        } else {
-            LazyVGrid(columns: columns, spacing: 12) {
-                ForEach(filteredQuickItems) { item in
-                    itemTile(for: item)
-                }
-            }
-            .padding(.horizontal)
-            .padding(.top, 16)
-        }
-    }
-
-    private func browseSections(proxy: ScrollViewProxy) -> some View {
-        LazyVStack(alignment: .leading, spacing: 20, pinnedViews: [.sectionHeaders]) {
-            Section {
+            } else {
                 if !topShortcutItems.isEmpty {
-                    TopUsedShortcutsView(items: topShortcutItems, onTapItem: addShortcutItemToBasket)
+                    Section {
+                        TopUsedShortcutsView(items: topShortcutItems, onTapItem: addShortcutItemToBasket)
+                            .listRowInsets(EdgeInsets())
+                            .listRowBackground(Color.clear)
+                    }
                 }
 
                 ForEach(sectionedQuickItems) { section in
-                    sectionView(for: section)
-                }
-            } header: {
-                if jumpBarSections.count > 1 {
-                    categoryJumpBar(proxy: proxy)
+                    Section(isExpanded: expandedBinding(for: section.category)) {
+                        LazyVGrid(columns: gridColumns, spacing: 10) {
+                            ForEach(section.items) { item in
+                                itemTile(for: item)
+                            }
+                        }
+                        .padding(.vertical, 4)
+                        .listRowInsets(EdgeInsets(.zero))
+                        .listRowBackground(Color.clear)
+                        .listRowSeparator(.hidden)
+                    } header: {
+                        categorySectionHeader(for: section)
+                    }
                 }
             }
         }
-        .padding(.top, 16)
+        .listStyle(.sidebar)
+        .animation(.easeInOut(duration: 0.22), value: basketItems.count)
     }
+
 
     private var contextualSuggestionOverlay: some View {
         BoughtTogetherWidgetView(items: contextualBoughtTogetherItems, onTapItem: addBoughtTogetherWidgetItemToBasket)
             .frame(maxWidth: 360)
             .frame(maxWidth: .infinity, alignment: .center)
-    }
-
-    private func sectionView(for section: QuickItemSection) -> some View {
-        CollapsibleQuickItemSection(
-            title: section.category.title,
-            systemImageName: section.category.systemImageName,
-            tintName: section.category.tintName,
-            itemCount: section.items.count,
-            usageCount: section.usageCount,
-            isExpanded: isExpanded(section.category),
-            onToggle: {
-                toggleSection(section.category)
-            }
-        ) {
-            if #available(iOS 26, *) {
-                GlassEffectContainer {
-                    LazyVGrid(columns: columns, spacing: 12) {
-                        ForEach(section.items) { item in
-                            itemTile(for: item)
-                        }
-                    }
-                }
-            } else {
-                LazyVGrid(columns: columns, spacing: 12) {
-                    ForEach(section.items) { item in
-                        itemTile(for: item)
-                    }
-                }
-            }
-        }
-        .padding(.horizontal)
-        .id(section.category)
-        .background(
-            GeometryReader { geo in
-                Color.clear.transformPreference(SectionMinYKey.self) { dict in
-                    dict[section.category] = geo.frame(in: .global).minY
-                }
-            }
-        )
     }
 
     private func itemTile(for item: QuickItem) -> some View {
@@ -520,6 +401,94 @@ struct MainGridView: View {
             } else {
                 expandedCategories.insert(category)
             }
+        }
+    }
+
+    private func expandedBinding(for category: QuickItemCategory) -> Binding<Bool> {
+        Binding(
+            get: { expandedCategories.contains(category) },
+            set: { expanded in
+                withAnimation(.easeInOut(duration: 0.2)) {
+                    if expanded { expandedCategories.insert(category) }
+                    else { expandedCategories.remove(category) }
+                }
+            }
+        )
+    }
+
+    private func itemRow(for item: QuickItem) -> some View {
+        Button {
+            addQuickItemToBasket(item)
+        } label: {
+            HStack(spacing: 14) {
+                Text(item.emoji)
+                    .font(.title2)
+                    .frame(width: 36, alignment: .center)
+
+                VStack(alignment: .leading, spacing: 2) {
+                    Text(ProductDisplayNameProvider.displayName(for: item.name))
+                        .foregroundStyle(.primary)
+
+                    if let hint = hintText(for: item) {
+                        Text(hint)
+                            .font(.caption)
+                            .foregroundStyle(.tertiary)
+                    }
+                }
+
+                Spacer()
+            }
+            .padding(.vertical, 2)
+            .contentShape(Rectangle())
+        }
+        .buttonStyle(.plain)
+    }
+
+    private func categorySectionHeader(for section: QuickItemSection) -> some View {
+        let tint = categoryTintColor(for: section.category)
+        return HStack(spacing: 8) {
+            Image(systemName: section.category.systemImageName)
+                .font(.caption.weight(.bold))
+                .foregroundStyle(tint)
+                .frame(width: 24, height: 24)
+                .background(tint.opacity(0.15), in: RoundedRectangle(cornerRadius: 6, style: .continuous))
+
+            Text(section.category.title)
+                .font(.subheadline.weight(.semibold))
+                .foregroundStyle(.primary)
+                .textCase(nil)
+
+            Spacer()
+
+            if section.usageCount > 0 {
+                Text("Top \(section.usageCount)×")
+                    .font(.caption2.weight(.semibold))
+                    .foregroundStyle(tint)
+                    .padding(.horizontal, 7)
+                    .padding(.vertical, 3)
+                    .background(tint.opacity(0.12), in: Capsule())
+                    .textCase(nil)
+            }
+
+            Text("\(section.items.count)")
+                .font(.caption)
+                .foregroundStyle(.tertiary)
+                .textCase(nil)
+        }
+    }
+
+    private func categoryTintColor(for category: QuickItemCategory) -> Color {
+        switch category.tintName {
+        case "green":  return .green
+        case "red":    return .red
+        case "orange": return .orange
+        case "cyan":   return .cyan
+        case "indigo": return .indigo
+        case "teal":   return .teal
+        case "pink":   return .pink
+        case "gray":   return .gray
+        case "purple": return .purple
+        default:       return .blue
         }
     }
 
@@ -841,12 +810,6 @@ struct MainGridView: View {
     }
 }
 
-private struct SectionMinYKey: PreferenceKey {
-    static var defaultValue: [QuickItemCategory: CGFloat] = [:]
-    static func reduce(value: inout [QuickItemCategory: CGFloat], nextValue: () -> [QuickItemCategory: CGFloat]) {
-        value.merge(nextValue()) { $1 }
-    }
-}
 
 private struct SnackBarState: Identifiable, Equatable {
     let id: UUID

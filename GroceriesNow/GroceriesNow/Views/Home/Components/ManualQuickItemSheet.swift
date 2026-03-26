@@ -22,12 +22,13 @@ struct ManualQuickItemSheet: View {
 
     var body: some View {
         NavigationStack {
-            Form {
+            List {
                 productFields
                 categoryPicker
                 basketOption
                 emojiSuggestions
             }
+            .listStyle(.insetGrouped)
             .navigationTitle("New Product")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar { toolbarContent }

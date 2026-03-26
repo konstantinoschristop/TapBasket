@@ -15,7 +15,6 @@ struct TopUsedShortcutsView: View {
 
     var body: some View {
         widgetContainer
-            .padding(.horizontal)
     }
 
     @ViewBuilder

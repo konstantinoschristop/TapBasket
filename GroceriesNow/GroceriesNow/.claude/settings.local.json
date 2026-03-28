@@ -1,7 +1,24 @@
 {
   "permissions": {
     "allow": [
-      "Bash(python3 -c \":*)"
+      "Bash(python3 -c \":*)",
+      "Bash(xargs sed:*)",
+      "Bash(swift /tmp/gen_icon.swift /tmp/GroceriesNow-icon-1024.png)",
+      "Bash(swift /tmp/gen_launch_asset.swift)",
+      "Bash(ASSETS=\"/Users/k.christopoulos/Desktop/MyProjects/TapBasket/GroceriesNow/GroceriesNow/Assets.xcassets/LaunchBasket.imageset\")",
+      "Bash(mkdir -p \"$ASSETS\")",
+      "Bash(cp /tmp/LaunchBasket@1x.png \"$ASSETS/\")",
+      "Bash(cp /tmp/LaunchBasket@2x.png \"$ASSETS/\")",
+      "Bash(cp /tmp/LaunchBasket@3x.png \"$ASSETS/\")",
+      "Bash(swift /tmp/gen_taplist_icon.swift /tmp/Taplist-icon-1024.png)",
+      "Bash(swift /tmp/gen_taplist_mix_icon.swift /tmp/Taplist-mix-icon-1024.png)",
+      "Bash(swift /tmp/gen_variants.swift)",
+      "Bash(swift /tmp/gen_taplist_launch_v2.swift)",
+      "Bash(sed -i '' 's/k\\\\.christopoulos\\\\.GroceriesNow;/k.christopoulos.Taplist;/g' /Users/k.christopoulos/Desktop/MyProjects/TapBasket/GroceriesNow/GroceriesNow.xcodeproj/project.pbxproj)",
+      "Bash(sed -i '' 's/k\\\\.christopoulos\\\\.GroceriesNowTests;/k.christopoulos.TaplistTests;/g' /Users/k.christopoulos/Desktop/MyProjects/TapBasket/GroceriesNow/GroceriesNow.xcodeproj/project.pbxproj)",
+      "Bash(sed -i '' 's/k\\\\.christopoulos\\\\.GroceriesNowUITests;/k.christopoulos.TaplistUITests;/g' /Users/k.christopoulos/Desktop/MyProjects/TapBasket/GroceriesNow/GroceriesNow.xcodeproj/project.pbxproj)",
+      "Bash(sed -i '' 's/Color\\(\\\\.secondarySystemGroupedBackground\\)/Color\\(\"\"CardBackground\"\"\\)/g' \"/Users/k.christopoulos/Desktop/MyProjects/TapBasket/GroceriesNow/GroceriesNow/Views/Home/MainGridView.swift\" \"/Users/k.christopoulos/Desktop/MyProjects/TapBasket/GroceriesNow/GroceriesNow/Views/Home/Components/QuickItemTile.swift\" \"/Users/k.christopoulos/Desktop/MyProjects/TapBasket/GroceriesNow/GroceriesNow/Views/Home/Components/TopUsedShortcutsView.swift\" \"/Users/k.christopoulos/Desktop/MyProjects/TapBasket/GroceriesNow/GroceriesNow/Views/Home/Components/ProPaywallSheet.swift\" \"/Users/k.christopoulos/Desktop/MyProjects/TapBasket/GroceriesNow/GroceriesNow/Views/Basket/BasketView.swift\")",
+      "Bash(__NEW_LINE_abbbe385c05d8cbd__ sed:*)"
     ]
   }
 }

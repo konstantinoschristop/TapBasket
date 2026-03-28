@@ -37,9 +37,9 @@ struct BasketRowView: View {
             Button(action: onEditNote) {
                 Image(systemName: item.note?.isEmpty == false ? "note.text" : "square.and.pencil")
                     .font(.subheadline.weight(.semibold))
-                    .foregroundStyle(.secondary)
+                    .foregroundStyle(item.note?.isEmpty == false ? Color.green : .secondary)
                     .padding(6)
-                    .background(Color(.secondarySystemBackground).opacity(item.note?.isEmpty == false ? 1 : 0.01))
+                    .background(Color("LaunchBackground").opacity(item.note?.isEmpty == false ? 1 : 0.01))
                     .clipShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
             }
             .buttonStyle(.plain)
@@ -50,9 +50,21 @@ struct BasketRowView: View {
                 onIncrement: onIncrement
             )
         }
-        .padding(.vertical, 4)
+        .padding(.vertical, 10)
+        .padding(.leading, 12)
+        .overlay(alignment: .leading) {
+            RoundedRectangle(cornerRadius: 2, style: .continuous)
+                .fill(
+                    LinearGradient(
+                        colors: [Color.green.opacity(item.isChecked ? 0.2 : 0.55), Color.green.opacity(0.1)],
+                        startPoint: .top, endPoint: .bottom
+                    )
+                )
+                .frame(width: 3)
+                .padding(.vertical, 6)
+        }
         .contentShape(Rectangle())
-        .opacity(item.isChecked ? 0.72 : 1)
+        .opacity(item.isChecked ? 0.6 : 1)
         .scaleEffect(item.isChecked ? 0.992 : 1)
         .animation(.spring(response: 0.25, dampingFraction: 0.82), value: item.isChecked)
         .onTapGesture(perform: onToggleChecked)

@@ -1,17 +1,17 @@
 {
   "images" : [
     {
-      "filename" : "tapbasket.png",
+      "filename" : "LaunchBasket@1x.png",
       "idiom" : "universal",
       "scale" : "1x"
     },
     {
-      "filename" : "tapbasket 1.png",
+      "filename" : "LaunchBasket@2x.png",
       "idiom" : "universal",
       "scale" : "2x"
     },
     {
-      "filename" : "tapbasket 2.png",
+      "filename" : "LaunchBasket@3x.png",
       "idiom" : "universal",
       "scale" : "3x"
     }

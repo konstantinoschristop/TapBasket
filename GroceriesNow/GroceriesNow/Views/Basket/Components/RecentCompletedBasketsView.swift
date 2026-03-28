@@ -28,23 +28,34 @@ struct RecentCompletedBasketsView: View {
                     .transition(.opacity.combined(with: .move(edge: .bottom)))
             }
         }
-        .padding(.top, 18)
+        .padding(.vertical, 12)
         .animation(.easeInOut(duration: 0.22), value: baskets.count)
     }
 
+    // MARK: - Header
+
     private var header: some View {
-        HStack(alignment: .center) {
-            VStack(alignment: .leading, spacing: 4) {
-                Label {
-                    Text("recent_baskets.header.title")
-                        .font(.headline)
-                } icon: {
-                    Image(systemName: "clock.arrow.trianglehead.counterclockwise.rotate.90")
-                        .foregroundStyle(Color.accentColor)
-                }
+        HStack(spacing: 12) {
+            Image(systemName: "clock.fill")
+                .font(.system(size: 15, weight: .semibold))
+                .foregroundStyle(.white)
+                .frame(width: 34, height: 34)
+                .background(
+                    LinearGradient(
+                        colors: [Color.indigo.mix(with: .white, by: 0.18), Color.indigo],
+                        startPoint: .topLeading, endPoint: .bottomTrailing
+                    ),
+                    in: RoundedRectangle(cornerRadius: 9, style: .continuous)
+                )
+                .shadow(color: Color.indigo.opacity(0.35), radius: 4, y: 2)
+
+            VStack(alignment: .leading, spacing: 1) {
+                Text("recent_baskets.header.title")
+                    .font(.subheadline.weight(.semibold))
+                    .foregroundStyle(Color(.label))
 
                 Text("recent_baskets.header.subtitle")
-                    .font(.caption)
+                    .font(.caption2)
                     .foregroundStyle(.secondary)
             }
 
@@ -52,15 +63,16 @@ struct RecentCompletedBasketsView: View {
 
             if !baskets.isEmpty {
                 Text("\(baskets.count)")
-                    .font(.caption.weight(.bold))
-                    .foregroundStyle(Color.accentColor)
-                    .padding(.horizontal, 8)
-                    .padding(.vertical, 4)
-                    .background(Color.accentColor.opacity(0.12))
-                    .clipShape(Capsule())
+                    .font(.caption2.weight(.bold))
+                    .foregroundStyle(Color.indigo)
+                    .padding(.horizontal, 7)
+                    .padding(.vertical, 3)
+                    .background(Color.indigo.opacity(0.12), in: Capsule())
             }
         }
     }
+
+    // MARK: - Cards list
 
     @ViewBuilder
     private var basketCards: some View {
@@ -97,10 +109,10 @@ struct RecentCompletedBasketsView: View {
                 )
                 .font(.caption.weight(.semibold))
             }
-            .foregroundStyle(Color.accentColor)
+            .foregroundStyle(Color.indigo)
             .frame(maxWidth: .infinity)
             .padding(.vertical, 11)
-            .background(Color.accentColor.opacity(0.10))
+            .background(Color.indigo.opacity(0.10))
             .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
         }
         .buttonStyle(.plain)
@@ -118,103 +130,147 @@ struct RecentCompletedBasketsView: View {
 
     private func basketCard(for basket: RecentBasketSummary) -> some View {
         VStack(alignment: .leading, spacing: 0) {
-            cardHeader(for: basket)
-                .padding(.horizontal, 12)
-                .padding(.top, 12)
-                .padding(.bottom, 10)
+            emojiStrip(for: basket)
+                .padding(.horizontal, 14)
+                .padding(.top, 14)
+                .padding(.bottom, 12)
 
-            Divider()
-                .padding(.horizontal, 12)
+            infoBar(for: basket)
+                .padding(.horizontal, 14)
+                .padding(.bottom, 14)
 
-            itemsList(for: basket)
-                .padding(.horizontal, 12)
-                .padding(.vertical, 10)
+            if isExpanded(basket) {
+                Divider()
+                    .padding(.horizontal, 14)
+
+                itemsList(for: basket)
+                    .padding(.horizontal, 14)
+                    .padding(.vertical, 10)
+            }
         }
         .frame(maxWidth: .infinity, alignment: .leading)
-        .background(
+        .background(Color("CardBackground"), in: RoundedRectangle(cornerRadius: 16, style: .continuous))
+        .overlay {
             RoundedRectangle(cornerRadius: 16, style: .continuous)
-                .fill(.ultraThinMaterial)
-        )
-        .overlay(
-            RoundedRectangle(cornerRadius: 16, style: .continuous)
-                .stroke(Color.white.opacity(0.22), lineWidth: 1)
-        )
-        .shadow(color: .black.opacity(0.05), radius: 12, y: 5)
+                .stroke(
+                    LinearGradient(
+                        colors: [Color.indigo.opacity(0.35), Color.indigo.opacity(0.1)],
+                        startPoint: .topLeading, endPoint: .bottomTrailing
+                    ),
+                    lineWidth: 1
+                )
+        }
+        .shadow(color: Color.indigo.opacity(0.08), radius: 10, y: 4)
     }
 
-    private func cardHeader(for basket: RecentBasketSummary) -> some View {
-        HStack(alignment: .center, spacing: 10) {
-            VStack(alignment: .leading, spacing: 3) {
+    private func emojiStrip(for basket: RecentBasketSummary) -> some View {
+        HStack(spacing: 6) {
+            ForEach(Array(basket.items.prefix(6).enumerated()), id: \.offset) { _, item in
+                Text(item.emoji)
+                    .font(.title3)
+                    .frame(width: 38, height: 38)
+                    .background(Color("LaunchBackground"), in: RoundedRectangle(cornerRadius: 10, style: .continuous))
+            }
+
+            if basket.items.count > 6 {
+                Text("+\(basket.items.count - 6)")
+                    .font(.caption.weight(.bold))
+                    .foregroundStyle(.secondary)
+                    .frame(width: 38, height: 38)
+                    .background(Color("LaunchBackground"), in: RoundedRectangle(cornerRadius: 10, style: .continuous))
+            }
+
+            Spacer(minLength: 0)
+        }
+    }
+
+    private func infoBar(for basket: RecentBasketSummary) -> some View {
+        HStack(spacing: 8) {
+            VStack(alignment: .leading, spacing: 2) {
                 Text(relativeDateString(basket.completedAt))
                     .font(.subheadline.weight(.semibold))
                     .foregroundStyle(.primary)
                 Text(basket.completedAt, style: .time)
-                    .font(.caption)
+                    .font(.caption2)
                     .foregroundStyle(.secondary)
             }
 
-            Spacer(minLength: 8)
+            Spacer(minLength: 4)
 
-            HStack(spacing: 6) {
-                hideButton(for: basket)
-                addAllButton(for: basket)
+            // Item count
+            Text("\(basket.items.count)")
+                .font(.caption2.weight(.bold))
+                .foregroundStyle(.secondary)
+                .padding(.horizontal, 7)
+                .padding(.vertical, 4)
+                .background(Color("LaunchBackground"), in: Capsule())
+
+            // Expand / collapse
+            Button {
+                withAnimation(.spring(response: 0.3, dampingFraction: 0.8)) {
+                    toggleExpandedState(for: basket)
+                }
+            } label: {
+                Image(systemName: isExpanded(basket) ? "chevron.up" : "list.bullet")
+                    .font(.caption.weight(.semibold))
+                    .foregroundStyle(Color.indigo)
+                    .frame(width: 30, height: 30)
+                    .background(Color.indigo.opacity(0.1), in: Circle())
             }
-            .fixedSize(horizontal: true, vertical: false)
+            .buttonStyle(.plain)
+
+            // Add all
+            Button { onAddBasket(basket) } label: {
+                HStack(spacing: 4) {
+                    Image(systemName: "plus")
+                        .font(.caption.weight(.bold))
+                    Text("action.add_all")
+                        .font(.caption.weight(.semibold))
+                        .lineLimit(1)
+                }
+                .foregroundStyle(.white)
+                .padding(.horizontal, 10)
+                .padding(.vertical, 6)
+                .background(Color.indigo, in: Capsule())
+            }
+            .buttonStyle(.plain)
+
+            // Hide
+            Button {
+                withAnimation(.easeInOut(duration: 0.18)) { onHideBasket(basket) }
+            } label: {
+                Image(systemName: "xmark")
+                    .font(.caption.weight(.bold))
+                    .foregroundStyle(.secondary)
+                    .frame(width: 30, height: 30)
+                    .background(Color("LaunchBackground"), in: Circle())
+            }
+            .buttonStyle(.plain)
         }
     }
 
-    private func hideButton(for basket: RecentBasketSummary) -> some View {
-        Button {
-            withAnimation(.easeInOut(duration: 0.18)) {
-                onHideBasket(basket)
-            }
-        } label: {
-            Image(systemName: "eye.slash")
-                .font(.caption)
-        }
-        .buttonStyle(.bordered)
-        .controlSize(.small)
-        .tint(.secondary)
-    }
-
-    private func addAllButton(for basket: RecentBasketSummary) -> some View {
-        Button {
-            onAddBasket(basket)
-        } label: {
-            HStack(spacing: 4) {
-                Image(systemName: "plus.circle.fill")
-                Text("action.add_all")
-                    .lineLimit(1)
-            }
-            .font(.caption.weight(.semibold))
-        }
-        .buttonStyle(.bordered)
-        .controlSize(.small)
-    }
+    // MARK: - Items list
 
     private func itemsList(for basket: RecentBasketSummary) -> some View {
         let visibleItems = visibleItems(for: basket)
 
-        return VStack(alignment: .leading, spacing: 0) {
-            ForEach(Array(visibleItems.enumerated()), id: \.element.id) { index, item in
-                if index > 0 {
-                    Divider()
-                        .padding(.leading, 32)
-                }
+        return VStack(alignment: .leading, spacing: 2) {
+            ForEach(visibleItems) { item in
                 itemRow(item)
             }
 
             if basket.items.count > 4 {
-                Divider()
-                    .padding(.leading, 32)
                 expandButton(for: basket)
+                    .padding(.top, 4)
             }
         }
     }
 
     private func expandButton(for basket: RecentBasketSummary) -> some View {
         Button {
-            toggleExpandedState(for: basket)
+            withAnimation(.spring(response: 0.3, dampingFraction: 0.8)) {
+                toggleExpandedState(for: basket)
+            }
         } label: {
             HStack(spacing: 6) {
                 Text(expandButtonTitle(for: basket))
@@ -222,9 +278,10 @@ struct RecentCompletedBasketsView: View {
                     .font(.caption2.weight(.semibold))
             }
             .font(.caption.weight(.semibold))
-            .foregroundStyle(Color.accentColor)
+            .foregroundStyle(Color.indigo)
             .frame(maxWidth: .infinity)
-            .padding(.vertical, 8)
+            .padding(.vertical, 7)
+            .background(Color.indigo.opacity(0.07), in: RoundedRectangle(cornerRadius: 8, style: .continuous))
         }
         .buttonStyle(.plain)
     }
@@ -233,7 +290,8 @@ struct RecentCompletedBasketsView: View {
         HStack(spacing: 10) {
             Text(item.emoji)
                 .font(.body)
-                .frame(width: 24)
+                .frame(width: 28, height: 28)
+                .background(Color("LaunchBackground"), in: RoundedRectangle(cornerRadius: 7, style: .continuous))
 
             Text(ProductDisplayNameProvider.displayName(for: item.name))
                 .font(.subheadline)
@@ -253,11 +311,11 @@ struct RecentCompletedBasketsView: View {
             } label: {
                 Image(systemName: "plus.circle.fill")
                     .font(.subheadline)
-                    .foregroundStyle(Color.accentColor)
+                    .foregroundStyle(Color.indigo)
             }
             .buttonStyle(.plain)
         }
-        .padding(.vertical, 7)
+        .padding(.vertical, 6)
     }
 
     // MARK: - Helpers
@@ -271,12 +329,10 @@ struct RecentCompletedBasketsView: View {
     }
 
     private func toggleExpandedState(for basket: RecentBasketSummary) {
-        withAnimation(.easeInOut(duration: 0.2)) {
-            if expandedBasketIDs.contains(basket.id) {
-                expandedBasketIDs.remove(basket.id)
-            } else {
-                expandedBasketIDs.insert(basket.id)
-            }
+        if expandedBasketIDs.contains(basket.id) {
+            expandedBasketIDs.remove(basket.id)
+        } else {
+            expandedBasketIDs.insert(basket.id)
         }
     }
 

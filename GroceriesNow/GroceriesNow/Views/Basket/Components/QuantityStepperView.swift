@@ -17,6 +17,7 @@ struct QuantityStepperView: View {
                 .font(.subheadline)
                 .fontWeight(.semibold)
                 .frame(minWidth: 22)
+                .foregroundStyle(.primary)
 
             Button(action: onIncrement) {
                 Image(systemName: "plus.circle.fill")
@@ -24,6 +25,6 @@ struct QuantityStepperView: View {
             }
             .buttonStyle(.plain)
         }
-        .foregroundStyle(.secondary)
+        .foregroundStyle(Color.green)
     }
 }

@@ -1,8 +1,16 @@
 import SwiftUI
 import SwiftData
+import TipKit
 
 @main
 struct TapBasketApp: App {
+    init() {
+        try? Tips.configure([
+            .displayFrequency(.immediate),
+            .datastoreLocation(.applicationDefault)
+        ])
+    }
+
     var sharedModelContainer: ModelContainer = {
         let schema = Schema([
             QuickItem.self,
@@ -21,9 +29,12 @@ struct TapBasketApp: App {
         }
     }()
 
+    @State private var purchaseManager = PurchaseManager()
+
     var body: some Scene {
         WindowGroup {
             ContentView()
+                .environment(purchaseManager)
         }
         .modelContainer(sharedModelContainer)
     }

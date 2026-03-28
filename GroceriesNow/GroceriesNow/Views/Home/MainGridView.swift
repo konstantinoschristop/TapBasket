@@ -1,5 +1,6 @@
 import SwiftUI
 import SwiftData
+import TipKit
 
 private struct QuickItemSection: Identifiable {
     let category: QuickItemCategory
@@ -32,8 +33,13 @@ struct MainGridView: View {
     @State private var snackBarDisplayDuration: TimeInterval = 2.6
     @State private var basketButtonScale: CGFloat = 1
     @State private var cachedCategoryUsage: [QuickItemCategory: Int] = [:]
+    @Environment(PurchaseManager.self) private var purchaseManager
     @State private var showRecipeSheet = false
+    @State private var showPaywall = false
     @State private var isRecipeAvailable = false
+
+    private let addItemTip = AddItemTip()
+    private let recipeAITip = RecipeAITip()
 
     private let gridColumns = Array(repeating: GridItem(.flexible(), spacing: 10), count: 3)
 
@@ -106,7 +112,8 @@ private var hasExactNameMatch: Bool {
                 id: item.id,
                 name: ProductDisplayNameProvider.displayName(for: item.name),
                 emoji: item.emoji,
-                totalQuantity: shortcut.totalQuantity
+                totalQuantity: shortcut.totalQuantity,
+                category: item.category
             )
         }
     }
@@ -169,10 +176,16 @@ private var hasExactNameMatch: Bool {
                 if isRecipeAvailable {
                     ToolbarItem(placement: .topBarTrailing) {
                         Button {
-                            showRecipeSheet = true
+                            if FeatureFlags.aiRecipeRequiresPro && !purchaseManager.isPro {
+                                showPaywall = true
+                            } else {
+                                showRecipeSheet = true
+                                recipeAITip.invalidate(reason: .actionPerformed)
+                            }
                         } label: {
                             Label(String(localized: "recipe.toolbar_button"), systemImage: "sparkles")
                         }
+                        .popoverTip(recipeAITip)
                     }
                 }
             }
@@ -191,6 +204,10 @@ private var hasExactNameMatch: Bool {
                 }
             }
             #endif
+            .sheet(isPresented: $showPaywall) {
+                ProPaywallSheet(purchaseManager: purchaseManager)
+                    .presentationDetents([.large])
+            }
             .onAppear(perform: syncExpandedCategories)
             .onAppear {
                 #if canImport(FoundationModels)
@@ -257,6 +274,14 @@ private var hasExactNameMatch: Bool {
                     }
                 }
             } else {
+                Section {
+                    TipView(addItemTip)
+                        .tipBackground(Color("CardBackground"))
+                        .listRowBackground(Color.clear)
+                        .listRowSeparator(.hidden)
+                        .listRowInsets(EdgeInsets(top: 4, leading: 16, bottom: 0, trailing: 16))
+                }
+
                 if !topShortcutItems.isEmpty {
                     Section {
                         TopUsedShortcutsView(
@@ -264,6 +289,8 @@ private var hasExactNameMatch: Bool {
                             onTapItem: addShortcutItemToBasket,
                             onAddAll: { topShortcutItems.forEach { addShortcutItemToBasket($0) } }
                         )
+                            .padding(.horizontal, 12)
+                            .padding(.vertical, 6)
                             .listRowInsets(EdgeInsets())
                             .listRowBackground(Color.clear)
                     }
@@ -276,7 +303,8 @@ private var hasExactNameMatch: Bool {
                                 itemTile(for: item)
                             }
                         }
-                        .padding(.vertical, 4)
+                        .padding(.horizontal, 4)
+                        .padding(.vertical, 8)
                         .listRowInsets(EdgeInsets(.zero))
                         .listRowBackground(Color.clear)
                         .listRowSeparator(.hidden)
@@ -287,6 +315,8 @@ private var hasExactNameMatch: Bool {
             }
         }
         .listStyle(.sidebar)
+        .scrollContentBackground(.hidden)
+        .background(Color("LaunchBackground"))
         .animation(.easeInOut(duration: 0.22), value: basketItems.count)
     }
 
@@ -345,7 +375,7 @@ private var hasExactNameMatch: Bool {
     @ViewBuilder
     private var basketButton: some View {
         let label = HStack(spacing: 8) {
-            Text("🧺")
+            Image(systemName: "basket.fill")
             Text(String(localized: "home.basket_button_format", defaultValue: "Basket (%lld)", locale: locale).replacingOccurrences(of: "%lld", with: "\(basketManager.totalItemCount(from: basketItems))"))
                 .fontWeight(.semibold)
         }
@@ -356,7 +386,9 @@ private var hasExactNameMatch: Bool {
         Button {
             showBasket = true
         } label: {
-            label.adaptiveGlass(in: Capsule())
+            label
+                .adaptiveGlass(in: Capsule())
+                .shadow(color: .black.opacity(0.12), radius: 12, y: 4)
         }
         .scaleEffect(basketButtonScale)
     }
@@ -443,7 +475,7 @@ private var hasExactNameMatch: Bool {
 
                 Spacer()
             }
-            .padding(.vertical, 2)
+            .padding(.vertical, 6)
             .contentShape(Rectangle())
         }
         .buttonStyle(.plain)
@@ -451,17 +483,33 @@ private var hasExactNameMatch: Bool {
 
     private func categorySectionHeader(for section: QuickItemSection) -> some View {
         let tint = categoryTintColor(for: section.category)
-        return HStack(spacing: 8) {
+        return HStack(spacing: 12) {
+            // App-icon-style square with gradient
             Image(systemName: section.category.systemImageName)
-                .font(.caption.weight(.bold))
-                .foregroundStyle(tint)
-                .frame(width: 24, height: 24)
-                .background(tint.opacity(0.15), in: RoundedRectangle(cornerRadius: 6, style: .continuous))
+                .font(.system(size: 15, weight: .semibold))
+                .foregroundStyle(.white)
+                .frame(width: 34, height: 34)
+                .background(
+                    LinearGradient(
+                        colors: [tint.mix(with: .white, by: 0.15), tint],
+                        startPoint: .topLeading,
+                        endPoint: .bottomTrailing
+                    ),
+                    in: RoundedRectangle(cornerRadius: 9, style: .continuous)
+                )
+                .shadow(color: tint.opacity(0.35), radius: 4, y: 2)
 
-            Text(section.category.title)
-                .font(.subheadline.weight(.semibold))
-                .foregroundStyle(.primary)
-                .textCase(nil)
+            VStack(alignment: .leading, spacing: 1) {
+                Text(section.category.title)
+                    .font(.subheadline.weight(.bold))
+                    .foregroundStyle(Color(.label))
+                    .textCase(nil)
+
+                Text("\(section.items.count) items")
+                    .font(.caption2)
+                    .foregroundStyle(Color(.secondaryLabel))
+                    .textCase(nil)
+            }
 
             Spacer()
 
@@ -474,12 +522,8 @@ private var hasExactNameMatch: Bool {
                     .background(tint.opacity(0.12), in: Capsule())
                     .textCase(nil)
             }
-
-            Text("\(section.items.count)")
-                .font(.caption)
-                .foregroundStyle(.tertiary)
-                .textCase(nil)
         }
+        .padding(.vertical, 6)
     }
 
     private func categoryTintColor(for category: QuickItemCategory) -> Color {
@@ -578,6 +622,7 @@ private var hasExactNameMatch: Bool {
         showSingleItemSnackBar(for: item, previousQuantity: previousQuantity)
         updateContextualSuggestions(for: item.name)
         pulseBasketButton()
+        addItemTip.invalidate(reason: .actionPerformed)
     }
 
     private func pulseBasketButton() {

@@ -81,7 +81,12 @@ struct CollapsibleQuickItemSection<Content: View>: View {
         .padding(.horizontal, 12)
         .padding(.vertical, 10)
 
-        base.adaptiveGlass(in: RoundedRectangle(cornerRadius: 16, style: .continuous))
+        base
+            .background(Color("CardBackground"), in: RoundedRectangle(cornerRadius: 16, style: .continuous))
+            .overlay(
+                RoundedRectangle(cornerRadius: 16, style: .continuous)
+                    .stroke(Color(.separator).opacity(0.2), lineWidth: 0.5)
+            )
     }
 
     private var headerTint: Color {

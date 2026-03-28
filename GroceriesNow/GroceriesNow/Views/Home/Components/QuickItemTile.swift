@@ -13,6 +13,21 @@ struct QuickItemTile: View {
         ProductDisplayNameProvider.displayName(for: item.name)
     }
 
+    private var categoryTint: Color {
+        switch item.category.tintName {
+        case "green":  return .green
+        case "red":    return .red
+        case "orange": return .orange
+        case "cyan":   return .cyan
+        case "indigo": return .indigo
+        case "teal":   return .teal
+        case "pink":   return .pink
+        case "gray":   return .gray
+        case "purple": return .purple
+        default:       return .blue
+        }
+    }
+
     var body: some View {
         Button {
             withAnimation(.spring(response: 0.18, dampingFraction: 0.72)) {
@@ -61,14 +76,17 @@ struct QuickItemTile: View {
         .frame(maxWidth: .infinity)
         .frame(height: 100)
         .padding(.horizontal, 4)
-        .background(
+        .background {
             RoundedRectangle(cornerRadius: 16, style: .continuous)
-                .fill(Color(.secondarySystemGroupedBackground))
-                .shadow(color: .black.opacity(0.06), radius: 4, y: 2)
-        )
+                .fill(Color("CardBackground"))
+                .overlay(
+                    RoundedRectangle(cornerRadius: 16, style: .continuous)
+                        .fill(categoryTint.opacity(0.05))
+                )
+        }
         .overlay(
             RoundedRectangle(cornerRadius: 16, style: .continuous)
-                .stroke(Color(.separator).opacity(0.25), lineWidth: 0.5)
+                .stroke(categoryTint.opacity(0.25), lineWidth: 1)
         )
         .overlay(alignment: .topTrailing) {
             if isInBasket {

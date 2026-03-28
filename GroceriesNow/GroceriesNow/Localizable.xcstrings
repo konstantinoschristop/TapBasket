@@ -33,6 +33,9 @@
     "%lld items" : {
 
     },
+    "+%lld" : {
+
+    },
     "×%lld" : {
       "localizations" : {
         "el" : {
@@ -49,10 +52,7 @@
         }
       }
     },
-    "🧺" : {
-
-    },
-    "🛒 Shopping List" : {
+    "🛒" : {
 
     },
     "action.add" : {
@@ -187,6 +187,12 @@
 
     },
     "Add to basket now" : {
+
+    },
+    "AI Shopping Lists" : {
+
+    },
+    "Basket completed!" : {
 
     },
     "basket_item_note.add_note" : {
@@ -564,7 +570,7 @@
     "Emoji" : {
 
     },
-    "GroceriesNow" : {
+    "Export your basket as an image to share with friends and family." : {
 
     },
     "home.basket_button_format" : {
@@ -635,14 +641,14 @@
       "localizations" : {
         "el" : {
           "stringUnit" : {
-            "state" : "translated",
-            "value" : "Tap Basket"
+            "state" : "needs_review",
+            "value" : "Taplist"
           }
         },
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Tap Basket"
+            "value" : "Taplist"
           }
         }
       }
@@ -667,6 +673,9 @@
 
     },
     "New Product" : {
+
+    },
+    "One-time purchase · No subscription · Works fully on-device" : {
 
     },
     "Product" : {
@@ -3833,7 +3842,16 @@
         }
       }
     },
+    "Restore Purchase" : {
+
+    },
     "Save" : {
+
+    },
+    "Share your list" : {
+
+    },
+    "Shopping List" : {
 
     },
     "snackbar.added_item_format" : {
@@ -3932,13 +3950,43 @@
         }
       }
     },
+    "Swipe left on any basket item to remove it." : {
+
+    },
+    "Swipe to remove" : {
+
+    },
+    "Tap any item once to add it. Tap again to increase the quantity." : {
+
+    },
+    "Tap to add to basket" : {
+
+    },
+    "Taplist" : {
+
+    },
+    "Taplist Pro" : {
+
+    },
     "Top %lld×" : {
 
     },
     "Top %lldx" : {
 
     },
+    "Type any recipe and Taplist builds your shopping list automatically." : {
+
+    },
     "Undo" : {
+
+    },
+    "Unlock AI-powered shopping lists" : {
+
+    },
+    "Unlock for %@" : {
+
+    },
+    "Your items have been saved to history." : {
 
     }
   },

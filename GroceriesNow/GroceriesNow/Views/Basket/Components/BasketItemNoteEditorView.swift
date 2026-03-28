@@ -26,6 +26,8 @@ struct BasketItemNoteEditorView: View {
                 }
             }
             .listStyle(.insetGrouped)
+            .scrollContentBackground(.hidden)
+            .background(Color("LaunchBackground"))
             .navigationTitle(Text("basket_item_note.title"))
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {

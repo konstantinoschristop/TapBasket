@@ -29,6 +29,8 @@ struct ManualQuickItemSheet: View {
                 emojiSuggestions
             }
             .listStyle(.insetGrouped)
+            .scrollContentBackground(.hidden)
+            .background(Color("LaunchBackground"))
             .navigationTitle("New Product")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar { toolbarContent }

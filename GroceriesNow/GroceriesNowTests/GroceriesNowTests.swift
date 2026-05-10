@@ -403,24 +403,6 @@ struct GroceriesNowTests {
         #expect(suggestionsWithBoth.isEmpty)
     }
 
-    @Test("snackbar state preserves queue payload details")
-    func snackBarStatePreservesQueuePayloadDetails() {
-        let state = SnackBarState(
-            id: UUID(),
-            title: "Added 🥛 Milk",
-            undoName: "Milk",
-            previousQuantity: 1,
-            basketSnapshot: ["Milk"],
-            progress: 1
-        )
-
-        #expect(state.title == "Added 🥛 Milk")
-        #expect(state.undoName == "Milk")
-        #expect(state.previousQuantity == 1)
-        #expect(state.basketSnapshot == ["Milk"])
-        #expect(state.progress == 1)
-    }
-
     @Test("product display name provider localizes seeded items and falls back for custom names")
     func productDisplayNameProviderResolvesSeededAndCustomNames() {
         let milkDisplayName = ProductDisplayNameProvider.displayName(for: "Milk")

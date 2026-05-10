@@ -7,12 +7,12 @@ struct BasketView: View {
     @Environment(\.modelContext) private var modelContext
     @Environment(\.locale) private var locale
     @Query(sort: [SortDescriptor(\BasketItem.name, order: .forward)]) private var basketItems: [BasketItem]
-    @Query(sort: [SortDescriptor(\CompletedBasket.completedAt, order: .reverse)]) private var completedBaskets: [CompletedBasket]
-    @Query(sort: [SortDescriptor(\CompletedBasketEntry.completedAt, order: .reverse)]) private var completedEntries: [CompletedBasketEntry]
 
     let manager: BasketManager
+    /// Fired once the completion overlay has finished playing. Parent uses this
+    /// to surface a brief post-completion confirmation on the home screen.
+    var onCompletion: (() -> Void)? = nil
 
-    @State private var feedbackMessage: String?
     @State private var noteEditorItem: BasketItem?
     @State private var isCompletingBasket = false
     @State private var showCompletionBadge = false
@@ -21,14 +21,6 @@ struct BasketView: View {
 
     private let swipeToDeleteTip = SwipeToDeleteTip()
     private let shareBasketTip = ShareBasketTip()
-
-    private var recentBaskets: [RecentBasketSummary] {
-        manager.recentBasketSummaries(baskets: completedBaskets, entries: completedEntries)
-    }
-
-    private var shouldShowRecentHistory: Bool {
-        !recentBaskets.isEmpty
-    }
 
     private var regularItems: [BasketItem] {
         basketItems.filter { $0.recipeName == nil }
@@ -43,50 +35,52 @@ struct BasketView: View {
             if dict[name] == nil { order.append(name) }
             dict[name, default: []].append(item)
         }
-        return order.map { (name: $0, items: dict[$0]!) }
+        return order.map { (name: $0, items: dict[$0] ?? []) }
     }
 
     var body: some View {
-        NavigationStack {
-            listContent
-                .navigationTitle(Text("basket.screen_title"))
-                .toolbar { toolbarContent }
-                .alert(Text("basket.feedback.updated_title"), isPresented: isShowingFeedbackAlert) {
-                    Button(String(localized: "action.done")) {}
-                } message: {
-                    Text(feedbackMessage ?? "")
-                }
-                .sheet(item: $noteEditorItem) { item in
-                    BasketItemNoteEditorView(
-                        itemName: item.name,
-                        initialNote: item.note,
-                        onSave: { note in
-                            manager.saveNote(note, for: item, in: modelContext)
-                        }
-                    )
-                    .presentationDetents([.medium])
-                }
-                .task(id: basketItems.count) { await prepareShareImage() }
-        }
-        .overlay {
-            if showCompletionBadge {
-                completionOverlay
+        listContent
+            .navigationTitle(Text("basket.screen_title"))
+            // Hide the system back button — the leading "Done" button handles dismissal.
+            .navigationBarBackButtonHidden(true)
+            .toolbar { toolbarContent }
+            .sheet(item: $noteEditorItem) { item in
+                BasketItemNoteEditorView(
+                    itemName: item.name,
+                    initialNote: item.note,
+                    onSave: { note in
+                        manager.saveNote(note, for: item, in: modelContext)
+                    }
+                )
+                .presentationDetents([.medium])
             }
-        }
+            .task(id: basketItems.count) {
+                // Defer the image render until after the zoom transition settles —
+                // starting it immediately competes for CPU/GPU time mid-animation.
+                try? await Task.sleep(for: .milliseconds(400))
+                await prepareShareImage()
+            }
+            .overlay {
+                if showCompletionBadge {
+                    BasketCompletionOverlay()
+                        .transition(.asymmetric(
+                            insertion: .scale(scale: 0.85).combined(with: .opacity),
+                            removal: .opacity.combined(with: .scale(scale: 0.92))
+                        ))
+                }
+            }
     }
 
     @ViewBuilder
     private var listContent: some View {
         List {
             basketSection
-
-            if shouldShowRecentHistory {
-                recentHistorySection
-            }
         }
         .listStyle(.insetGrouped)
         .scrollContentBackground(.hidden)
         .background(Color("LaunchBackground"))
+        .animation(.spring(response: 0.32, dampingFraction: 0.85), value: basketItems.count)
+        .animation(.spring(response: 0.3, dampingFraction: 0.85), value: recipeGroups.map(\.name))
         .onAppear {
             SwipeToDeleteTip.basketItemCount = basketItems.count
             ShareBasketTip.basketItemCount = basketItems.count
@@ -95,55 +89,38 @@ struct BasketView: View {
             SwipeToDeleteTip.basketItemCount = count
             ShareBasketTip.basketItemCount = count
         }
-    }
-
-    private var completionOverlay: some View {
-        ZStack {
-            Color.black.opacity(0.08)
-                .ignoresSafeArea()
-
-            VStack(spacing: 18) {
-                ZStack {
-                    Circle()
-                        .fill(Color.green.opacity(0.12))
-                        .frame(width: 84, height: 84)
-                    Image(systemName: "checkmark.circle.fill")
-                        .font(.system(size: 54))
-                        .foregroundStyle(.green)
-                        .symbolEffect(.bounce.up.byLayer, value: showCompletionBadge)
-                }
-
-                VStack(spacing: 5) {
-                    Text("Basket completed!")
-                        .font(.title3.weight(.bold))
-                        .foregroundStyle(.primary)
-                    Text("Your items have been saved to history.")
-                        .font(.subheadline)
-                        .foregroundStyle(.secondary)
-                        .multilineTextAlignment(.center)
-                }
+        // Banner pinned at the bottom of the basket — always visible
+        // regardless of scroll position, above the home indicator.
+        .safeAreaInset(edge: .bottom, spacing: 0) {
+            if !AdsConfiguration.hideForScreenshots {
+                InlineBannerSection()
             }
-            .padding(.horizontal, 32)
-            .padding(.vertical, 32)
-            .frame(maxWidth: 320)
-            .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 28, style: .continuous))
-            .overlay {
-                RoundedRectangle(cornerRadius: 28, style: .continuous)
-                    .stroke(Color.green.opacity(0.18), lineWidth: 1)
-            }
-            .shadow(color: .black.opacity(0.12), radius: 24, y: 10)
         }
-        .allowsHitTesting(false)
     }
 
     @ViewBuilder
     private var basketSection: some View {
+        // Hero header — only when basket has items. Replaces the small section title.
+        if !basketItems.isEmpty {
+            Section {
+                BasketSummaryHeader(items: basketItems)
+                    .padding(.horizontal, 20)
+                    .padding(.top, 8)
+                    .padding(.bottom, 12)
+                    .listRowInsets(EdgeInsets())
+                    .listRowBackground(Color.clear)
+                    .listRowSeparator(.hidden)
+            }
+        }
+
         Section {
             TipView(swipeToDeleteTip)
                 .tipBackground(Color("CardBackground"))
+                .padding(.horizontal, 20)
+                .padding(.top, 4)
+                .listRowInsets(EdgeInsets())
                 .listRowBackground(Color.clear)
                 .listRowSeparator(.hidden)
-                .listRowInsets(EdgeInsets(top: 4, leading: 16, bottom: 0, trailing: 16))
         }
 
         if basketItems.isEmpty {
@@ -154,15 +131,12 @@ struct BasketView: View {
                     description: Text("basket.empty.description")
                 )
                 .transition(.opacity)
-            } header: {
-                basketSectionHeader(itemCount: 0)
+                .listRowBackground(Color.clear)
             }
         } else {
             if !regularItems.isEmpty {
                 Section {
                     rows(for: regularItems)
-                } header: {
-                    basketSectionHeader(itemCount: regularItems.count)
                 }
             }
 
@@ -176,78 +150,26 @@ struct BasketView: View {
         }
     }
 
-    private func basketSectionHeader(itemCount: Int) -> some View {
-        HStack(spacing: 12) {
-            Image(systemName: "basket.fill")
-                .font(.system(size: 15, weight: .semibold))
-                .foregroundStyle(.white)
-                .frame(width: 34, height: 34)
-                .background(
-                    LinearGradient(
-                        colors: [Color.green.mix(with: .white, by: 0.18), Color.green],
-                        startPoint: .topLeading, endPoint: .bottomTrailing
-                    ),
-                    in: RoundedRectangle(cornerRadius: 9, style: .continuous)
-                )
-                .shadow(color: Color.green.opacity(0.35), radius: 4, y: 2)
-            VStack(alignment: .leading, spacing: 1) {
-                Text("basket.section.current")
-                    .font(.subheadline.weight(.semibold))
-                    .foregroundStyle(Color(.label))
-                    .textCase(nil)
-                if itemCount > 0 {
-                    Text("\(itemCount) items")
-                        .font(.caption2)
-                        .foregroundStyle(.secondary)
-                        .textCase(nil)
-                }
-            }
-            Spacer()
-        }
-        .padding(.vertical, 6)
-    }
-
     private func recipeSectionHeader(name: String, itemCount: Int) -> some View {
-        HStack(spacing: 12) {
+        HStack(alignment: .firstTextBaseline, spacing: 8) {
             Image(systemName: "sparkles")
-                .font(.system(size: 15, weight: .semibold))
-                .foregroundStyle(.white)
-                .frame(width: 34, height: 34)
-                .background(
-                    LinearGradient(
-                        colors: [Color.purple.mix(with: .white, by: 0.18), Color.purple],
-                        startPoint: .topLeading, endPoint: .bottomTrailing
-                    ),
-                    in: RoundedRectangle(cornerRadius: 9, style: .continuous)
-                )
-                .shadow(color: Color.purple.opacity(0.35), radius: 4, y: 2)
-            VStack(alignment: .leading, spacing: 1) {
-                Text(name.capitalized)
-                    .font(.subheadline.weight(.semibold))
-                    .foregroundStyle(Color(.label))
-                    .textCase(nil)
-                Text("\(itemCount) items")
-                    .font(.caption2)
-                    .foregroundStyle(.secondary)
-                    .textCase(nil)
-            }
+                .font(.caption.weight(.semibold))
+                .foregroundStyle(Color.accentColor)
+
+            Text(name.capitalized)
+                .font(.subheadline.weight(.semibold))
+                .foregroundStyle(Color(.label))
+                .textCase(nil)
+
+            Text("\(itemCount)")
+                .font(.caption.weight(.medium))
+                .foregroundStyle(Color(.tertiaryLabel))
+                .monospacedDigit()
+                .textCase(nil)
+
             Spacer()
         }
-        .padding(.vertical, 4)
-    }
-
-    private var recentHistorySection: some View {
-        Section {
-            RecentCompletedBasketsView(
-                baskets: recentBaskets,
-                onAddBasket: addRecentBasket,
-                onAddItem: addRecentItem,
-                onHideBasket: hideRecentBasket
-            )
-            .listRowInsets(EdgeInsets())
-            .listRowBackground(Color.clear)
-            .listRowSeparator(.hidden)
-        }
+        .padding(.vertical, 2)
     }
 
     private func rows(for items: [BasketItem]) -> some View {
@@ -260,11 +182,17 @@ struct BasketView: View {
                 onEditNote: { noteEditorItem = item }
             )
             .listRowBackground(Color("CardBackground"))
-            .listRowSeparatorTint(Color.green.opacity(0.12))
+            .listRowSeparatorTint(Color.accentColor.opacity(0.12))
+            .transition(.asymmetric(
+                insertion: .scale(scale: 0.92).combined(with: .opacity).combined(with: .move(edge: .leading)),
+                removal: .opacity.combined(with: .scale(scale: 0.95))
+            ))
         }
         .onDelete { offsets in
-            for index in offsets {
-                manager.delete(items[index], in: modelContext)
+            withAnimation(.spring(response: 0.32, dampingFraction: 0.85)) {
+                for index in offsets {
+                    manager.delete(items[index], in: modelContext)
+                }
             }
         }
     }
@@ -277,7 +205,22 @@ struct BasketView: View {
             }
         }
         ToolbarItemGroup(placement: .topBarTrailing) {
-            Group {
+            // Primary CTA: complete basket — tinted accent, prominent
+            Button {
+                completeCurrentBasket()
+            } label: {
+                Label(String(localized: "action.complete"), systemImage: "checkmark")
+                    .labelStyle(.iconOnly)
+                    .font(.subheadline.weight(.semibold))
+            }
+            .buttonStyle(.borderedProminent)
+            .controlSize(.small)
+            .tint(Color("BrandGreen"))
+            .disabled(basketItems.isEmpty || isCompletingBasket)
+            .accessibilityLabel(Text("action.complete"))
+
+            // Secondary: share + clear collapsed into a Menu
+            Menu {
                 if let image = shareImage, !isPreparingShare {
                     let swiftUIImage = Image(uiImage: image)
                     ShareLink(
@@ -287,60 +230,23 @@ struct BasketView: View {
                             image: swiftUIImage
                         )
                     ) {
-                        shareButtonIcon(loading: false)
+                        Label(String(localized: "action.share", defaultValue: "Share"), systemImage: "square.and.arrow.up")
                     }
-                    .popoverTip(shareBasketTip)
-                } else {
-                    shareButtonIcon(loading: isPreparingShare)
                 }
-            }
-            .disabled(basketItems.isEmpty || isCompletingBasket)
 
-            Button {
-                completeCurrentBasket()
+                Button(role: .destructive) {
+                    manager.clearBasket(basketItems, in: modelContext)
+                } label: {
+                    Label(String(localized: "action.clear_basket"), systemImage: "trash")
+                }
             } label: {
-                Image(systemName: "checkmark")
-                    .font(.caption.weight(.bold))
-                    .foregroundStyle(.white)
-                    .frame(width: 28, height: 28)
-                    .background(
-                        LinearGradient(
-                            colors: [Color.green.mix(with: .white, by: 0.2), Color.green],
-                            startPoint: .topLeading, endPoint: .bottomTrailing
-                        )
-                    )
-                    .clipShape(Circle())
+                Image(systemName: "ellipsis")
+                    .font(.subheadline.weight(.semibold))
             }
+            .menuStyle(.borderlessButton)
+            .popoverTip(shareBasketTip)
             .disabled(basketItems.isEmpty || isCompletingBasket)
-            .accessibilityLabel(Text("action.complete"))
-
-            Button(role: .destructive) {
-                manager.clearBasket(basketItems, in: modelContext)
-            } label: {
-                Image(systemName: "trash")
-                    .font(.caption.weight(.bold))
-                    .foregroundStyle(.white)
-                    .frame(width: 28, height: 28)
-                    .background(Color.red)
-                    .clipShape(Circle())
-            }
-            .disabled(basketItems.isEmpty || isCompletingBasket)
-            .accessibilityLabel(Text("action.clear_basket"))
         }
-    }
-
-    private func shareButtonIcon(loading: Bool) -> some View {
-        ZStack {
-            Color.green.clipShape(Circle())
-            if loading {
-                ProgressView().tint(.white).scaleEffect(0.8)
-            } else {
-                Image(systemName: "square.and.arrow.up")
-                    .font(.caption.weight(.bold))
-                    .foregroundStyle(.white)
-            }
-        }
-        .frame(width: 28, height: 28)
     }
 
     @MainActor
@@ -360,74 +266,33 @@ struct BasketView: View {
         isPreparingShare = false
     }
 
-    private var isShowingFeedbackAlert: Binding<Bool> {
-        Binding(
-            get: { feedbackMessage != nil },
-            set: { newValue in
-                if !newValue {
-                    feedbackMessage = nil
-                }
-            }
-        )
-    }
-
     private func completeCurrentBasket() {
         guard !basketItems.isEmpty, !isCompletingBasket else { return }
         isCompletingBasket = true
 
-        withAnimation(.spring(response: 0.4, dampingFraction: 0.75)) {
+        // Show overlay first so its multi-stage animation + haptics begin immediately,
+        // then commit the data change. The overlay's own animation arc is ~900ms; we
+        // hold it on screen for ~1.6s total so the user reads the "saved" subtitle
+        // before it dismisses.
+        withAnimation(.spring(response: 0.42, dampingFraction: 0.78)) {
             showCompletionBadge = true
         }
 
         manager.completeBasket(basketItems, in: modelContext)
 
         Task {
-            try? await Task.sleep(for: .milliseconds(1800))
+            try? await Task.sleep(for: .milliseconds(1600))
             await MainActor.run {
-                withAnimation(.easeOut(duration: 0.3)) {
+                withAnimation(.easeOut(duration: 0.32)) {
                     showCompletionBadge = false
                 }
                 isCompletingBasket = false
+                onCompletion?()
             }
         }
     }
 
 
-    private func addRecentItem(_ item: RecentBasketItem) {
-        manager.addRecentItem(item, in: modelContext, basketItems: basketItems)
-    }
-
-    private func addRecentBasket(_ basket: RecentBasketSummary) {
-        let result = manager.addRecentBasket(basket, in: modelContext, basketItems: basketItems)
-        feedbackMessage = feedbackMessage(for: result)
-    }
-
-    private func hideRecentBasket(_ basket: RecentBasketSummary) {
-        manager.removeRecentBasket(
-            basket,
-            completedBaskets: completedBaskets,
-            completedEntries: completedEntries,
-            in: modelContext
-        )
-    }
-
-    private func feedbackMessage(for result: BulkAddResult) -> String? {
-        guard result.hasChanges else { return nil }
-
-        switch (result.insertedCount, result.mergedCount) {
-        case let (inserted, merged) where inserted > 0 && merged > 0:
-            return String(localized: "basket.feedback.added_updated_format", defaultValue: "Added %lld new items. Updated %lld items already in your basket.", locale: locale)
-                .replacingOccurrences(of: "%lld", with: "\(inserted)", options: [], range: String(localized: "basket.feedback.added_updated_format", defaultValue: "Added %lld new items. Updated %lld items already in your basket.", locale: locale).range(of: "%lld"))
-                .replacingOccurrences(of: "%lld", with: "\(merged)")
-        case let (_, merged) where merged > 0:
-            return String(localized: "basket.feedback.all_updated")
-        case let (inserted, _) where inserted > 0:
-            return String(localized: "basket.feedback.added_items_format", defaultValue: "Added %lld items to your basket.", locale: locale)
-                .replacingOccurrences(of: "%lld", with: "\(inserted)")
-        default:
-            return nil
-        }
-    }
 }
 
 #Preview {

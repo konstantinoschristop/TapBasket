@@ -26,13 +26,13 @@
                             <!-- App name -->
                             <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Taplist" textAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="lbl-app-name">
                                 <rect key="frame" x="20" y="486" width="353" height="28"/>
-                                <fontDescription key="fontDescription" type="system" pointSize="22" weight="semibold"/>
-                                <color key="textColor" red="1" green="1" blue="1" alpha="0.90" colorSpace="custom" customColorSpace="sRGB"/>
+                                <fontDescription key="fontDescription" type="system" pointSize="24" weight="bold"/>
+                                <color key="textColor" red="0.110" green="0.110" blue="0.118" alpha="1.0" colorSpace="custom" customColorSpace="sRGB"/>
                                 <nil key="highlightedColor"/>
                             </label>
                         </subviews>
-                        <!-- Green background matching icon gradient mid-tone -->
-                        <color key="backgroundColor" red="0.10" green="0.50" blue="0.35" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                        <!-- Cream paper background, matches LaunchBackground asset -->
+                        <color key="backgroundColor" red="0.937" green="0.929" blue="0.918" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                         <constraints>
                             <!-- Basket: centered, slightly above middle -->
                             <constraint firstItem="MwX-W8-Peq" firstAttribute="centerX" secondItem="Ze5-6b-2t3" secondAttribute="centerX" id="cx-basket"/>

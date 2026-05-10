@@ -2,13 +2,17 @@ import TipKit
 
 // MARK: - Add Item Tip
 
-/// Shown above the browse grid on first launch.
+/// Shown above the browse grid on first launch. Teaches the tap-to-add gesture
+/// model — non-obvious for newcomers since the grid looks like a static menu.
+///
+/// The message explicitly mentions all three gestures (tap, long-press, re-tap)
+/// because anything less leads users to assume the tile is binary toggle-only.
 struct AddItemTip: Tip {
     var title: Text {
-        Text("Tap to add to basket")
+        Text("tip.add_item.title")
     }
     var message: Text? {
-        Text("Tap any item once to add it. Tap again to increase the quantity.")
+        Text("tip.add_item.message")
     }
     var image: Image? {
         Image(systemName: "hand.tap.fill")
@@ -21,10 +25,10 @@ struct AddItemTip: Tip {
 /// No parameter rules needed — the button itself is only visible when AI is available.
 struct RecipeAITip: Tip {
     var title: Text {
-        Text("AI Shopping Lists")
+        Text("tip.recipe_ai.title")
     }
     var message: Text? {
-        Text("Type any recipe and Taplist builds your shopping list automatically.")
+        Text("tip.recipe_ai.message")
     }
     var image: Image? {
         Image(systemName: "sparkles")
@@ -38,10 +42,10 @@ struct SwipeToDeleteTip: Tip {
     @Parameter static var basketItemCount: Int = 0
 
     var title: Text {
-        Text("Swipe to remove")
+        Text("tip.swipe_to_delete.title")
     }
     var message: Text? {
-        Text("Swipe left on any basket item to remove it.")
+        Text("tip.swipe_to_delete.message")
     }
     var image: Image? {
         Image(systemName: "trash")
@@ -59,10 +63,10 @@ struct ShareBasketTip: Tip {
     @Parameter static var basketItemCount: Int = 0
 
     var title: Text {
-        Text("Share your list")
+        Text("tip.share_basket.title")
     }
     var message: Text? {
-        Text("Export your basket as an image to share with friends and family.")
+        Text("tip.share_basket.message")
     }
     var image: Image? {
         Image(systemName: "square.and.arrow.up")

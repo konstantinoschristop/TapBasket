@@ -1,5 +1,11 @@
 import SwiftUI
 
+/// A single row in the basket list.
+///
+/// Layout: emoji · name (struck through when checked) + optional note line ·
+/// trailing quantity stepper. Tap row toggles checked. Note editing and delete
+/// move to the row's context menu and leading-edge swipe action so the row
+/// itself stays uncluttered.
 struct BasketRowView: View {
     let item: BasketItem
     let onToggleChecked: () -> Void
@@ -7,42 +13,54 @@ struct BasketRowView: View {
     let onDecrement: () -> Void
     let onEditNote: () -> Void
 
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+
+    /// Brief BrandGreen wash that plays when the user just checked the row off.
+    /// Fades out automatically after the animation, leaving the row in its
+    /// dimmed/struck-through "checked" state.
+    @State private var checkPulse = false
+
     private var displayName: String {
         ProductDisplayNameProvider.displayName(for: item.name)
+    }
+
+    private var hasNote: Bool {
+        item.note?.isEmpty == false
     }
 
     var body: some View {
         HStack(spacing: 12) {
             Text(item.emoji)
                 .font(.title2)
-                .scaleEffect(item.isChecked ? 0.9 : 1)
+                .scaleEffect(item.isChecked ? 0.92 : 1)
+                .frame(width: 30)
 
-            VStack(alignment: .leading, spacing: 4) {
-                Text(displayName)
-                    .strikethrough(item.isChecked)
-                    .foregroundStyle(item.isChecked ? .secondary : .primary)
+            VStack(alignment: .leading, spacing: 3) {
+                HStack(spacing: 6) {
+                    Text(displayName)
+                        .font(.body)
+                        .strikethrough(item.isChecked)
+                        .foregroundStyle(item.isChecked ? Color(.secondaryLabel) : Color(.label))
+                        .lineLimit(1)
+
+                    if hasNote {
+                        Image(systemName: "note.text")
+                            .font(.caption2.weight(.semibold))
+                            .foregroundStyle(Color(.tertiaryLabel))
+                    }
+                }
 
                 if let note = item.note, !note.isEmpty {
                     Text(note)
                         .font(.caption)
-                        .foregroundStyle(.secondary)
+                        .foregroundStyle(Color(.secondaryLabel))
                         .lineLimit(1)
                         .transition(.opacity.combined(with: .move(edge: .top)))
                 }
             }
             .animation(.easeInOut(duration: 0.18), value: item.note)
 
-            Spacer()
-
-            Button(action: onEditNote) {
-                Image(systemName: item.note?.isEmpty == false ? "note.text" : "square.and.pencil")
-                    .font(.subheadline.weight(.semibold))
-                    .foregroundStyle(item.note?.isEmpty == false ? Color.green : .secondary)
-                    .padding(6)
-                    .background(Color("LaunchBackground").opacity(item.note?.isEmpty == false ? 1 : 0.01))
-                    .clipShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
-            }
-            .buttonStyle(.plain)
+            Spacer(minLength: 8)
 
             QuantityStepperView(
                 quantity: item.quantity,
@@ -50,23 +68,47 @@ struct BasketRowView: View {
                 onIncrement: onIncrement
             )
         }
-        .padding(.vertical, 10)
-        .padding(.leading, 12)
-        .overlay(alignment: .leading) {
-            RoundedRectangle(cornerRadius: 2, style: .continuous)
-                .fill(
-                    LinearGradient(
-                        colors: [Color.green.opacity(item.isChecked ? 0.2 : 0.55), Color.green.opacity(0.1)],
-                        startPoint: .top, endPoint: .bottom
-                    )
-                )
-                .frame(width: 3)
-                .padding(.vertical, 6)
-        }
+        .padding(.vertical, 6)
+        .padding(.horizontal, 4)
         .contentShape(Rectangle())
-        .opacity(item.isChecked ? 0.6 : 1)
-        .scaleEffect(item.isChecked ? 0.992 : 1)
-        .animation(.spring(response: 0.25, dampingFraction: 0.82), value: item.isChecked)
-        .onTapGesture(perform: onToggleChecked)
+        // BrandGreen wash on tick — the row briefly glows green to reward the
+        // check-off, then settles into the dimmed checked state.
+        .background {
+            RoundedRectangle(cornerRadius: 8, style: .continuous)
+                .fill(Color("BrandGreen"))
+                .opacity(checkPulse ? 0.18 : 0)
+                .padding(.horizontal, -8)
+                .animation(.taplistTap, value: checkPulse)
+        }
+        .opacity(item.isChecked ? 0.55 : 1)
+        .animation(.taplistTap, value: item.isChecked)
+        .onTapGesture {
+            // Only pulse when transitioning UNchecked → checked. Unchecking
+            // shouldn't celebrate. Skip the pulse under reduce-motion — the
+            // dimmed state + strikethrough already communicate the toggle.
+            if !item.isChecked && !reduceMotion {
+                checkPulse = true
+                Task {
+                    try? await Task.sleep(for: .milliseconds(550))
+                    await MainActor.run { checkPulse = false }
+                }
+            }
+            onToggleChecked()
+        }
+        .swipeActions(edge: .leading, allowsFullSwipe: false) {
+            Button { onEditNote() } label: {
+                Label(hasNote ? "Edit note" : "Add note", systemImage: "note.text")
+            }
+            .tint(Color.accentColor)
+        }
+        .contextMenu {
+            Button { onEditNote() } label: {
+                Label(hasNote ? "Edit note" : "Add note", systemImage: "note.text")
+            }
+            Button { onToggleChecked() } label: {
+                Label(item.isChecked ? "Uncheck" : "Mark checked",
+                      systemImage: item.isChecked ? "circle" : "checkmark.circle")
+            }
+        }
     }
 }

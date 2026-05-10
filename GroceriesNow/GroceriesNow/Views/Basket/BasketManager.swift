@@ -74,6 +74,20 @@ final class BasketManager {
         return previousQuantity
     }
 
+    /// Removes the basket item matching `name` (case-insensitive) entirely, regardless of quantity.
+    /// Returns the previous quantity (0 if no match was found).
+    @discardableResult
+    func removeItem(named name: String, in modelContext: ModelContext, basketItems: [BasketItem]) -> Int {
+        guard let existing = basketItems.first(where: { $0.name.caseInsensitiveCompare(name) == .orderedSame }) else {
+            return 0
+        }
+        let previousQuantity = existing.quantity
+        modelContext.delete(existing)
+        try? modelContext.save()
+        haptics.itemRemoved()
+        return previousQuantity
+    }
+
     func undoAddItem(named name: String, previousQuantity: Int, in modelContext: ModelContext, basketItems: [BasketItem]) {
         guard let existing = basketItems.first(where: { $0.name.caseInsensitiveCompare(name) == .orderedSame }) else { return }
 
@@ -147,8 +161,17 @@ final class BasketManager {
             modelContext.delete(item)
         }
 
+        RecommendationEngine.shared.record(
+            completedItemNames: items.map(\.name),
+            at: completedBasket.completedAt,
+            in: modelContext
+        )
+
         try? modelContext.save()
-        haptics.basketCompleted()
+        // Haptic feedback for completion is driven by the BasketCompletionOverlay
+        // (light tap on enter, success notification when the checkmark lands) so
+        // the audio/haptic sequence syncs with the visual animation rather than
+        // firing instantly when this function runs.
     }
 
     func topPurchaseHints(from entries: [CompletedBasketEntry], limit: Int = 3) -> [PurchaseHint] {
@@ -343,10 +366,41 @@ final class BasketManager {
         triggeredBy itemName: String,
         entries: [CompletedBasketEntry],
         basketItems: [BasketItem],
+        in context: ModelContext,
         limit: Int = 2
     ) -> [BoughtTogetherSuggestion] {
-        let currentBasketNames = Set(basketItems.map { $0.name.lowercased() })
+        let excluding = Set(basketItems.map(\.name))
 
+        // Primary: try a bundle of 3–5 items first
+        if let bundleMembers = RecommendationEngine.shared.bestBundle(
+            for: itemName,
+            excluding: excluding,
+            in: context
+        ) {
+            let allItems = ([itemName] + bundleMembers).map { $0.capitalized }.sorted()
+            return [BoughtTogetherSuggestion(
+                id: allItems.joined(separator: "|"),
+                itemNames: allItems,
+                occurrenceCount: bundleMembers.count
+            )]
+        }
+
+        // Secondary: single best suggestion
+        if let suggested = RecommendationEngine.shared.bestSuggestion(
+            for: itemName,
+            excluding: excluding,
+            in: context
+        ) {
+            let pair = [itemName.capitalized, suggested.capitalized].sorted()
+            return [BoughtTogetherSuggestion(
+                id: pair.joined(separator: "|"),
+                itemNames: pair,
+                occurrenceCount: 1
+            )]
+        }
+
+        // Fallback: legacy co-occurrence analysis from CompletedBasketEntry history
+        let currentBasketNames = Set(basketItems.map { $0.name.lowercased() })
         return boughtTogetherSuggestions(from: entries, limit: 8)
             .filter { suggestion in
                 let lowercasedNames = suggestion.itemNames.map { $0.lowercased() }

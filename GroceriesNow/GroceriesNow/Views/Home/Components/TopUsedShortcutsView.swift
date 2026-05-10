@@ -1,4 +1,32 @@
 import SwiftUI
+import UIKit
+
+// MARK: - UIKit clip breaker
+
+/// `UITableViewCell` (which backs every SwiftUI List row) sets
+/// `clipsToBounds = true` at the UIKit level. SwiftUI's `scrollClipDisabled()`
+/// only controls SwiftUI-level clipping and cannot override this. This view
+/// walks up the UIKit hierarchy on `didMoveToWindow` and disables clipping on
+/// every ancestor until it reaches the List's own `UIScrollView`, so a
+/// horizontal `ScrollView` inside a List row can visually bleed to the screen
+/// edge.
+private final class _ClipBreakerView: UIView {
+    override func didMoveToWindow() {
+        super.didMoveToWindow()
+        guard window != nil else { return }
+        var node: UIView? = superview
+        while let v = node {
+            v.clipsToBounds = false
+            if v is UIScrollView { break }
+            node = v.superview
+        }
+    }
+}
+
+private struct ListCellClipBreaker: UIViewRepresentable {
+    func makeUIView(context: Context) -> _ClipBreakerView { _ClipBreakerView() }
+    func updateUIView(_ uiView: _ClipBreakerView, context: Context) {}
+}
 
 struct TopUsedShortcutItem: Identifiable {
     let id: UUID
@@ -10,71 +38,42 @@ struct TopUsedShortcutItem: Identifiable {
 
 struct TopUsedShortcutsView: View {
     let items: [TopUsedShortcutItem]
+    /// Set of lowercased item names currently in the basket — drives the
+    /// "added" visual state per avatar. Items stay visible regardless.
+    let inBasketNames: Set<String>
     let onTapItem: (TopUsedShortcutItem) -> Void
     let onAddAll: () -> Void
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 12) {
+        VStack(alignment: .leading, spacing: 14) {
             header
                 .padding(.horizontal, 16)
-            grid
-                .safeAreaPadding(.horizontal, 16)
+            avatarRow
         }
-        .padding(.vertical, 16)
-        .background {
-            RoundedRectangle(cornerRadius: 20, style: .continuous)
-                .fill(
-                    LinearGradient(
-                        colors: [
-                            Color.orange.opacity(0.07),
-                            Color.yellow.opacity(0.04),
-                            Color("CardBackground")
-                        ],
-                        startPoint: .topLeading,
-                        endPoint: .bottomTrailing
-                    )
-                )
-        }
-        .overlay {
-            RoundedRectangle(cornerRadius: 20, style: .continuous)
-                .stroke(
-                    LinearGradient(
-                        colors: [
-                            Color(red: 1.0, green: 0.78, blue: 0.18).opacity(0.7),
-                            Color(red: 1.0, green: 0.48, blue: 0.08).opacity(0.35)
-                        ],
-                        startPoint: .topLeading,
-                        endPoint: .bottomTrailing
-                    ),
-                    lineWidth: 1.5
-                )
-        }
-        .shadow(color: Color.orange.opacity(0.15), radius: 12, y: 4)
+        .padding(.vertical, 4)
     }
 
+    /// True when every visible regular is already in the basket — "Add all"
+    /// would do nothing, so we suppress the button.
+    private var allInBasket: Bool {
+        items.prefix(10).allSatisfy { inBasketNames.contains($0.name.lowercased()) }
+    }
+
+    /// Header matches SmartStart and BoughtTogether: leading icon in an
+    /// accent-tinted rounded square + headline title + caption subtitle +
+    /// trailing accent capsule action. One pattern across all home widgets.
     private var header: some View {
         HStack(spacing: 12) {
-            Image(systemName: "star.fill")
-                .font(.system(size: 15, weight: .semibold))
-                .foregroundStyle(.white)
-                .frame(width: 34, height: 34)
-                .background(
-                    LinearGradient(
-                        colors: [
-                            Color(red: 1.0, green: 0.78, blue: 0.18),
-                            Color(red: 1.0, green: 0.48, blue: 0.08)
-                        ],
-                        startPoint: .topLeading,
-                        endPoint: .bottomTrailing
-                    ),
-                    in: RoundedRectangle(cornerRadius: 9, style: .continuous)
-                )
-                .shadow(color: Color.orange.opacity(0.4), radius: 5, y: 2)
+            Image(systemName: "repeat.circle.fill")
+                .font(.system(size: 14, weight: .semibold))
+                .foregroundStyle(Color.accentColor)
+                .frame(width: 32, height: 32)
+                .background(Color.accentColor.opacity(0.12), in: RoundedRectangle(cornerRadius: 9, style: .continuous))
 
             VStack(alignment: .leading, spacing: 2) {
                 Text("regulars.header.title")
-                    .font(.subheadline.weight(.semibold))
-
+                    .font(.headline)
+                    .foregroundStyle(Color(.label))
                 Text("regulars.header.subtitle")
                     .font(.caption)
                     .foregroundStyle(.secondary)
@@ -82,61 +81,162 @@ struct TopUsedShortcutsView: View {
 
             Spacer()
 
-            Button(action: onAddAll) {
-                Text("Add all")
-                    .font(.caption.weight(.semibold))
-                    .foregroundStyle(.white)
-                    .padding(.horizontal, 10)
-                    .padding(.vertical, 5)
-                    .background(Color.accentColor, in: Capsule())
+            if !allInBasket {
+                Button(action: onAddAll) {
+                    Text("action.add_all")
+                        .font(.subheadline.weight(.semibold))
+                        .foregroundStyle(Color.accentColor)
+                        .padding(.horizontal, 12)
+                        .padding(.vertical, 6)
+                        .background(Color.accentColor.opacity(0.12), in: Capsule())
+                }
+                .buttonStyle(.spring(scale: 0.94))
+                .transition(.scale.combined(with: .opacity))
             }
-            .buttonStyle(.plain)
         }
+        .animation(.taplistTransition, value: allInBasket)
     }
 
-    private var grid: some View {
+    private var avatarRow: some View {
         ScrollView(.horizontal, showsIndicators: false) {
-            HStack(spacing: 8) {
-                ForEach(items.prefix(8)) { item in
-                    chip(for: item)
+            HStack(alignment: .top, spacing: 14) {
+                // Up to 10 essentials. Items don't get filtered out when added —
+                // they're permanent affordances; the avatar shows an "added"
+                // state instead.
+                ForEach(items.prefix(10)) { item in
+                    RegularAvatar(
+                        item: item,
+                        isInBasket: inBasketNames.contains(item.name.lowercased()),
+                        onTap: onTapItem
+                    )
+                    .transition(.scale.combined(with: .opacity))
                 }
             }
             .padding(.vertical, 4)
+            .animation(.spring(response: 0.4, dampingFraction: 0.85), value: items.map(\.id))
         }
-        .contentMargins(.horizontal, 2, for: .scrollContent)
+        // No content margins — the scroll content reaches the full row width
+        // so the last avatar can scroll right up to the screen edge.
+        .scrollClipDisabled()
+        // Breaks UITableViewCell's clipsToBounds at the UIKit level so
+        // avatars can bleed visually past the row boundary to the screen edge.
+        .background(ListCellClipBreaker())
     }
+}
 
-    private func chip(for item: TopUsedShortcutItem) -> some View {
-        Button { onTapItem(item) } label: {
-            HStack(spacing: 7) {
-                Text(item.emoji)
-                    .font(.body)
+/// Single circular avatar in the Regulars row.
+///
+/// Tap toggles membership in the basket (matches QuickItemTile). When the
+/// item is in the basket, a small BrandGreen checkmark badge appears in the
+/// top-right corner and the circle gains a thin green ring.
+private struct RegularAvatar: View {
+    let item: TopUsedShortcutItem
+    let isInBasket: Bool
+    let onTap: (TopUsedShortcutItem) -> Void
+
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+
+    @State private var showFlash = false
+    @State private var pulseToken = 0
+
+    var body: some View {
+        Button {
+            // Light for add, soft for remove (matches BasketHaptics + tile behavior).
+            let style: UIImpactFeedbackGenerator.FeedbackStyle = isInBasket ? .soft : .light
+            UIImpactFeedbackGenerator(style: style).impactOccurred()
+
+            // Visual celebration only on add — don't pulse on remove.
+            if !isInBasket && !reduceMotion {
+                pulseToken &+= 1
+                showFlash = true
+                Task {
+                    try? await Task.sleep(for: .milliseconds(550))
+                    await MainActor.run { showFlash = false }
+                }
+            }
+
+            // Avatar stays in the row regardless of whether we're adding or
+            // removing — no need to delay the callback to wait for an exit
+            // animation.
+            onTap(item)
+        } label: {
+            VStack(spacing: 6) {
+                ZStack {
+                    Circle()
+                        .fill(Color("CardBackground"))
+                    Circle()
+                        .strokeBorder(
+                            isInBasket ? Color("BrandGreen").opacity(0.6) : Color(.separator).opacity(0.25),
+                            lineWidth: isInBasket ? 1.5 : 0.5
+                        )
+                    Text(item.emoji)
+                        .font(.system(size: 32))
+                }
+                .frame(width: 64, height: 64)
+                // Brief green glow over the avatar on add
+                .overlay {
+                    Circle()
+                        .fill(Color("BrandGreen"))
+                        .opacity(showFlash ? 0.22 : 0)
+                        .animation(.spring(response: 0.22, dampingFraction: 0.7), value: showFlash)
+                        .allowsHitTesting(false)
+                }
+                // Expanding green ring on each tap
+                .overlay {
+                    AvatarPulseRing(token: pulseToken)
+                        .allowsHitTesting(false)
+                }
+                // Top-right BrandGreen checkmark badge when added — same
+                // visual language as QuickItemTile.
+                .overlay(alignment: .topTrailing) {
+                    if isInBasket {
+                        Image(systemName: "checkmark")
+                            .font(.system(size: 9, weight: .bold))
+                            .foregroundStyle(.white)
+                            .frame(width: 18, height: 18)
+                            .background(Color("BrandGreen"), in: Circle())
+                            .overlay {
+                                Circle().strokeBorder(Color("CardBackground"), lineWidth: 1.5)
+                            }
+                            .offset(x: 2, y: -2)
+                            .transition(.scale.combined(with: .opacity))
+                            .symbolEffect(.bounce, options: .nonRepeating, value: isInBasket)
+                    }
+                }
+                .animation(.taplistCelebrate, value: isInBasket)
 
                 Text(ProductDisplayNameProvider.displayName(for: item.name))
-                    .font(.subheadline.weight(.medium))
+                    .font(.caption.weight(.medium))
                     .foregroundStyle(.primary)
                     .lineLimit(1)
+                    .frame(width: 72)
             }
-            .padding(.horizontal, 14)
-            .padding(.vertical, 10)
-            .background(Color("LaunchBackground"), in: Capsule())
-            .overlay(Capsule().stroke(tintColor(for: item.category).opacity(0.25), lineWidth: 1))
         }
-        .buttonStyle(.plain)
+        .buttonStyle(.spring(scale: 0.92))
+    }
+}
+
+/// Circular green ring that expands + fades each time `token` changes.
+private struct AvatarPulseRing: View {
+    let token: Int
+
+    @State private var scale: CGFloat = 1
+    @State private var opacity: Double = 0
+
+    var body: some View {
+        Circle()
+            .strokeBorder(Color("BrandGreen"), lineWidth: 2)
+            .scaleEffect(scale)
+            .opacity(opacity)
+            .onChange(of: token) { _, _ in play() }
     }
 
-    private func tintColor(for category: QuickItemCategory) -> Color {
-        switch category.tintName {
-        case "green":  return .green
-        case "red":    return .red
-        case "orange": return .orange
-        case "cyan":   return .cyan
-        case "indigo": return .indigo
-        case "teal":   return .teal
-        case "pink":   return .pink
-        case "gray":   return .gray
-        case "purple": return .purple
-        default:       return .blue
+    private func play() {
+        scale = 1
+        opacity = 0.9
+        withAnimation(.easeOut(duration: 0.5)) {
+            scale = 1.18
+            opacity = 0
         }
     }
 }

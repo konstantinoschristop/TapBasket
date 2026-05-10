@@ -42,6 +42,8 @@ struct RecipeBasketSheet: View {
                 if !service.isLoading {
                     if let error = service.errorMessage {
                         errorRow(error)
+                    } else if service.isInvalidDish {
+                        notARecipeRow
                     } else if service.hasSearched && resolvedIngredients.isEmpty {
                         emptyRow
                     }
@@ -55,9 +57,26 @@ struct RecipeBasketSheet: View {
                     addButton
                 }
             }
+            // Text field cleared — reset to initial state
+            .onChange(of: recipeText) { _, newValue in
+                if newValue.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+                    service.cancel()
+                    resolvedIngredients = []
+                    selectedNames = []
+                    service.reset()
+                }
+            }
             // New generation starting — reset everything
             .onChange(of: service.isLoading) { _, loading in
                 if loading {
+                    resolvedIngredients = []
+                    selectedNames = []
+                }
+            }
+            // Don't save invalid dish queries to history
+            .onChange(of: service.isInvalidDish) { _, invalid in
+                if invalid {
+                    // clear any streamed-in state so nothing leaks through
                     resolvedIngredients = []
                     selectedNames = []
                 }
@@ -251,6 +270,24 @@ struct RecipeBasketSheet: View {
         }
     }
 
+    private var notARecipeRow: some View {
+        Section {
+            VStack(alignment: .leading, spacing: 6) {
+                HStack(spacing: 10) {
+                    Image(systemName: "fork.knife.slash")
+                        .foregroundStyle(.orange)
+                    Text(String(localized: "recipe.sheet.not_a_recipe"))
+                        .foregroundStyle(.primary)
+                        .fontWeight(.medium)
+                }
+                Text(String(localized: "recipe.sheet.not_a_recipe_hint"))
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+            }
+            .padding(.vertical, 4)
+        }
+    }
+
     private var emptyRow: some View {
         Section {
             HStack(spacing: 10) {
@@ -288,7 +325,9 @@ struct RecipeBasketSheet: View {
                     count == 0 ? Color.secondary.opacity(0.2) : Color.accentColor,
                     in: RoundedRectangle(cornerRadius: 14, style: .continuous)
                 )
-                .foregroundStyle(count == 0 ? Color.secondary : Color.white)
+                // Color(.systemBackground) inverts with the accent (charcoal in
+                // light, white in dark) so the label always reads.
+                .foregroundStyle(count == 0 ? Color.secondary : Color(.systemBackground))
         }
         .buttonStyle(.plain)
         .disabled(count == 0)

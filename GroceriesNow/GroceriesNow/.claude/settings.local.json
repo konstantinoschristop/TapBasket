@@ -18,7 +18,16 @@
       "Bash(sed -i '' 's/k\\\\.christopoulos\\\\.GroceriesNowTests;/k.christopoulos.TaplistTests;/g' /Users/k.christopoulos/Desktop/MyProjects/TapBasket/GroceriesNow/GroceriesNow.xcodeproj/project.pbxproj)",
       "Bash(sed -i '' 's/k\\\\.christopoulos\\\\.GroceriesNowUITests;/k.christopoulos.TaplistUITests;/g' /Users/k.christopoulos/Desktop/MyProjects/TapBasket/GroceriesNow/GroceriesNow.xcodeproj/project.pbxproj)",
       "Bash(sed -i '' 's/Color\\(\\\\.secondarySystemGroupedBackground\\)/Color\\(\"\"CardBackground\"\"\\)/g' \"/Users/k.christopoulos/Desktop/MyProjects/TapBasket/GroceriesNow/GroceriesNow/Views/Home/MainGridView.swift\" \"/Users/k.christopoulos/Desktop/MyProjects/TapBasket/GroceriesNow/GroceriesNow/Views/Home/Components/QuickItemTile.swift\" \"/Users/k.christopoulos/Desktop/MyProjects/TapBasket/GroceriesNow/GroceriesNow/Views/Home/Components/TopUsedShortcutsView.swift\" \"/Users/k.christopoulos/Desktop/MyProjects/TapBasket/GroceriesNow/GroceriesNow/Views/Home/Components/ProPaywallSheet.swift\" \"/Users/k.christopoulos/Desktop/MyProjects/TapBasket/GroceriesNow/GroceriesNow/Views/Basket/BasketView.swift\")",
-      "Bash(__NEW_LINE_abbbe385c05d8cbd__ sed:*)"
+      "Bash(__NEW_LINE_abbbe385c05d8cbd__ sed:*)",
+      "Read(//Users/k.christopoulos/Desktop/MyProjects/TapBasket/**)",
+      "Bash(xcodebuild -project GroceriesNow.xcodeproj -scheme GroceriesNow -destination 'generic/platform=iOS Simulator' -quiet build)",
+      "Bash(xcodebuild -project /Users/k.christopoulos/Desktop/MyProjects/TapBasket/GroceriesNow/GroceriesNow.xcodeproj -scheme GroceriesNow -destination 'generic/platform=iOS Simulator' -quiet build)",
+      "Bash(python3 -c 'from PIL import Image, ImageDraw, ImageFont; print\\(\"PIL OK\"\\)')",
+      "Bash(swift /tmp/generate_icon.swift /tmp/taplist_assets)",
+      "Bash(chmod +x /tmp/resize_icons.sh)",
+      "Bash(/tmp/resize_icons.sh Assets.xcassets/AppIcon.appiconset)",
+      "Bash(sips -g pixelWidth -g pixelHeight Assets.xcassets/AppIcon.appiconset/icon-ios-60x60@3x.png Assets.xcassets/AppIcon.appiconset/icon-ios-83.5x83.5@2x.png Assets.xcassets/AppIcon.appiconset/icon-watchos-1024x1024.png)",
+      "Bash(sips -g pixelWidth Assets.xcassets/LaunchBasket.imageset/LaunchBasket@2x.png)"
     ]
   }
 }

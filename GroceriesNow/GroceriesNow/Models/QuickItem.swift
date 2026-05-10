@@ -72,13 +72,15 @@ enum QuickItemCategory: String, CaseIterable, Codable {
     ]
 }
 
+/// CloudKit-ready: no `@Attribute(.unique)`, every stored property has a default.
+/// Uniqueness of `id` is enforced implicitly via SwiftData's primary key.
 @Model
 final class QuickItem {
-    @Attribute(.unique) var id: UUID
-    var name: String
-    var emoji: String
-    var sortOrder: Int
-    var categoryRawValue: String
+    var id: UUID = UUID()
+    var name: String = ""
+    var emoji: String = ""
+    var sortOrder: Int = 0
+    var categoryRawValue: String = QuickItemCategory.custom.rawValue
 
     var category: QuickItemCategory {
         get { QuickItemCategory(rawValue: categoryRawValue) ?? .custom }

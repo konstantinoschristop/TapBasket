@@ -2,6 +2,23 @@ import SwiftUI
 import SwiftData
 import TipKit
 
+/// Snapshot of the last add, used to drive the "Undo" affordance on the
+/// basket button. We capture enough to build a localized label and to call
+/// `BasketManager.undoAddItem` without having to look anything up again.
+private struct LastAddRecord {
+    let name: String          // canonical name (matches BasketItem.name)
+    let displayName: String   // localized display
+    let emoji: String
+    let previousQuantity: Int // 0 = was a fresh insert, N = was already at N
+    let addedAt: Date
+
+    /// Undo is only valid for ~30 seconds — beyond that the user has likely
+    /// moved on and an unexpected revert would be jarring.
+    var isFresh: Bool {
+        Date().timeIntervalSince(addedAt) < 30
+    }
+}
+
 private struct QuickItemSection: Identifiable {
     let category: QuickItemCategory
     let items: [QuickItem]
@@ -16,32 +33,40 @@ struct MainGridView: View {
     @Query(sort: [SortDescriptor(\QuickItem.sortOrder, order: .forward)]) private var quickItems: [QuickItem]
     @Query(sort: [SortDescriptor(\BasketItem.name, order: .forward)]) private var basketItems: [BasketItem]
     @Query(sort: [SortDescriptor(\CompletedBasketEntry.completedAt, order: .reverse)]) private var completedEntries: [CompletedBasketEntry]
+    @Query(sort: [SortDescriptor(\CompletedBasket.completedAt, order: .reverse)]) private var completedBaskets: [CompletedBasket]
 
     @State private var basketManager = BasketManager()
+    @Namespace private var basketZoom
     @State private var showBasket = false
     @State private var searchText = ""
     @State private var showManualAddSheet = false
     @State private var expandedCategories = Set<QuickItemCategory>()
-    @State private var activeContextualSuggestionID: String?
-    @State private var contextualTriggerName: String?
-    @State private var contextualSuggestionTask: Task<Void, Never>?
-    @State private var contextualSuggestionDuration: TimeInterval = 4.5
-
-    @State private var activeSnackBarState: SnackBarState?
-    @State private var queuedSnackBarStates: [SnackBarState] = []
-    @State private var snackBarTask: Task<Void, Never>?
-    @State private var snackBarDisplayDuration: TimeInterval = 2.6
     @State private var basketButtonScale: CGFloat = 1
+    /// Last single-item add — surfaces an "Undo" action via long-press on the
+    /// basket button. Cleared on bulk adds, removes, or basket completion so
+    /// undo never reaches across context boundaries.
+    @State private var lastAdd: LastAddRecord?
+    /// Brief "Logged" confirmation pill shown when returning home after a
+    /// completed basket. Auto-dismisses ~2.5s later.
+    @State private var loggedPillVisible = false
+    @State private var loggedPillDismissTask: Task<Void, Never>?
     @State private var cachedCategoryUsage: [QuickItemCategory: Int] = [:]
+    @State private var smartStartItems: [QuickItem] = []
     @Environment(PurchaseManager.self) private var purchaseManager
     @State private var showRecipeSheet = false
     @State private var showPaywall = false
+    @State private var showRecentBasketsSheet = false
     @State private var isRecipeAvailable = false
+    #if DEBUG
+    @State private var showDebugMenu = false
+    @AppStorage("flag_aiRecipeRequiresPro") private var aiRecipeRequiresPro: Bool = true
+    #endif
+    @AppStorage("collapsedCategoryKeys") private var collapsedCategoryKeys: String = ""
 
     private let addItemTip = AddItemTip()
     private let recipeAITip = RecipeAITip()
 
-    private let gridColumns = Array(repeating: GridItem(.flexible(), spacing: 10), count: 3)
+    private let gridColumns = Array(repeating: GridItem(.flexible(), spacing: 12), count: 2)
 
     private var trimmedSearch: String {
         searchText.trimmingCharacters(in: .whitespacesAndNewlines)
@@ -49,10 +74,6 @@ struct MainGridView: View {
 
     private var isSearching: Bool {
         !trimmedSearch.isEmpty
-    }
-
-    private var isShowingPopupOverlay: Bool {
-        activeSnackBarState != nil || !contextualBoughtTogetherItems.isEmpty
     }
 
     private var filteredQuickItems: [QuickItem] {
@@ -64,6 +85,12 @@ struct MainGridView: View {
 
     private var basketItemNames: Set<String> {
         Set(basketItems.map { $0.name.lowercased() })
+    }
+
+    /// Quick lookup of in-basket quantities so each tile can show its ×N badge
+    /// without doing an O(n) scan per tile.
+    private var basketQuantitiesByName: [String: Int] {
+        Dictionary(uniqueKeysWithValues: basketItems.map { ($0.name.lowercased(), $0.quantity) })
     }
 
     private var sectionedQuickItems: [QuickItemSection] {
@@ -96,6 +123,16 @@ private var hasExactNameMatch: Bool {
         basketManager.topPurchaseHints(from: completedEntries)
     }
 
+    /// Recent shopping trips surfaced via the toolbar `recentBasketsMenu`.
+    /// Capped at 10 — older trips still influence recommendations but aren't surfaced.
+    private var recentBasketSummaries: [RecentBasketSummary] {
+        basketManager.recentBasketSummaries(
+            baskets: completedBaskets,
+            entries: completedEntries,
+            limit: 10
+        )
+    }
+
     private var topShortcutItems: [TopUsedShortcutItem] {
         let shortcuts = basketManager.topUsedShortcuts(from: completedEntries)
         guard !shortcuts.isEmpty else { return [] }
@@ -105,9 +142,11 @@ private var hasExactNameMatch: Bool {
             uniquingKeysWith: { first, _ in first }
         )
 
+        // Note: we deliberately don't filter out items already in the basket.
+        // Regulars are essential affordances — they belong on the home screen
+        // permanently. The avatar shows an "added" state instead.
         return shortcuts.compactMap { shortcut -> TopUsedShortcutItem? in
             guard let item = itemsByName[shortcut.itemName.lowercased()] else { return nil }
-            guard !basketItemNames.contains(item.name.lowercased()) else { return nil }
             return TopUsedShortcutItem(
                 id: item.id,
                 name: ProductDisplayNameProvider.displayName(for: item.name),
@@ -118,61 +157,55 @@ private var hasExactNameMatch: Bool {
         }
     }
 
-    private var contextualBoughtTogetherItems: [BoughtTogetherWidgetItem] {
-        guard let activeContextualSuggestionID, let contextualTriggerName else { return [] }
-
-        let suggestions = basketManager.contextualBoughtTogetherSuggestions(
-            triggeredBy: contextualTriggerName,
-            entries: completedEntries,
-            basketItems: basketItems,
-            limit: 2
-        )
-
-        let itemsByName = Dictionary(
-            quickItems.map { ($0.name.lowercased(), $0) },
-            uniquingKeysWith: { first, _ in first }
-        )
-        let inBasket = basketItemNames
-
-        return suggestions.compactMap { suggestion in
-            guard suggestion.id == activeContextualSuggestionID else { return nil }
-
-            let remainingItems = suggestion.itemNames.compactMap { name -> QuickItem? in
-                let key = name.lowercased()
-                guard let item = itemsByName[key], !inBasket.contains(key) else { return nil }
-                return item
-            }
-
-            guard !remainingItems.isEmpty else { return nil }
-
-            return BoughtTogetherWidgetItem(
-                id: suggestion.id,
-                title: remainingItems
-                    .map { ProductDisplayNameProvider.displayName(for: $0.name) }
-                    .joined(separator: " + "),
-                subtitle: suggestionSubtitle(for: suggestion, remainingCount: remainingItems.count),
-                emojiSummary: remainingItems.map(\.emoji).joined(separator: " ")
-            )
-        }
-    }
-
-    private var basketTriggerName: String {
-        activeSnackBarState?.undoName ?? contextualTriggerName ?? ""
+    private var undoLabel: String? {
+        guard let record = lastAdd, record.isFresh else { return nil }
+        return String(localized: "action.undo_format", defaultValue: "Undo %@", locale: locale)
+            .replacingOccurrences(of: "%@", with: "\(record.emoji) \(record.displayName)")
     }
 
     var body: some View {
         NavigationStack {
-            ZStack(alignment: .bottom) {
-                scrollContent
-                    .opacity(isShowingPopupOverlay ? 0.5 : 1)
-
-                overlayControls
-            }
-            .navigationTitle(Text("home.navigation_title"))
+            scrollContent
+                .overlay(alignment: .top) {
+                    loggedPill
+                }
+                .overlay {
+                    FloatingBasketButton(
+                        emojis: basketItems.map(\.emoji),
+                        count: basketManager.totalItemCount(from: basketItems),
+                        scale: basketButtonScale,
+                        namespace: basketZoom,
+                        onTap: { showBasket = true },
+                        undoLabel: undoLabel,
+                        onUndo: performUndoLastAdd
+                    )
+                }
+                .navigationDestination(isPresented: $showBasket) {
+                    basketDestination
+                }
+                .navigationTitle(Text("home.navigation_title"))
             .toolbarTitleDisplayMode(.inlineLarge)
+            #if DEBUG
+            .sheet(isPresented: $showDebugMenu) { debugMenuSheet }
+            #endif
             .searchable(text: $searchText, prompt: Text("home.search_prompt"))
             .scrollDismissesKeyboard(.immediately)
             .toolbar {
+                if !recentBasketSummaries.isEmpty {
+                    ToolbarItem(placement: .topBarTrailing) {
+                        Button {
+                            showRecentBasketsSheet = true
+                        } label: {
+                            // Title + icon makes the History entry point
+                            // discoverable without adding another widget to
+                            // the already-busy home screen.
+                            Label("history.title", systemImage: "clock.arrow.circlepath")
+                                .labelStyle(.titleAndIcon)
+                                .font(.subheadline.weight(.semibold))
+                        }
+                        .accessibilityLabel(Text("history.title"))
+                    }
+                }
                 if isRecipeAvailable {
                     ToolbarItem(placement: .topBarTrailing) {
                         Button {
@@ -188,9 +221,13 @@ private var hasExactNameMatch: Bool {
                         .popoverTip(recipeAITip)
                     }
                 }
-            }
-            .sheet(isPresented: $showBasket) {
-                BasketView(manager: basketManager)
+                #if DEBUG
+                ToolbarItem(placement: .topBarTrailing) {
+                    Button { showDebugMenu = true } label: {
+                        Image(systemName: "wrench.and.screwdriver")
+                    }
+                }
+                #endif
             }
             .sheet(isPresented: $showManualAddSheet) {
                 ManualQuickItemSheet(initialName: trimmedSearch, onSave: saveManualQuickItem)
@@ -208,11 +245,22 @@ private var hasExactNameMatch: Bool {
                 ProPaywallSheet(purchaseManager: purchaseManager)
                     .presentationDetents([.large])
             }
+            .sheet(isPresented: $showRecentBasketsSheet) {
+                RecentBasketsSheet(
+                    baskets: recentBasketSummaries,
+                    inBasketNames: basketItemNames,
+                    onAddBasket: addRecentBasketFromHome,
+                    onAddItem: addRecentItemFromHome,
+                    onHideBasket: hideRecentBasketFromHome
+                )
+                .presentationDetents([.medium, .large])
+                .presentationDragIndicator(.visible)
+            }
             .onAppear(perform: syncExpandedCategories)
             .onAppear {
                 #if canImport(FoundationModels)
                 if #available(iOS 26.0, macOS 26.0, *) {
-                    isRecipeAvailable = true
+                    isRecipeAvailable = FeatureFlags.aiRecipeEnabled
                 }
                 #endif
             }
@@ -222,34 +270,38 @@ private var hasExactNameMatch: Bool {
                 syncExpandedCategories()
             }
             .onChange(of: basketItems.map(\.name)) { _, _ in
-                clearInvalidContextualSuggestion()
+                refreshSmartStart()
             }
+            .onChange(of: completedEntries.count) { _, _ in refreshSmartStart() }
+            .onAppear { refreshSmartStart() }
         }
     }
 
-    private var overlayControls: some View {
-        VStack(spacing: 8) {
-            if let state = activeSnackBarState {
-                AddItemSnackBarView(
-                    title: state.title,
-                    progress: state.progress,
-                    onUndo: undoLastAdd
-                )
-                .frame(maxWidth: .infinity)
-                .transition(.move(edge: .bottom).combined(with: .opacity))
+    /// Brief post-completion confirmation that slides down from the top after
+    /// the basket has been logged to history. Doesn't block taps — purely
+    /// visual reinforcement so the celebration doesn't evaporate when the
+    /// basket sheet dismisses.
+    @ViewBuilder
+    private var loggedPill: some View {
+        if loggedPillVisible {
+            HStack(spacing: 8) {
+                Image(systemName: "checkmark.circle.fill")
+                    .foregroundStyle(Color("BrandGreen"))
+                Text("home.logged_pill")
+                    .font(.subheadline.weight(.semibold))
+                    .foregroundStyle(.primary)
             }
-
-            if !contextualBoughtTogetherItems.isEmpty {
-                contextualSuggestionOverlay
-                    .transition(.move(edge: .bottom).combined(with: .opacity))
+            .padding(.horizontal, 14)
+            .padding(.vertical, 9)
+            .adaptiveGlass(in: Capsule())
+            .overlay {
+                Capsule().strokeBorder(Color(.separator).opacity(0.25), lineWidth: 0.5)
             }
-
-            basketButton
+            .shadow(color: .black.opacity(0.10), radius: 10, y: 4)
+            .padding(.top, 6)
+            .transition(.move(edge: .top).combined(with: .opacity))
+            .allowsHitTesting(false)
         }
-        .padding(.horizontal)
-        .padding(.bottom, 12)
-        .animation(.spring(response: 0.28, dampingFraction: 0.9), value: activeSnackBarState != nil)
-        .animation(.spring(response: 0.32, dampingFraction: 0.92), value: contextualBoughtTogetherItems.map(\.id))
     }
 
     @ViewBuilder
@@ -286,30 +338,72 @@ private var hasExactNameMatch: Bool {
                     Section {
                         TopUsedShortcutsView(
                             items: topShortcutItems,
-                            onTapItem: addShortcutItemToBasket,
+                            inBasketNames: basketItemNames,
+                            onTapItem: toggleShortcutItemInBasket,
                             onAddAll: { topShortcutItems.forEach { addShortcutItemToBasket($0) } }
                         )
-                            .padding(.horizontal, 12)
-                            .padding(.vertical, 6)
+                        .listRowInsets(EdgeInsets(top: 4, leading: 0, bottom: 8, trailing: 0))
+                        .listRowBackground(Color.clear)
+                        .listRowSeparator(.hidden)
+                    }
+                }
+
+                // Universal "anyone would buy" rail — secondary to Regulars
+                // above. Auto-drifts, draggable, and items already in the
+                // basket fade out of the loop.
+                Section {
+                    PantryStaplesRail(
+                        inBasketNames: basketItemNames,
+                        onTap: addPantryStaple,
+                        onAddAll: addAllPantryStaples
+                    )
+                    .listRowInsets(EdgeInsets(top: 0, leading: 0, bottom: 8, trailing: 0))
+                    .listRowBackground(Color.clear)
+                    .listRowSeparator(.hidden)
+                }
+
+                if !smartStartItems.isEmpty {
+                    Section {
+                        SmartStartView(
+                            items: smartStartItems,
+                            onTapItem: addQuickItemToBasket,
+                            onAddAll: { smartStartItems.forEach { addQuickItemToBasket($0) } }
+                        )
+                        .padding(.horizontal, 16)
+                        .padding(.vertical, 6)
+                        .listRowInsets(EdgeInsets())
+                        .listRowBackground(Color.clear)
+                        .listRowSeparator(.hidden)
+                    }
+                }
+
+                // Banner sits at the natural break between smart suggestions
+                // and the category grid — visible mid-session, not buried at
+                // the very bottom after all categories.
+                if !AdsConfiguration.hideForScreenshots {
+                    Section {
+                        InlineBannerSection()
                             .listRowInsets(EdgeInsets())
                             .listRowBackground(Color.clear)
+                            .listRowSeparator(.hidden)
                     }
                 }
 
                 ForEach(sectionedQuickItems) { section in
                     Section(isExpanded: expandedBinding(for: section.category)) {
-                        LazyVGrid(columns: gridColumns, spacing: 10) {
+                        LazyVGrid(columns: gridColumns, spacing: 12) {
                             ForEach(section.items) { item in
                                 itemTile(for: item)
                             }
                         }
-                        .padding(.horizontal, 4)
+                        .padding(.horizontal, 16)
                         .padding(.vertical, 8)
                         .listRowInsets(EdgeInsets(.zero))
                         .listRowBackground(Color.clear)
                         .listRowSeparator(.hidden)
                     } header: {
                         categorySectionHeader(for: section)
+                            .listRowInsets(EdgeInsets())
                     }
                 }
             }
@@ -317,27 +411,21 @@ private var hasExactNameMatch: Bool {
         .listStyle(.sidebar)
         .scrollContentBackground(.hidden)
         .background(Color("LaunchBackground"))
-        .animation(.easeInOut(duration: 0.22), value: basketItems.count)
+        .animation(.spring(response: 0.25, dampingFraction: 0.85), value: basketItems.count)
     }
 
-
-    private var contextualSuggestionOverlay: some View {
-        BoughtTogetherWidgetView(items: contextualBoughtTogetherItems, onTapItem: addBoughtTogetherWidgetItemToBasket)
-            .frame(maxWidth: 360)
-            .frame(maxWidth: .infinity, alignment: .center)
-    }
 
     private func itemTile(for item: QuickItem) -> some View {
         QuickItemTile(
             item: item,
-            hintText: hintText(for: item),
             isInBasket: basketItemNames.contains(item.name.lowercased()),
-            action: {
-                addQuickItemToBasket(item)
-            },
-            onDelete: item.category == .custom ? {
-                deleteCustomQuickItem(item)
-            } : nil
+            quantity: basketQuantitiesByName[item.name.lowercased()] ?? 0,
+            // Tap toggles: add if out, remove if in. Long-press increments
+            // (the rare case). The tile suppresses the tap-on-release after
+            // a successful long-press so the toggle never fires accidentally.
+            action: { toggleQuickItemInBasket(item) },
+            onLongPress: { incrementQuickItemInBasket(item) },
+            onDelete: item.category == .custom ? { deleteCustomQuickItem(item) } : nil
         )
     }
 
@@ -373,24 +461,17 @@ private var hasExactNameMatch: Bool {
     }
 
     @ViewBuilder
-    private var basketButton: some View {
-        let label = HStack(spacing: 8) {
-            Image(systemName: "basket.fill")
-            Text(String(localized: "home.basket_button_format", defaultValue: "Basket (%lld)", locale: locale).replacingOccurrences(of: "%lld", with: "\(basketManager.totalItemCount(from: basketItems))"))
-                .fontWeight(.semibold)
+    private var basketDestination: some View {
+        let view = BasketView(manager: basketManager, onCompletion: {
+            showLoggedPill()
+            // Pop back to home after the completion animation finishes.
+            showBasket = false
+        })
+        if #available(iOS 18.0, *) {
+            view.navigationTransition(.zoom(sourceID: "basket", in: basketZoom))
+        } else {
+            view
         }
-        .font(.headline)
-        .padding(.horizontal, 22)
-        .padding(.vertical, 16)
-
-        Button {
-            showBasket = true
-        } label: {
-            label
-                .adaptiveGlass(in: Capsule())
-                .shadow(color: .black.opacity(0.12), radius: 12, y: 4)
-        }
-        .scaleEffect(basketButtonScale)
     }
 
     private var shouldShowManualAddButton: Bool {
@@ -445,10 +526,13 @@ private var hasExactNameMatch: Bool {
         Binding(
             get: { expandedCategories.contains(category) },
             set: { expanded in
-                withAnimation(.easeInOut(duration: 0.2)) {
+                withAnimation(.spring(response: 0.32, dampingFraction: 0.8)) {
                     if expanded { expandedCategories.insert(category) }
                     else { expandedCategories.remove(category) }
                 }
+                // Persist collapsed set (store collapsed, not expanded, so default is all-expanded)
+                let collapsed = Set(QuickItemCategory.allCases).subtracting(expandedCategories)
+                collapsedCategoryKeys = collapsed.map(\.rawValue).sorted().joined(separator: ",")
             }
         )
     }
@@ -482,78 +566,57 @@ private var hasExactNameMatch: Bool {
     }
 
     private func categorySectionHeader(for section: QuickItemSection) -> some View {
-        let tint = categoryTintColor(for: section.category)
-        return HStack(spacing: 12) {
-            // App-icon-style square with gradient
+        HStack(spacing: 12) {
             Image(systemName: section.category.systemImageName)
-                .font(.system(size: 15, weight: .semibold))
-                .foregroundStyle(.white)
-                .frame(width: 34, height: 34)
-                .background(
-                    LinearGradient(
-                        colors: [tint.mix(with: .white, by: 0.15), tint],
-                        startPoint: .topLeading,
-                        endPoint: .bottomTrailing
-                    ),
-                    in: RoundedRectangle(cornerRadius: 9, style: .continuous)
-                )
-                .shadow(color: tint.opacity(0.35), radius: 4, y: 2)
+                .font(.system(size: 14, weight: .semibold))
+                .foregroundStyle(Color.accentColor)
+                .frame(width: 32, height: 32)
+                .background(Color.accentColor.opacity(0.12), in: RoundedRectangle(cornerRadius: 9, style: .continuous))
 
-            VStack(alignment: .leading, spacing: 1) {
-                Text(section.category.title)
-                    .font(.subheadline.weight(.bold))
-                    .foregroundStyle(Color(.label))
-                    .textCase(nil)
+            Text(section.category.title)
+                .font(.title3.weight(.bold))
+                .foregroundStyle(Color(.label))
+                .textCase(nil)
+                .tracking(-0.2)
 
-                Text("\(section.items.count) items")
-                    .font(.caption2)
-                    .foregroundStyle(Color(.secondaryLabel))
-                    .textCase(nil)
-            }
+            Text("\(section.items.count)")
+                .font(.subheadline.weight(.medium))
+                .foregroundStyle(Color(.tertiaryLabel))
+                .monospacedDigit()
+                .textCase(nil)
 
             Spacer()
-
-            if section.usageCount > 0 {
-                Text("Top \(section.usageCount)×")
-                    .font(.caption2.weight(.semibold))
-                    .foregroundStyle(tint)
-                    .padding(.horizontal, 7)
-                    .padding(.vertical, 3)
-                    .background(tint.opacity(0.12), in: Capsule())
-                    .textCase(nil)
-            }
         }
-        .padding(.vertical, 6)
+        .padding(.vertical, 4)
+        // Opaque background so scrolling content doesn't bleed through
+        // the pinned header as it slides underneath.
+        .padding(.horizontal, 16)
+        .padding(.top, 8)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background(Color("LaunchBackground"))
     }
 
-    private func categoryTintColor(for category: QuickItemCategory) -> Color {
-        switch category.tintName {
-        case "green":  return .green
-        case "red":    return .red
-        case "orange": return .orange
-        case "cyan":   return .cyan
-        case "indigo": return .indigo
-        case "teal":   return .teal
-        case "pink":   return .pink
-        case "gray":   return .gray
-        case "purple": return .purple
-        default:       return .blue
-        }
+    private func refreshSmartStart() {
+        smartStartItems = SmartStartEngine.shared.items(
+            quickItems: quickItems,
+            basketItems: basketItems,
+            in: modelContext
+        )
     }
 
     private func syncExpandedCategories() {
         let visibleSet = Set(visibleCategories)
         let defaults = HomeBrowseState.defaultExpandedCategories(for: sectionedQuickItems.map(\.category))
 
-        if expandedCategories.isEmpty {
-            expandedCategories = defaults
-            return
-        }
-
-        expandedCategories = expandedCategories.intersection(visibleSet)
-
-        if expandedCategories.isEmpty {
-            expandedCategories = defaults
+        if !collapsedCategoryKeys.isEmpty {
+            // Restore from persisted state: visible categories minus the collapsed ones
+            let collapsedRaws = Set(collapsedCategoryKeys.split(separator: ",").map(String.init))
+            let restored = visibleSet.filter { !collapsedRaws.contains($0.rawValue) }
+            expandedCategories = restored.isEmpty ? defaults : restored
+        } else {
+            // No persisted state — expand all visible by default
+            expandedCategories = expandedCategories.intersection(visibleSet)
+            if expandedCategories.isEmpty { expandedCategories = defaults }
         }
     }
 
@@ -608,8 +671,7 @@ private var hasExactNameMatch: Bool {
 
         if addToBasket {
             let previousQuantity = basketManager.addItem(newQuickItem, in: modelContext, basketItems: basketItems)
-            showSingleItemSnackBar(for: newQuickItem, previousQuantity: previousQuantity)
-            updateContextualSuggestions(for: newQuickItem.name)
+            recordLastAdd(item: newQuickItem, previousQuantity: previousQuantity)
         }
 
         try? modelContext.save()
@@ -619,8 +681,35 @@ private var hasExactNameMatch: Bool {
     private func addQuickItemToBasket(_ item: QuickItem) {
         UIApplication.shared.sendAction(#selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil)
         let previousQuantity = basketManager.addItem(item, in: modelContext, basketItems: basketItems)
-        showSingleItemSnackBar(for: item, previousQuantity: previousQuantity)
-        updateContextualSuggestions(for: item.name)
+        recordLastAdd(item: item, previousQuantity: previousQuantity)
+        pulseBasketButton()
+        addItemTip.invalidate(reason: .actionPerformed)
+    }
+
+    /// Tile-tap behaviour: toggle membership.
+    /// If the item is already in the basket, remove it entirely (regardless of quantity).
+    /// Otherwise, add it via the normal add path.
+    private func toggleQuickItemInBasket(_ item: QuickItem) {
+        let alreadyInBasket = basketItemNames.contains(item.name.lowercased())
+        guard alreadyInBasket else {
+            addQuickItemToBasket(item)
+            return
+        }
+
+        UIApplication.shared.sendAction(#selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil)
+        basketManager.removeItem(named: item.name, in: modelContext, basketItems: basketItems)
+        // Removal invalidates undo — last add no longer represents current state.
+        lastAdd = nil
+        pulseBasketButton()
+    }
+
+    /// Tile long-press: always increments quantity by 1, whether the item is
+    /// in the basket already or not. `BasketManager.addItem` handles both —
+    /// it either inserts a new BasketItem or bumps the existing quantity.
+    private func incrementQuickItemInBasket(_ item: QuickItem) {
+        UIApplication.shared.sendAction(#selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil)
+        let previousQuantity = basketManager.addItem(item, in: modelContext, basketItems: basketItems)
+        recordLastAdd(item: item, previousQuantity: previousQuantity)
         pulseBasketButton()
         addItemTip.invalidate(reason: .actionPerformed)
     }
@@ -639,201 +728,138 @@ private var hasExactNameMatch: Bool {
         addQuickItemToBasket(item)
     }
 
-    private func addBoughtTogetherWidgetItemToBasket(_ item: BoughtTogetherWidgetItem) {
-        guard let contextualTriggerName,
-              let suggestion = basketManager.contextualBoughtTogetherSuggestions(
-                triggeredBy: contextualTriggerName,
-                entries: completedEntries,
-                basketItems: basketItems,
-                limit: 2
-              ).first(where: { $0.id == item.id }) else { return }
+    /// Adds a curated staple to the basket.
+    ///
+    /// Prefers an existing `QuickItem` match (preserves category metadata and
+    /// flows through the same add path as the rest of the home screen).
+    /// Falls back to inserting a bare `BasketItem` when no matching QuickItem
+    /// exists in the user's seed/custom set.
+    private func addPantryStaple(_ staple: PantryStaple) {
+        UIApplication.shared.sendAction(#selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil)
 
-        let result = basketManager.addBoughtTogetherSuggestion(suggestion, quickItems: quickItems, in: modelContext, basketItems: basketItems)
-        showBulkAddSnackBar(result: result, emojiSummary: item.emojiSummary, affectedNames: suggestion.itemNames)
-        clearInvalidContextualSuggestion()
-    }
-
-    private func suggestionSubtitle(for suggestion: BoughtTogetherSuggestion, remainingCount: Int) -> String {
-        if remainingCount == 1 {
-            return String(localized: "suggestion.subtitle.single")
-        }
-        return String(localized: "suggestion.subtitle.multiple")
-    }
-
-    private func updateContextualSuggestions(for itemName: String) {
-        let suggestions = basketManager.contextualBoughtTogetherSuggestions(
-            triggeredBy: itemName,
-            entries: completedEntries,
-            basketItems: basketItems,
-            limit: 1
-        )
-
-        guard let suggestion = suggestions.first else {
-            activeContextualSuggestionID = nil
-            contextualTriggerName = nil
-            contextualSuggestionTask?.cancel()
-            contextualSuggestionTask = nil
+        if let match = quickItems.first(where: { $0.name.caseInsensitiveCompare(staple.name) == .orderedSame }) {
+            addQuickItemToBasket(match)
             return
         }
 
-        contextualSuggestionTask?.cancel()
-        activeContextualSuggestionID = suggestion.id
-        contextualTriggerName = itemName
-
-        contextualSuggestionTask = Task {
-            try? await Task.sleep(for: .seconds(contextualSuggestionDuration))
-            guard !Task.isCancelled else { return }
-
-            await MainActor.run {
-                withAnimation(.easeInOut(duration: 0.25)) {
-                    activeContextualSuggestionID = nil
-                    contextualTriggerName = nil
-                }
-                contextualSuggestionTask = nil
-            }
-        }
-    }
-
-    private func clearInvalidContextualSuggestion() {
-        guard let activeContextualSuggestionID, let contextualTriggerName else { return }
-
-        let suggestions = basketManager.contextualBoughtTogetherSuggestions(
-            triggeredBy: contextualTriggerName,
-            entries: completedEntries,
-            basketItems: basketItems,
-            limit: 2
-        )
-
-        if !suggestions.contains(where: { $0.id == activeContextualSuggestionID }) {
-            self.activeContextualSuggestionID = nil
-            self.contextualTriggerName = nil
-            contextualSuggestionTask?.cancel()
-            contextualSuggestionTask = nil
-        }
-    }
-
-    private func showSingleItemSnackBar(for item: QuickItem, previousQuantity: Int) {
-        let displayName = ProductDisplayNameProvider.displayName(for: item.name)
-        let format = String(localized: "snackbar.added_item_format", defaultValue: "Added %@ %@", locale: locale)
-        let title = format
-            .replacingOccurrences(of: "%@", with: item.emoji, options: [], range: format.range(of: "%@"))
-            .replacingOccurrences(of: "%@", with: displayName)
-
-        showSnackBar(
-            title: title,
-            previousQuantity: previousQuantity,
-            undoName: item.name
-        )
-    }
-
-    private func showBulkAddSnackBar(result: BulkAddResult, emojiSummary: String, affectedNames: [String]) {
-        guard result.hasChanges else { return }
-
-        let title: String
-        switch (result.insertedCount, result.mergedCount) {
-        case let (_, merged) where result.insertedCount > 0 && merged > 0:
-            title = String(localized: "snackbar.bulk_added_some_updated_format", defaultValue: "Added some. Updated %lld already in basket", locale: locale)
-                .replacingOccurrences(of: "%lld", with: "\(merged)")
-        case let (_, merged) where merged > 0:
-            title = String(localized: "snackbar.bulk_already_in_basket_updated_format", defaultValue: "Already in basket. Updated %lld", locale: locale)
-                .replacingOccurrences(of: "%lld", with: "\(merged)")
-        default:
-            title = String(localized: "snackbar.bulk_added_default_format", defaultValue: "Added %@", locale: locale)
-                .replacingOccurrences(of: "%@", with: emojiSummary)
-        }
-
-        showSnackBar(
-            title: title,
-            previousQuantity: 0,
-            undoName: nil,
-            basketSnapshot: affectedNames
-        )
-    }
-
-    private func showSnackBar(
-        title: String,
-        previousQuantity: Int,
-        undoName: String?,
-        basketSnapshot: [String] = []
-    ) {
-        let newState = SnackBarState(
-            id: UUID(),
-            title: title,
-            undoName: undoName,
-            previousQuantity: previousQuantity,
-            basketSnapshot: basketSnapshot,
-            progress: 1
-        )
-
-        // Always present immediately, replacing any active or queued snackbar.
-        // This prevents toast buildup when items are added rapidly.
-        queuedSnackBarStates = []
-        presentSnackBar(newState)
-    }
-
-    private func presentSnackBar(_ state: SnackBarState) {
-        snackBarTask?.cancel()
-        activeSnackBarState = state
-
-        snackBarTask = Task {
-            let start = Date()
-
-            while !Task.isCancelled {
-                let elapsed = Date().timeIntervalSince(start)
-                let remaining = max(0, 1 - (elapsed / snackBarDisplayDuration))
-
-                await MainActor.run {
-                    guard var visibleState = activeSnackBarState, visibleState.id == state.id else { return }
-                    visibleState.progress = remaining
-                    activeSnackBarState = visibleState
-                }
-
-                if remaining <= 0 {
-                    break
-                }
-
-                try? await Task.sleep(for: .milliseconds(16))
-            }
-
-            await MainActor.run {
-                guard activeSnackBarState?.id == state.id else { return }
-                advanceSnackBarQueue()
-            }
-        }
-    }
-
-    private func advanceSnackBarQueue() {
-        snackBarTask?.cancel()
-        snackBarTask = nil
-        activeSnackBarState = nil
-
-        guard !queuedSnackBarStates.isEmpty else { return }
-        let nextState = queuedSnackBarStates.removeFirst()
-        presentSnackBar(nextState)
-    }
-
-    private func undoLastAdd() {
-        guard let state = activeSnackBarState else { return }
-        snackBarTask?.cancel()
-
-        if let undoName = state.undoName {
-            basketManager.undoAddItem(named: undoName, previousQuantity: state.previousQuantity, in: modelContext, basketItems: basketItems)
+        // Fallback: no matching QuickItem — insert a BasketItem directly.
+        let previousQuantity: Int
+        if let existing = basketItems.first(where: { $0.name.caseInsensitiveCompare(staple.name) == .orderedSame }) {
+            previousQuantity = existing.quantity
+            existing.quantity += 1
         } else {
-            let currentItems = basketItems
-            let targetNames = Set(state.basketSnapshot.map { $0.lowercased() })
+            previousQuantity = 0
+            modelContext.insert(BasketItem(name: staple.name, emoji: staple.emoji, quantity: 1))
+        }
+        try? modelContext.save()
 
-            for item in currentItems where targetNames.contains(item.name.lowercased()) {
-                if item.quantity > 1 {
-                    item.quantity -= 1
-                } else {
-                    modelContext.delete(item)
-                }
-            }
-            try? modelContext.save()
+        lastAdd = LastAddRecord(
+            name: staple.name,
+            displayName: ProductDisplayNameProvider.displayName(for: staple.name),
+            emoji: staple.emoji,
+            previousQuantity: previousQuantity,
+            addedAt: Date()
+        )
+        pulseBasketButton()
+    }
+
+    /// Tap on a Regulars avatar — toggles the underlying QuickItem's basket
+    /// membership, matching the grid tile's behaviour.
+    private func toggleShortcutItemInBasket(_ shortcut: TopUsedShortcutItem) {
+        guard let item = quickItems.first(where: { $0.id == shortcut.id }) else { return }
+        toggleQuickItemInBasket(item)
+    }
+
+    /// "Add all" affordance on the pantry rail. Adds every staple that isn't
+    /// already in the basket. Bulk add, so we clear the undo-record afterwards
+    /// (single-item undo isn't meaningful for a many-item add).
+    private func addAllPantryStaples() {
+        UIApplication.shared.sendAction(#selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil)
+        let inBasket = basketItemNames
+        for staple in PantryStaple.all where !inBasket.contains(staple.id) {
+            addPantryStaple(staple)
+        }
+        lastAdd = nil
+    }
+
+    private func addRecentBasketFromHome(_ basket: RecentBasketSummary) {
+        UIApplication.shared.sendAction(#selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil)
+        _ = basketManager.addRecentBasket(basket, in: modelContext, basketItems: basketItems)
+        // Bulk add — undo isn't well-defined for many items, so clear it.
+        lastAdd = nil
+        pulseBasketButton()
+    }
+
+    private func addRecentItemFromHome(_ item: RecentBasketItem) {
+        UIApplication.shared.sendAction(#selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil)
+        let previousQuantity = basketItems
+            .first { $0.name.caseInsensitiveCompare(item.name) == .orderedSame }?
+            .quantity ?? 0
+        basketManager.addRecentItem(item, in: modelContext, basketItems: basketItems)
+        lastAdd = LastAddRecord(
+            name: item.name,
+            displayName: ProductDisplayNameProvider.displayName(for: item.name),
+            emoji: item.emoji,
+            previousQuantity: previousQuantity,
+            addedAt: Date()
+        )
+        pulseBasketButton()
+    }
+
+    /// Snapshot a freshly-added QuickItem so we can offer to undo it.
+    /// Called from every single-item add path; bulk paths clear `lastAdd` instead.
+    private func recordLastAdd(item: QuickItem, previousQuantity: Int) {
+        lastAdd = LastAddRecord(
+            name: item.name,
+            displayName: ProductDisplayNameProvider.displayName(for: item.name),
+            emoji: item.emoji,
+            previousQuantity: previousQuantity,
+            addedAt: Date()
+        )
+    }
+
+    /// Triggered by `BasketView.onCompletion`. Briefly surfaces a "Logged"
+    /// pill at the top of home and clears any lingering `lastAdd` so the
+    /// undo affordance doesn't reach back into a basket that no longer exists.
+    private func showLoggedPill() {
+        lastAdd = nil
+        loggedPillDismissTask?.cancel()
+
+        withAnimation(.taplistTransition) {
+            loggedPillVisible = true
         }
 
-        clearInvalidContextualSuggestion()
-        advanceSnackBarQueue()
+        loggedPillDismissTask = Task { @MainActor in
+            try? await Task.sleep(for: .milliseconds(2500))
+            guard !Task.isCancelled else { return }
+            withAnimation(.taplistTransition) {
+                loggedPillVisible = false
+            }
+        }
+    }
+
+    /// Undo the most recent add: either restore the previous quantity, or
+    /// remove the item entirely if it wasn't in the basket before. No-op if
+    /// `lastAdd` is gone (stale, removed, or already undone).
+    private func performUndoLastAdd() {
+        guard let record = lastAdd else { return }
+        UIImpactFeedbackGenerator(style: .soft).impactOccurred(intensity: 0.7)
+        basketManager.undoAddItem(
+            named: record.name,
+            previousQuantity: record.previousQuantity,
+            in: modelContext,
+            basketItems: basketItems
+        )
+        lastAdd = nil
+    }
+
+    private func hideRecentBasketFromHome(_ basket: RecentBasketSummary) {
+        basketManager.removeRecentBasket(
+            basket,
+            completedBaskets: completedBaskets,
+            completedEntries: completedEntries,
+            in: modelContext
+        )
     }
 
     private func hintText(for item: QuickItem) -> String? {
@@ -854,19 +880,55 @@ private var hasExactNameMatch: Bool {
 
         modelContext.delete(item)
         try? modelContext.save()
-
-        clearInvalidContextualSuggestion()
     }
-}
 
+    #if DEBUG
+    // MARK: - Debug menu
 
-private struct SnackBarState: Identifiable, Equatable {
-    let id: UUID
-    var title: String
-    var undoName: String?
-    var previousQuantity: Int
-    var basketSnapshot: [String]
-    var progress: Double
+    @ViewBuilder
+    private var debugMenuSheet: some View {
+        NavigationStack {
+            List {
+                Section {
+                    Toggle("Show AI Recipe Button", isOn: Binding(
+                        get: { FeatureFlags.aiRecipeEnabled },
+                        set: { FeatureFlags.aiRecipeEnabled = $0; isRecipeAvailable = $0 }
+                    ))
+                    .tint(.green)
+                    Toggle("Require Pro for AI Recipe", isOn: $aiRecipeRequiresPro)
+                        .tint(.green)
+                } header: {
+                    Text("Feature Flags")
+                } footer: {
+                    Text("Changes persist across launches via UserDefaults.")
+                        .foregroundStyle(.secondary)
+                }
+
+                Section {
+                    HStack {
+                        Text("isPro")
+                        Spacer()
+                        Text(purchaseManager.isPro ? "true" : "false")
+                            .foregroundStyle(.secondary)
+                    }
+                    Button("Restore Purchases") {
+                        Task { await purchaseManager.restorePurchases() }
+                    }
+                } header: {
+                    Text("Purchase Manager")
+                }
+            }
+            .navigationTitle("Debug Menu")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .confirmationAction) {
+                    Button("Done") { showDebugMenu = false }
+                }
+            }
+        }
+        .presentationDetents([.medium])
+    }
+    #endif
 }
 
 #Preview {

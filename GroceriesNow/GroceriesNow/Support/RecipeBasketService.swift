@@ -13,6 +13,25 @@ struct RecipeIngredient: Identifiable, Equatable {
 #if canImport(FoundationModels)
 import FoundationModels
 
+// MARK: Step 1 — Dish validation (lightweight, fast)
+
+@available(iOS 26.0, macOS 26.0, *)
+@Generable
+private struct _DishValidation {
+    @Guide(description: """
+        True if the input is a recognisable named recipe or dish that someone would cook, \
+        in ANY language or culture. \
+        False if the input is: a raw ingredient (onion, κρεμμύδι, milk, γάλα), \
+        a person's name (μπουμπής, John), gibberish (asdfjkl), \
+        or a generic food category (vegetables, λαχανικά). \
+        A dish = something you cook with multiple ingredients following a recipe. \
+        An ingredient = a single raw food item you buy at a store.
+        """)
+    var isDish: Bool
+}
+
+// MARK: Step 2 — Ingredient generation (only called for valid dishes)
+
 @available(iOS 26.0, macOS 26.0, *)
 @Generable
 private struct _GeneratedIngredient {
@@ -29,7 +48,7 @@ private struct _GeneratedIngredient {
 @available(iOS 26.0, macOS 26.0, *)
 @Generable
 private struct _GeneratedIngredientList {
-    @Guide(description: "Complete list of grocery ingredients needed to prepare the dish")
+    @Guide(description: "Complete list of grocery ingredients needed to prepare the dish.")
     var ingredients: [_GeneratedIngredient]
 }
 
@@ -39,8 +58,8 @@ final class RecipeBasketService {
     private(set) var isLoading = false
     private(set) var ingredients: [RecipeIngredient] = []
     private(set) var errorMessage: String?
-    /// True after at least one generation completes (success or failure, not cancellation).
     private(set) var hasSearched = false
+    private(set) var isInvalidDish = false
 
     var isAvailable: Bool {
         if case .available = SystemLanguageModel.default.availability { return true }
@@ -48,6 +67,19 @@ final class RecipeBasketService {
     }
 
     private var task: Task<Void, Never>?
+
+    /// Pantry staples filtered out client-side (model can't be trusted to skip them).
+    private static let pantryStaples: Set<String> = [
+        "salt", "pepper", "black pepper", "white pepper",
+        "water", "ice", "ice water",
+        "sugar", "brown sugar", "powdered sugar",
+        "flour", "all-purpose flour", "all purpose flour",
+        "olive oil", "vegetable oil", "cooking oil", "oil", "canola oil", "sunflower oil",
+        "butter", "unsalted butter", "salted butter",
+        "vinegar", "white vinegar", "balsamic vinegar",
+        "baking soda", "baking powder",
+        "cornstarch", "corn starch"
+    ]
 
     func suggest(for recipe: String) {
         task?.cancel()
@@ -61,18 +93,93 @@ final class RecipeBasketService {
         isLoading = false
     }
 
+    /// Resets all state back to the initial "no search yet" screen.
+    func reset() {
+        task?.cancel()
+        task = nil
+        isLoading = false
+        ingredients = []
+        errorMessage = nil
+        hasSearched = false
+        isInvalidDish = false
+    }
+
+    // MARK: - Client-side validation (fast, no model needed)
+
+    /// Quick rejection for obvious non-dish input before hitting the model.
+    private func failsClientCheck(_ input: String) -> Bool {
+        let trimmed = input.trimmingCharacters(in: .whitespacesAndNewlines)
+        // Too short to be a dish
+        if trimmed.count < 2 { return true }
+        // Pure numbers / punctuation
+        if trimmed.allSatisfy({ !$0.isLetter }) { return true }
+        // Repeating character pattern (gibberish like "aaaa", "ababab")
+        let letters = trimmed.filter(\.isLetter).lowercased()
+        if letters.count >= 4, Set(letters).count <= 2 { return true }
+        return false
+    }
+
+    private static func isPantryStaple(_ name: String) -> Bool {
+        pantryStaples.contains(name.lowercased().trimmingCharacters(in: .whitespacesAndNewlines))
+    }
+
+    // MARK: - Run
+
     private func run(recipe: String) async {
         isLoading = true
         ingredients = []
         errorMessage = nil
+        isInvalidDish = false
+
+        // Fast client-side rejection
+        if failsClientCheck(recipe) {
+            isInvalidDish = true
+            hasSearched = true
+            isLoading = false
+            return
+        }
 
         do {
-            let session = LanguageModelSession(
-                instructions: "You are a grocery shopping assistant. Always write ingredient names in English."
+            // ── Step 1: Model validation ──
+            let validationSession = LanguageModelSession(
+                instructions: """
+                    You decide if user input is a real dish/recipe name or not. \
+                    Answer isDish = true ONLY for a specific named dish that is cooked from a recipe. \
+                    Answer isDish = false for EVERYTHING else: \
+                    ingredients, names, gibberish, categories, adjectives, random words. \
+                    If you are unsure or do not recognise it, answer false.
+                    """
             )
 
-            let stream = session.streamResponse(
-                to: "List all the grocery ingredients I need to buy to make \(recipe). Be thorough and practical for a home cook.",
+            let validation = try await validationSession.respond(
+                to: "Is the following a specific named dish or recipe that someone cooks? Input: '\(recipe)'",
+                generating: _DishValidation.self
+            )
+
+            try Task.checkCancellation()
+
+            guard validation.content.isDish else {
+                isInvalidDish = true
+                hasSearched = true
+                isLoading = false
+                return
+            }
+
+            // ── Step 2: Generate ingredients ──
+            let ingredientSession = LanguageModelSession(
+                instructions: """
+                    You are a grocery shopping assistant. \
+                    List grocery ingredients needed to cook a given dish. \
+                    Be thorough and practical for a home cook. \
+                    Do NOT include basic pantry staples (salt, pepper, water, sugar, \
+                    flour, oil, butter, vinegar, baking soda, baking powder, cornstarch). \
+                    Only list items a person would specifically go to the store to buy. \
+                    Always write ingredient names in English regardless of input language.
+                    """
+            )
+
+            let stream = ingredientSession.streamResponse(
+                to: "List all grocery ingredients needed to make '\(recipe)'.",
                 generating: _GeneratedIngredientList.self
             )
 
@@ -82,6 +189,8 @@ final class RecipeBasketService {
                     guard let name = item.name, !name.isEmpty,
                           let emoji = item.emoji, !emoji.isEmpty
                     else { return nil }
+                    // Client-side pantry filter as safety net
+                    guard !Self.isPantryStaple(name) else { return nil }
                     let qty = item.quantity.map { $0 >= 1 && $0 <= 6 ? $0 : 1 } ?? 1
                     return RecipeIngredient(name: name, emoji: emoji, quantity: qty)
                 }

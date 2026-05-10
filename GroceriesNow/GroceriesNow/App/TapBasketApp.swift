@@ -1,6 +1,8 @@
 import SwiftUI
 import SwiftData
 import TipKit
+import GoogleMobileAds
+import UserMessagingPlatform
 
 @main
 struct TapBasketApp: App {
@@ -9,22 +11,69 @@ struct TapBasketApp: App {
             .displayFrequency(.immediate),
             .datastoreLocation(.applicationDefault)
         ])
+
+        // Start the SDK immediately and unconditionally. Per Google's docs,
+        // start() should be called at app launch regardless of consent status —
+        // consent governs personalisation, not whether the SDK runs at all.
+        MobileAds.shared.start(completionHandler: nil)
     }
+
+    // MARK: - iCloud sync configuration
+    //
+    // To enable iCloud sync of baskets + history across the user's devices:
+    //
+    //   1. In Xcode: Target → Signing & Capabilities → + Capability → iCloud.
+    //      Tick "CloudKit". Add a container ID matching `cloudKitContainerID`
+    //      below (or change the constant to match your existing container).
+    //   2. Set `enableCloudKitSync = true`.
+    //   3. Build. SwiftData will auto-create the schema in the user's private
+    //      CloudKit database the first time the app runs.
+    //
+    // Until both steps are done the app falls back to local-only storage.
+    // Models are already CloudKit-compatible (no `@Attribute(.unique)`, every
+    // stored property has a default), so flipping this on is a one-liner.
+    private static let enableCloudKitSync = false
+    private static let cloudKitContainerID = "iCloud.com.taplist.app"
 
     var sharedModelContainer: ModelContainer = {
         let schema = Schema([
             QuickItem.self,
             BasketItem.self,
             CompletedBasket.self,
-            CompletedBasketEntry.self
+            CompletedBasketEntry.self,
+            ItemUsageRecord.self,
+            CoOccurrenceRecord.self
         ])
-        let modelConfiguration = ModelConfiguration(schema: schema, isStoredInMemoryOnly: false)
+
+        let modelConfiguration: ModelConfiguration
+        if enableCloudKitSync {
+            modelConfiguration = ModelConfiguration(
+                schema: schema,
+                isStoredInMemoryOnly: false,
+                cloudKitDatabase: .private(cloudKitContainerID)
+            )
+        } else {
+            modelConfiguration = ModelConfiguration(
+                schema: schema,
+                isStoredInMemoryOnly: false
+            )
+        }
 
         do {
             let container = try ModelContainer(for: schema, configurations: [modelConfiguration])
             seedQuickItemsIfNeeded(in: container.mainContext)
             return container
         } catch {
+            // If CloudKit was requested but the capability isn't enabled in
+            // the project, container creation fails — fall back to local-only
+            // so the app still launches.
+            if enableCloudKitSync {
+                let fallback = ModelConfiguration(schema: schema, isStoredInMemoryOnly: false)
+                if let container = try? ModelContainer(for: schema, configurations: [fallback]) {
+                    seedQuickItemsIfNeeded(in: container.mainContext)
+                    return container
+                }
+            }
             fatalError("Could not create ModelContainer: \(error)")
         }
     }()
@@ -35,8 +84,43 @@ struct TapBasketApp: App {
         WindowGroup {
             ContentView()
                 .environment(purchaseManager)
+                .task {
+                    // Run consent flow once the UI is on screen so we have
+                    // a guaranteed root view controller for the UMP form.
+                    await Self.requestConsent()
+                }
         }
         .modelContainer(sharedModelContainer)
+    }
+
+    // MARK: - Consent flow
+
+    /// Requests consent info and presents the GDPR consent form if required.
+    /// Runs after the UI is on screen so the form has a valid presenter.
+    @MainActor
+    private static func requestConsent() async {
+        let parameters = RequestParameters()
+
+        await withCheckedContinuation { (continuation: CheckedContinuation<Void, Never>) in
+            ConsentInformation.shared.requestConsentInfoUpdate(with: parameters) { _ in
+                Task { @MainActor in
+                    guard
+                        let rootVC = UIApplication.shared.connectedScenes
+                            .compactMap({ $0 as? UIWindowScene })
+                            .flatMap({ $0.windows })
+                            .first(where: { $0.isKeyWindow })?
+                            .rootViewController
+                    else {
+                        continuation.resume()
+                        return
+                    }
+
+                    ConsentForm.loadAndPresentIfRequired(from: rootVC) { _ in
+                        continuation.resume()
+                    }
+                }
+            }
+        }
     }
 
     static let defaultQuickItems: [QuickItem] = [

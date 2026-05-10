@@ -1,14 +1,15 @@
 import Foundation
 import SwiftData
 
+/// CloudKit-ready: no `@Attribute(.unique)`, every stored property has a default.
 @Model
 final class CompletedBasketEntry {
-    @Attribute(.unique) var id: UUID
-    var basketID: UUID
-    var name: String
-    var emoji: String
-    var quantity: Int
-    var completedAt: Date
+    var id: UUID = UUID()
+    var basketID: UUID = UUID()
+    var name: String = ""
+    var emoji: String = ""
+    var quantity: Int = 1
+    var completedAt: Date = Date.distantPast
     var note: String?
 
     init(

@@ -2,25 +2,14 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
-    <!-- Launch screen -->
-    <key>UILaunchScreen</key>
-    <dict>
-        <key>UIColorName</key>
-        <string>LaunchBackground</string>
-        <key>UIImageName</key>
-        <string>LaunchBasket</string>
-        <key>UIImageRespectsSafeAreaInsets</key>
-        <true/>
-    </dict>
-
-    <!-- App does not use non-exempt encryption (no custom crypto, no VPN, no passwords transmitted) -->
-    <key>ITSAppUsesNonExemptEncryption</key>
-    <false/>
-
-    <!-- Supported interface orientations (iPhone) -->
-    <key>UISupportedInterfaceOrientations</key>
-    <array>
-        <string>UIInterfaceOrientationPortrait</string>
-    </array>
+	<key>UILaunchScreen</key>
+	<dict>
+		<key>UIColorName</key>
+		<string>LaunchBackground</string>
+		<key>UIImageName</key>
+		<string>LaunchBasket</string>
+		<key>UIImageRespectsSafeAreaInsets</key>
+		<true/>
+	</dict>
 </dict>
 </plist>

@@ -36,7 +36,9 @@ struct ProPaywallSheet: View {
                             .font(.system(size: 12, weight: .bold))
                             .foregroundStyle(.secondary)
                             .frame(width: 30, height: 30)
+                            .background(Color(.secondarySystemFill), in: Circle())
                     }
+                    .accessibilityLabel(Text("action.close"))
                 }
             }
         }

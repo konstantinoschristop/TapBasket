@@ -11,20 +11,62 @@ struct TapBasketApp: App {
         ])
     }
 
+    // MARK: - iCloud sync configuration
+    //
+    // To enable iCloud sync of baskets + history across the user's devices:
+    //
+    //   1. In Xcode: Target → Signing & Capabilities → + Capability → iCloud.
+    //      Tick "CloudKit". Add a container ID matching `cloudKitContainerID`
+    //      below (or change the constant to match your existing container).
+    //   2. Set `enableCloudKitSync = true`.
+    //   3. Build. SwiftData will auto-create the schema in the user's private
+    //      CloudKit database the first time the app runs.
+    //
+    // Until both steps are done the app falls back to local-only storage.
+    // Models are already CloudKit-compatible (no `@Attribute(.unique)`, every
+    // stored property has a default), so flipping this on is a one-liner.
+    private static let enableCloudKitSync = false
+    private static let cloudKitContainerID = "iCloud.com.taplist.app"
+
     var sharedModelContainer: ModelContainer = {
         let schema = Schema([
             QuickItem.self,
             BasketItem.self,
             CompletedBasket.self,
-            CompletedBasketEntry.self
+            CompletedBasketEntry.self,
+            ItemUsageRecord.self,
+            CoOccurrenceRecord.self
         ])
-        let modelConfiguration = ModelConfiguration(schema: schema, isStoredInMemoryOnly: false)
+
+        let modelConfiguration: ModelConfiguration
+        if enableCloudKitSync {
+            modelConfiguration = ModelConfiguration(
+                schema: schema,
+                isStoredInMemoryOnly: false,
+                cloudKitDatabase: .private(cloudKitContainerID)
+            )
+        } else {
+            modelConfiguration = ModelConfiguration(
+                schema: schema,
+                isStoredInMemoryOnly: false
+            )
+        }
 
         do {
             let container = try ModelContainer(for: schema, configurations: [modelConfiguration])
             seedQuickItemsIfNeeded(in: container.mainContext)
             return container
         } catch {
+            // If CloudKit was requested but the capability isn't enabled in
+            // the project, container creation fails — fall back to local-only
+            // so the app still launches.
+            if enableCloudKitSync {
+                let fallback = ModelConfiguration(schema: schema, isStoredInMemoryOnly: false)
+                if let container = try? ModelContainer(for: schema, configurations: [fallback]) {
+                    seedQuickItemsIfNeeded(in: container.mainContext)
+                    return container
+                }
+            }
             fatalError("Could not create ModelContainer: \(error)")
         }
     }()

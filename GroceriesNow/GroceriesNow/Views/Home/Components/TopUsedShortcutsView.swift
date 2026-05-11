@@ -1,4 +1,32 @@
 import SwiftUI
+import UIKit
+
+// MARK: - UIKit clip breaker
+
+/// `UITableViewCell` (which backs every SwiftUI List row) sets
+/// `clipsToBounds = true` at the UIKit level. SwiftUI's `scrollClipDisabled()`
+/// only controls SwiftUI-level clipping and cannot override this. This view
+/// walks up the UIKit hierarchy on `didMoveToWindow` and disables clipping on
+/// every ancestor until it reaches the List's own `UIScrollView`, so a
+/// horizontal `ScrollView` inside a List row can visually bleed to the screen
+/// edge.
+private final class _ClipBreakerView: UIView {
+    override func didMoveToWindow() {
+        super.didMoveToWindow()
+        guard window != nil else { return }
+        var node: UIView? = superview
+        while let v = node {
+            v.clipsToBounds = false
+            if v is UIScrollView { break }
+            node = v.superview
+        }
+    }
+}
+
+private struct ListCellClipBreaker: UIViewRepresentable {
+    func makeUIView(context: Context) -> _ClipBreakerView { _ClipBreakerView() }
+    func updateUIView(_ uiView: _ClipBreakerView, context: Context) {}
+}
 
 struct TopUsedShortcutItem: Identifiable {
     let id: UUID
@@ -84,10 +112,15 @@ struct TopUsedShortcutsView: View {
                     .transition(.scale.combined(with: .opacity))
                 }
             }
-            .padding(.horizontal, 16)
             .padding(.vertical, 4)
             .animation(.spring(response: 0.4, dampingFraction: 0.85), value: items.map(\.id))
         }
+        // No content margins — the scroll content reaches the full row width
+        // so the last avatar can scroll right up to the screen edge.
+        .scrollClipDisabled()
+        // Breaks UITableViewCell's clipsToBounds at the UIKit level so
+        // avatars can bleed visually past the row boundary to the screen edge.
+        .background(ListCellClipBreaker())
     }
 }
 

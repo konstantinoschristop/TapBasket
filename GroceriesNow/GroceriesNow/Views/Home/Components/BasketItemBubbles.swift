@@ -3,32 +3,38 @@ import SwiftUI
 /// Cluster of emoji avatars rotating slowly around the centre of an
 /// invisible bounding circle.
 ///
-/// **Layout** — 4 avatars on a circle of `slotRadius`, evenly spaced 90° apart.
-/// Slots maintain their 90° angular spacing at all times so avatars never
-/// overlap, regardless of how the cluster is rotated.
+/// **Layout** — up to 4 avatars on a circle of `dynamicSlotRadius`, evenly
+/// spaced around the full 360°. With fewer avatars the spacing stays balanced
+/// (2 → 180° apart, 3 → 120° apart, 4 → 90° apart). The avatar diameter and
+/// orbit radius both scale down as the cluster fills up, so a single large
+/// emoji gradually shrinks into a full four-avatar carousel.
 ///
 /// **Motion** — the whole cluster rotates around its centre at a slow
 /// constant angular velocity. Each avatar travels along the same orbit, just
-/// offset by 90° from the next. Reads as a calm carousel, not chaotic.
+/// offset by 360°/n from the next. Reads as a calm carousel, not chaotic.
 ///
 /// **Reusable across surfaces.** Takes a plain `[String]` of emojis. Use
 /// `.standard` for the home basket button, `.compact` for list section
 /// headers and other tight spaces.
 ///
 /// Respects `accessibilityReduceMotion`: rotation pauses, avatars sit at
-/// resting compass-point positions (top / right / bottom / left).
+/// resting positions.
 struct BasketItemBubbles: View {
 
     // MARK: - Public API
 
     let emojis: [String]
     var size: Size = .standard
+    /// Set to `false` to freeze the spin in place — useful while a navigation
+    /// transition is in progress so the constant TimelineView invalidation
+    /// doesn't compete with the transition renderer.
+    var isAnimating: Bool = true
 
     enum Size {
-        /// Hero treatment for the floating basket button — ~54pt area, 20pt avatars.
+        /// Hero treatment for the floating basket button — ~62pt area, 18pt avatars (at 4 items).
         case standard
         /// Compact treatment for list section headers and other dense spots —
-        /// ~36pt area, 14pt avatars.
+        /// ~44pt area, 12pt avatars (at 4 items).
         case compact
 
         var containerDiameter: CGFloat {
@@ -38,6 +44,9 @@ struct BasketItemBubbles: View {
             }
         }
 
+        // The values below are the "full cluster" (4-avatar) baselines.
+        // Actual runtime sizes are computed dynamically in BasketItemBubbles.
+
         var avatarDiameter: CGFloat {
             switch self {
             case .standard: 18
@@ -45,9 +54,7 @@ struct BasketItemBubbles: View {
             }
         }
 
-        /// Radius of the orbit each avatar travels along. Sized so adjacent
-        /// avatars (90° apart) don't touch, AND so the centre badge has clear
-        /// space inside the orbit.
+        /// Radius of the orbit each avatar travels along at max count (4).
         var slotRadius: CGFloat {
             switch self {
             case .standard: 20
@@ -111,9 +118,9 @@ struct BasketItemBubbles: View {
     @State private var nextSlotToReplace = 0
     @State private var rotationTask: Task<Void, Never>?
 
-    /// Each visible avatar slot. `slot` (0–3) drives the per-avatar phase
-    /// offsets so they never move in lockstep. `id` is fresh on every swap
-    /// so SwiftUI's ForEach fires the transition.
+    /// Each visible avatar slot. `slot` (0–3) drives the per-avatar angular
+    /// position within the orbit. `id` is fresh on every swap so SwiftUI's
+    /// ForEach fires the transition.
     private struct Avatar: Identifiable {
         let id = UUID()
         let emoji: String
@@ -122,7 +129,7 @@ struct BasketItemBubbles: View {
 
     var body: some View {
         Group {
-            if reduceMotion {
+            if reduceMotion || !isAnimating {
                 staticContainer
             } else {
                 animatedContainer
@@ -140,9 +147,12 @@ struct BasketItemBubbles: View {
             rotationTask?.cancel()
         }
         // Reinitialise when emoji set changes — caller may pass a different
-        // list (e.g. basket changes). Guarded so identical re-renders are no-ops.
+        // list (e.g. basket changes). Animate so avatar entries/exits and
+        // the resulting size shifts feel smooth.
         .onChange(of: emojis) { _, _ in
-            initialiseDisplayed()
+            withAnimation(.spring(response: 0.45, dampingFraction: 0.82)) {
+                initialiseDisplayed()
+            }
             startRotation()
         }
     }
@@ -151,8 +161,6 @@ struct BasketItemBubbles: View {
 
     private var animatedContainer: some View {
         TimelineView(.animation) { context in
-            // Cluster's current rotation, in radians. Wrapped to keep numbers
-            // small over long sessions even though `cos`/`sin` accept any value.
             let phase = context.date.timeIntervalSinceReferenceDate * size.spinSpeed
             ZStack {
                 ForEach(displayed) { avatar in
@@ -161,7 +169,6 @@ struct BasketItemBubbles: View {
                         .transition(.scale(scale: 0.6).combined(with: .opacity))
                 }
 
-                // Centre badge: stays put while avatars spin around it.
                 centreBadge
             }
         }
@@ -182,9 +189,6 @@ struct BasketItemBubbles: View {
 
     // MARK: - Centre "+N" badge
 
-    /// Shown when the basket has more items than the 4 visible slots — it
-    /// tells the user "the cluster is a sample, there are this many more".
-    /// Sits dead-centre in the orbit so the cluster reads as orbits-around-a-hub.
     @ViewBuilder
     private var centreBadge: some View {
         let hidden = max(0, emojis.count - slotCount)
@@ -204,9 +208,10 @@ struct BasketItemBubbles: View {
     // MARK: - Single avatar
 
     private func avatarView(for avatar: Avatar) -> some View {
-        Text(avatar.emoji)
-            .font(.system(size: size.emojiFontSize))
-            .frame(width: size.avatarDiameter, height: size.avatarDiameter)
+        let d = dynamicAvatarDiameter
+        return Text(avatar.emoji)
+            .font(.system(size: dynamicEmojiFontSize))
+            .frame(width: d, height: d)
             .background {
                 Circle().fill(Color("CardBackground"))
             }
@@ -218,16 +223,64 @@ struct BasketItemBubbles: View {
 
     // MARK: - Position math
 
-    /// Orbital position of an avatar around the bubble centre. The slot's
-    /// resting angle (0 = top, 1 = right, 2 = bottom, 3 = left) is offset by
-    /// `spin` so the whole cluster rotates together — relative spacing
-    /// between avatars stays at exactly 90°, so they can never overlap.
+    /// Orbital position of an avatar around the bubble centre.
+    ///
+    /// Avatars are evenly distributed around the full 360° based on how many
+    /// are currently displayed (`displayed.count`), so the cluster always
+    /// looks balanced regardless of count:
+    ///   1 → centred (slotRadius = 0, no movement)
+    ///   2 → top / bottom (180° apart)
+    ///   3 → equilateral triangle (120° apart)
+    ///   4 → compass points (90° apart)
+    ///
+    /// `spin` rotates the whole formation so all avatars travel the same
+    /// orbit path — relative spacing is preserved, overlap is impossible.
     private func slotPosition(for slot: Int, spin: Double) -> CGSize {
-        let restingAngle = (Double(slot) * 2.0 * .pi / Double(slotCount)) - .pi / 2
+        let count = max(1, displayed.count)
+        let restingAngle = (Double(slot) * 2.0 * .pi / Double(count)) - .pi / 2
         let angle = restingAngle + spin
-        let x = cos(angle) * size.slotRadius
-        let y = sin(angle) * size.slotRadius
-        return CGSize(width: x, height: y)
+        let r = dynamicSlotRadius
+        return CGSize(width: cos(angle) * r, height: sin(angle) * r)
+    }
+
+    // MARK: - Dynamic sizing helpers
+
+    /// Avatar circle diameter that scales down as more avatars join the cluster.
+    ///
+    ///   1 avatar  → large, nearly filling the container
+    ///   2 avatars → medium-large
+    ///   3 avatars → slightly smaller
+    ///   4 avatars → the Size preset's fixed `avatarDiameter`
+    private var dynamicAvatarDiameter: CGFloat {
+        switch displayed.count {
+        case 0, 1: return size == .standard ? 38 : 26
+        case 2:    return size == .standard ? 26 : 18
+        case 3:    return size == .standard ? 21 : 14
+        default:   return size.avatarDiameter
+        }
+    }
+
+    /// Orbit radius that grows as the cluster fills up.
+    ///
+    /// At 1 avatar the radius is 0 (avatar sits dead-centre, motionless).
+    /// At 4 it matches the Size preset's `slotRadius`.
+    private var dynamicSlotRadius: CGFloat {
+        switch displayed.count {
+        case 0, 1: return 0
+        case 2:    return size == .standard ? 14 : 9
+        case 3:    return size == .standard ? 17 : 12
+        default:   return size.slotRadius
+        }
+    }
+
+    /// Emoji glyph point size that grows in lock-step with the avatar circle.
+    private var dynamicEmojiFontSize: CGFloat {
+        switch displayed.count {
+        case 0, 1: return size == .standard ? 24 : 16
+        case 2:    return size == .standard ? 17 : 11
+        case 3:    return size == .standard ? 14 : 9
+        default:   return size.emojiFontSize
+        }
     }
 
     // MARK: - State management
@@ -242,7 +295,6 @@ struct BasketItemBubbles: View {
 
     private func startRotation() {
         rotationTask?.cancel()
-        // Only rotate when there's something not currently shown to rotate to.
         guard !reduceMotion, emojis.count > slotCount else { return }
 
         let interval = size.rotationInterval
@@ -266,8 +318,6 @@ struct BasketItemBubbles: View {
         let slot = nextSlotToReplace
         guard let index = displayed.firstIndex(where: { $0.slot == slot }) else { return }
 
-        // Replace with a fresh Avatar (new UUID) so ForEach treats it as
-        // remove+insert and fires the transition on both sides.
         withAnimation(.easeInOut(duration: 0.7)) {
             displayed[index] = Avatar(emoji: next, slot: slot)
         }

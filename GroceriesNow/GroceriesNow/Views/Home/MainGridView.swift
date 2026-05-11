@@ -36,6 +36,7 @@ struct MainGridView: View {
     @Query(sort: [SortDescriptor(\CompletedBasket.completedAt, order: .reverse)]) private var completedBaskets: [CompletedBasket]
 
     @State private var basketManager = BasketManager()
+    @Namespace private var basketZoom
     @State private var showBasket = false
     @State private var searchText = ""
     @State private var showManualAddSheet = false
@@ -156,14 +157,31 @@ private var hasExactNameMatch: Bool {
         }
     }
 
+    private var undoLabel: String? {
+        guard let record = lastAdd, record.isFresh else { return nil }
+        return String(localized: "action.undo_format", defaultValue: "Undo %@", locale: locale)
+            .replacingOccurrences(of: "%@", with: "\(record.emoji) \(record.displayName)")
+    }
+
     var body: some View {
         NavigationStack {
             scrollContent
-                .safeAreaInset(edge: .bottom, spacing: 0) {
-                    bottomBar
-                }
                 .overlay(alignment: .top) {
                     loggedPill
+                }
+                .overlay {
+                    FloatingBasketButton(
+                        emojis: basketItems.map(\.emoji),
+                        count: basketManager.totalItemCount(from: basketItems),
+                        scale: basketButtonScale,
+                        namespace: basketZoom,
+                        onTap: { showBasket = true },
+                        undoLabel: undoLabel,
+                        onUndo: performUndoLastAdd
+                    )
+                }
+                .navigationDestination(isPresented: $showBasket) {
+                    basketDestination
                 }
                 .navigationTitle(Text("home.navigation_title"))
             .toolbarTitleDisplayMode(.inlineLarge)
@@ -210,9 +228,6 @@ private var hasExactNameMatch: Bool {
                     }
                 }
                 #endif
-            }
-            .sheet(isPresented: $showBasket) {
-                BasketView(manager: basketManager, onCompletion: showLoggedPill)
             }
             .sheet(isPresented: $showManualAddSheet) {
                 ManualQuickItemSheet(initialName: trimmedSearch, onSave: saveManualQuickItem)
@@ -289,26 +304,6 @@ private var hasExactNameMatch: Bool {
         }
     }
 
-    /// Floating bottom controls. No heavy bar background — the basket button itself
-    /// is a glass capsule that floats over the scroll content. `safeAreaInset` still
-    /// pushes scroll content up by the bar's height so nothing is hidden behind it.
-    ///
-    /// When the basket is empty, the button fades + scales out smoothly. We keep
-    /// it MOUNTED (rather than conditionally rendering) so the safeAreaInset's
-    /// height doesn't collapse mid-transition — that collapse was clipping the
-    /// button's capsule + shadow to its shrinking container, leaving a brief
-    /// frame artifact at the bottom edge. Tradeoff is a small reserved space
-    /// when empty, which is invisible since `basketButton` already styles
-    /// itself as inert (`.disabled(isEmpty)`).
-    private var bottomBar: some View {
-        basketButton
-            .padding(.horizontal, 16)
-            .padding(.bottom, 8)
-            .opacity(basketItems.isEmpty ? 0 : 1)
-            .scaleEffect(basketItems.isEmpty ? 0.85 : 1)
-            .animation(.taplistTransition, value: basketItems.isEmpty)
-    }
-
     @ViewBuilder
     private var scrollContent: some View {
         List {
@@ -353,6 +348,20 @@ private var hasExactNameMatch: Bool {
                     }
                 }
 
+                // Universal "anyone would buy" rail — secondary to Regulars
+                // above. Auto-drifts, draggable, and items already in the
+                // basket fade out of the loop.
+                Section {
+                    PantryStaplesRail(
+                        inBasketNames: basketItemNames,
+                        onTap: addPantryStaple,
+                        onAddAll: addAllPantryStaples
+                    )
+                    .listRowInsets(EdgeInsets(top: 0, leading: 0, bottom: 8, trailing: 0))
+                    .listRowBackground(Color.clear)
+                    .listRowSeparator(.hidden)
+                }
+
                 if !smartStartItems.isEmpty {
                     Section {
                         SmartStartView(
@@ -365,6 +374,18 @@ private var hasExactNameMatch: Bool {
                         .listRowInsets(EdgeInsets())
                         .listRowBackground(Color.clear)
                         .listRowSeparator(.hidden)
+                    }
+                }
+
+                // Banner sits at the natural break between smart suggestions
+                // and the category grid — visible mid-session, not buried at
+                // the very bottom after all categories.
+                if !AdsConfiguration.hideForScreenshots {
+                    Section {
+                        InlineBannerSection()
+                            .listRowInsets(EdgeInsets())
+                            .listRowBackground(Color.clear)
+                            .listRowSeparator(.hidden)
                     }
                 }
 
@@ -382,6 +403,7 @@ private var hasExactNameMatch: Bool {
                         .listRowSeparator(.hidden)
                     } header: {
                         categorySectionHeader(for: section)
+                            .listRowInsets(EdgeInsets())
                     }
                 }
             }
@@ -439,71 +461,16 @@ private var hasExactNameMatch: Bool {
     }
 
     @ViewBuilder
-    private var basketButton: some View {
-        let count = basketManager.totalItemCount(from: basketItems)
-        let isEmpty = count == 0
-
-        Button {
-            showBasket = true
-        } label: {
-            HStack(spacing: 12) {
-                // Bubbles are the focal element. When empty the button is
-                // hidden via opacity, so the icon is just an intermediate
-                // state during the fade.
-                if !basketItems.isEmpty {
-                    BasketItemBubbles(emojis: basketItems.map(\.emoji), size: .standard)
-                        .transition(.scale.combined(with: .opacity))
-                } else {
-                    Image(systemName: "basket.fill")
-                        .font(.system(size: 24, weight: .semibold))
-                        .frame(width: 62, height: 62)
-                        .transition(.scale.combined(with: .opacity))
-                }
-
-                // Stat-style typography: count is the hero, label is a small
-                // tracked uppercase caption underneath.
-                VStack(alignment: .leading, spacing: -1) {
-                    Text("\(count)")
-                        .font(.title3.weight(.bold))
-                        .monospacedDigit()
-                        .contentTransition(.numericText())
-                        .animation(.spring(response: 0.3, dampingFraction: 0.75), value: count)
-
-                    Text("home.basket_button.label")
-                        .font(.caption2.weight(.semibold))
-                        .foregroundStyle(.secondary)
-                        .textCase(.uppercase)
-                        .tracking(0.8)
-                }
-            }
-            .foregroundStyle(isEmpty ? Color(.tertiaryLabel) : Color(.label))
-            .padding(.horizontal, 14)
-            .padding(.vertical, 8)
-            // No maxWidth — pill hugs its content. fixedSize gives it priority
-            // over any ambient parent stretching (e.g. safeAreaInset).
-            .fixedSize(horizontal: true, vertical: false)
-            .adaptiveGlass(in: Capsule())
-            .overlay {
-                Capsule()
-                    .strokeBorder(Color(.separator).opacity(0.3), lineWidth: 0.5)
-            }
-            .shadow(color: .black.opacity(0.10), radius: 12, y: 5)
-            .contentShape(Capsule())
-            .animation(.taplistTransition, value: basketItems.isEmpty)
-        }
-        .buttonStyle(.spring(scale: 0.97))
-        .disabled(isEmpty)
-        .scaleEffect(basketButtonScale)
-        // Long-press surfaces an Undo affordance for the most recent add.
-        // Empty when there's nothing to undo, so SwiftUI suppresses the menu.
-        .contextMenu {
-            if let record = lastAdd, record.isFresh {
-                let label = String(localized: "action.undo_format", defaultValue: "Undo %@", locale: locale)
-                    .replacingOccurrences(of: "%@", with: "\(record.emoji) \(record.displayName)")
-                Button(role: .destructive, action: performUndoLastAdd) {
-                    Label(label, systemImage: "arrow.uturn.backward")
-                }
-            }
+    private var basketDestination: some View {
+        let view = BasketView(manager: basketManager, onCompletion: {
+            showLoggedPill()
+            // Pop back to home after the completion animation finishes.
+            showBasket = false
+        })
+        if #available(iOS 18.0, *) {
+            view.navigationTransition(.zoom(sourceID: "basket", in: basketZoom))
+        } else {
+            view
         }
     }
 
@@ -621,6 +588,12 @@ private var hasExactNameMatch: Bool {
             Spacer()
         }
         .padding(.vertical, 4)
+        // Opaque background so scrolling content doesn't bleed through
+        // the pinned header as it slides underneath.
+        .padding(.horizontal, 16)
+        .padding(.top, 8)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background(Color("LaunchBackground"))
     }
 
     private func refreshSmartStart() {
@@ -755,11 +728,58 @@ private var hasExactNameMatch: Bool {
         addQuickItemToBasket(item)
     }
 
+    /// Adds a curated staple to the basket.
+    ///
+    /// Prefers an existing `QuickItem` match (preserves category metadata and
+    /// flows through the same add path as the rest of the home screen).
+    /// Falls back to inserting a bare `BasketItem` when no matching QuickItem
+    /// exists in the user's seed/custom set.
+    private func addPantryStaple(_ staple: PantryStaple) {
+        UIApplication.shared.sendAction(#selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil)
+
+        if let match = quickItems.first(where: { $0.name.caseInsensitiveCompare(staple.name) == .orderedSame }) {
+            addQuickItemToBasket(match)
+            return
+        }
+
+        // Fallback: no matching QuickItem — insert a BasketItem directly.
+        let previousQuantity: Int
+        if let existing = basketItems.first(where: { $0.name.caseInsensitiveCompare(staple.name) == .orderedSame }) {
+            previousQuantity = existing.quantity
+            existing.quantity += 1
+        } else {
+            previousQuantity = 0
+            modelContext.insert(BasketItem(name: staple.name, emoji: staple.emoji, quantity: 1))
+        }
+        try? modelContext.save()
+
+        lastAdd = LastAddRecord(
+            name: staple.name,
+            displayName: ProductDisplayNameProvider.displayName(for: staple.name),
+            emoji: staple.emoji,
+            previousQuantity: previousQuantity,
+            addedAt: Date()
+        )
+        pulseBasketButton()
+    }
+
     /// Tap on a Regulars avatar — toggles the underlying QuickItem's basket
     /// membership, matching the grid tile's behaviour.
     private func toggleShortcutItemInBasket(_ shortcut: TopUsedShortcutItem) {
         guard let item = quickItems.first(where: { $0.id == shortcut.id }) else { return }
         toggleQuickItemInBasket(item)
+    }
+
+    /// "Add all" affordance on the pantry rail. Adds every staple that isn't
+    /// already in the basket. Bulk add, so we clear the undo-record afterwards
+    /// (single-item undo isn't meaningful for a many-item add).
+    private func addAllPantryStaples() {
+        UIApplication.shared.sendAction(#selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil)
+        let inBasket = basketItemNames
+        for staple in PantryStaple.all where !inBasket.contains(staple.id) {
+            addPantryStaple(staple)
+        }
+        lastAdd = nil
     }
 
     private func addRecentBasketFromHome(_ basket: RecentBasketSummary) {

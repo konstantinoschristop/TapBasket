@@ -1,23 +1,14 @@
 import SwiftUI
 
-/// History sheet listing recent shopping trips. Each basket is one compact row
-/// — bubble preview + date + count + ellipsis. The whole row is a `Menu`
-/// trigger; the menu itself is the only interaction surface.
-///
-/// Menu contents per basket:
-/// * One button per item — tap to add that single item to the current basket.
-/// * "Add all" — bulk-adds the whole shop and dismisses the sheet.
-/// * "Hide this shop" — destructive, removes the basket from the list.
-///
-/// No inline expand/collapse, no per-row state. Items live entirely inside the
-/// menu, so the list stays dense and scannable regardless of basket size.
+/// History sheet displaying past shopping trips as a 2-column grid.
+/// Each tile gives the animated emoji cluster a dedicated stage with a
+/// radial glow, and shows date + count in a clean strip below.
+/// The whole tile is a `Menu` trigger.
 struct RecentBasketsSheet: View {
     @Environment(\.dismiss) private var dismiss
     @Environment(\.locale) private var locale
 
     let baskets: [RecentBasketSummary]
-    /// Lowercased names of items currently in the active basket — drives the
-    /// "Add all" suppression when every item in a past shop is already added.
     let inBasketNames: Set<String>
     let onAddBasket: (RecentBasketSummary) -> Void
     let onAddItem: (RecentBasketItem) -> Void
@@ -25,19 +16,46 @@ struct RecentBasketsSheet: View {
 
     // MARK: - State
 
-    /// Snapshot of baskets taken on first appear. Isolates the list from parent
-    /// re-renders triggered by SwiftData writes (every onAddItem call).
     @State private var displayedBaskets: [RecentBasketSummary] = []
     @State private var displayLimit: Int = 10
-
     private let pageSize = 10
 
     private var visibleBaskets: [RecentBasketSummary] {
         Array(displayedBaskets.prefix(displayLimit))
     }
+    private var hasMore: Bool { displayLimit < displayedBaskets.count }
 
-    private var hasMore: Bool {
-        displayLimit < displayedBaskets.count
+    // MARK: - Sections
+
+    private struct BasketSection: Identifiable {
+        let id: String
+        let title: String
+        let baskets: [RecentBasketSummary]
+    }
+
+    private var sections: [BasketSection] {
+        let cal = Calendar.current
+        let now = Date()
+        var today: [RecentBasketSummary] = []
+        var week:  [RecentBasketSummary] = []
+        var older: [RecentBasketSummary] = []
+
+        for b in visibleBaskets {
+            if cal.isDateInToday(b.completedAt) {
+                today.append(b)
+            } else if let cutoff = cal.date(byAdding: .day, value: -7, to: now),
+                      b.completedAt >= cutoff {
+                week.append(b)
+            } else {
+                older.append(b)
+            }
+        }
+
+        return [
+            today.isEmpty ? nil : BasketSection(id: "today",   title: String(localized: "history.section.today"),     baskets: today),
+            week.isEmpty  ? nil : BasketSection(id: "week",    title: String(localized: "history.section.this_week"), baskets: week),
+            older.isEmpty ? nil : BasketSection(id: "earlier", title: String(localized: "history.section.earlier"),   baskets: older),
+        ].compactMap { $0 }
     }
 
     // MARK: - Body
@@ -54,10 +72,7 @@ struct RecentBasketsSheet: View {
                 }
         }
         .onAppear {
-            // Snapshot once — subsequent parent re-renders won't touch this.
-            if displayedBaskets.isEmpty {
-                displayedBaskets = baskets
-            }
+            if displayedBaskets.isEmpty { displayedBaskets = baskets }
         }
     }
 
@@ -66,75 +81,78 @@ struct RecentBasketsSheet: View {
     @ViewBuilder
     private var content: some View {
         if displayedBaskets.isEmpty {
-            emptyState
+            ContentUnavailableView(
+                String(localized: "recent_baskets.empty.title"),
+                systemImage: "clock.arrow.trianglehead.counterclockwise.rotate.90",
+                description: Text("recent_baskets.empty.description")
+            )
         } else {
-            List {
-                ForEach(visibleBaskets) { basket in
-                    basketRow(for: basket)
-                        .listRowBackground(Color("CardBackground"))
-                }
+            ScrollView {
+                LazyVStack(alignment: .leading, spacing: 0) {
+                    ForEach(sections) { section in
+                        sectionLabel(section.title)
 
-                if hasMore {
-                    showMoreRow
+                        LazyVGrid(
+                            columns: [GridItem(.flexible(), spacing: 12),
+                                      GridItem(.flexible(), spacing: 12)],
+                            spacing: 12
+                        ) {
+                            ForEach(section.baskets) { basket in
+                                basketTile(for: basket)
+                            }
+                        }
+                        .padding(.horizontal, 16)
+                        .padding(.bottom, 4)
+                    }
+
+                    if hasMore { showMoreButton.padding(.top, 8) }
                 }
+                .padding(.top, 8)
+                .padding(.bottom, 28)
             }
-            .listStyle(.insetGrouped)
-            .scrollContentBackground(.hidden)
             .background(Color("LaunchBackground"))
         }
     }
 
-    private var emptyState: some View {
-        ContentUnavailableView(
-            String(localized: "recent_baskets.empty.title"),
-            systemImage: "clock.arrow.trianglehead.counterclockwise.rotate.90",
-            description: Text("recent_baskets.empty.description")
-        )
+    // MARK: - Section label
+
+    private func sectionLabel(_ title: String) -> some View {
+        Text(title)
+            .font(.caption.weight(.bold))
+            .foregroundStyle(Color(.tertiaryLabel))
+            .textCase(.uppercase)
+            .tracking(1)
+            .padding(.horizontal, 20)
+            .padding(.top, 16)
+            .padding(.bottom, 10)
     }
 
-    // MARK: - Show-more row
+    // MARK: - Show-more
 
-    private var showMoreRow: some View {
-        let remaining = baskets.count - displayLimit
-        let nextBatch = min(pageSize, remaining)
+    private var showMoreButton: some View {
+        let nextBatch = min(pageSize, displayedBaskets.count - displayLimit)
         return Button {
-            withAnimation(.taplistTransition) {
-                displayLimit += pageSize
-            }
+            withAnimation(.taplistTransition) { displayLimit += pageSize }
         } label: {
-            HStack(spacing: 8) {
-                Spacer()
-                Text("Show \(nextBatch) more")
+            HStack(spacing: 6) {
+                Text(String(format: String(localized: "recent_baskets.show_more_format", defaultValue: "Show %lld more"), nextBatch))
                     .font(.subheadline.weight(.semibold))
-                    .foregroundStyle(Color.accentColor)
-                Image(systemName: "chevron.down")
-                    .font(.caption.weight(.bold))
-                    .foregroundStyle(Color.accentColor)
-                Spacer()
+                Image(systemName: "chevron.down").font(.caption.weight(.bold))
             }
-            .padding(.vertical, 6)
-            .contentShape(Rectangle())
+            .foregroundStyle(Color.accentColor)
+            .frame(maxWidth: .infinity)
+            .padding(.vertical, 18)
         }
         .buttonStyle(.plain)
-        .listRowBackground(Color("CardBackground"))
     }
 
-    // MARK: - Basket row
+    // MARK: - Tile
 
-    private func basketRow(for basket: RecentBasketSummary) -> some View {
-        let isToday = Calendar.current.isDateInToday(basket.completedAt)
-        let totalQuantity = basket.items.reduce(0) { $0 + $1.quantity }
-        // When every item in this basket is already in the active basket,
-        // "Add all" is a no-op — suppress it so the menu only offers
-        // meaningful actions.
-        let allItemsAlreadyInBasket = basket.items.allSatisfy {
-            inBasketNames.contains($0.name.lowercased())
-        }
+    private func basketTile(for basket: RecentBasketSummary) -> some View {
+        let allAdded = basket.items.allSatisfy { inBasketNames.contains($0.name.lowercased()) }
+        let isToday  = Calendar.current.isDateInToday(basket.completedAt)
 
         return Menu {
-            // Items as tappable buttons — picking adds that single item to
-            // the current basket. Sheet stays open so the user can keep
-            // picking from the same or other shops.
             ForEach(basket.items) { item in
                 Button {
                     UIImpactFeedbackGenerator(style: .light).impactOccurred()
@@ -143,95 +161,90 @@ struct RecentBasketsSheet: View {
                     Text("\(item.emoji) \(ProductDisplayNameProvider.displayName(for: item.name))")
                 }
             }
-
             Section {
-                if !allItemsAlreadyInBasket {
+                if !allAdded {
                     Button {
                         onAddBasket(basket)
                         dismiss()
                     } label: {
-                        Label("Add all \(basket.items.count) items", systemImage: "cart.badge.plus")
+                        Label(String(format: String(localized: "history.add_all_format", defaultValue: "Add all %lld items"), basket.items.count), systemImage: "cart.badge.plus")
                     }
                 }
-
                 Button(role: .destructive) {
                     onHideBasket(basket)
                     withAnimation(.taplistTransition) {
                         displayedBaskets.removeAll { $0.id == basket.id }
                     }
                 } label: {
-                    Label("Hide this shop", systemImage: "eye.slash")
+                    Label(String(localized: "history.hide_shop", defaultValue: "Hide this shop"), systemImage: "eye.slash")
                 }
             }
         } label: {
-            HStack(alignment: .center, spacing: 12) {
-                BasketItemBubbles(emojis: basket.items.map(\.emoji), size: .compact)
-
-                VStack(alignment: .leading, spacing: 2) {
-                    HStack(spacing: 6) {
-                        Text(relativeDateString(basket.completedAt))
-                            .font(.headline.weight(.semibold))
-                            .foregroundStyle(.primary)
-                            .textCase(nil)
-
-                        if isToday {
-                            Text("history.today_pill")
-                                .font(.caption2.weight(.bold))
-                                .foregroundStyle(Color("BrandGreen"))
-                                .padding(.horizontal, 7)
-                                .padding(.vertical, 3)
-                                .background(Color("BrandGreen").opacity(0.15), in: Capsule())
-                                .textCase(.uppercase)
-                                .tracking(0.5)
-                        }
-                    }
-
-                    Text(itemSummaryLabel(count: basket.items.count, totalQuantity: totalQuantity))
-                        .font(.caption.weight(.medium))
-                        .foregroundStyle(Color(.secondaryLabel))
-                        .textCase(nil)
-                        .monospacedDigit()
-                }
-
-                Spacer()
-
-                // Visible affordance — signals tappable + that more options
-                // live behind the row.
-                Image(systemName: "ellipsis.circle.fill")
-                    .font(.title3)
-                    .foregroundStyle(Color(.tertiaryLabel))
-            }
-            .padding(.vertical, 4)
-            .contentShape(Rectangle())
+            tileFace(basket: basket, isToday: isToday)
         }
         .buttonStyle(.plain)
     }
 
+    // MARK: - Tile face
+
+    private func tileFace(basket: RecentBasketSummary, isToday: Bool) -> some View {
+        VStack(spacing: 0) {
+
+            // BrandGreen accent bar on today's tiles
+            if isToday {
+                Color("BrandGreen").frame(height: 3)
+            }
+
+            // Cluster stage: radial glow + animated orbiting emojis
+            ZStack {
+                RadialGradient(
+                    colors: [Color.accentColor.opacity(0.16), Color.accentColor.opacity(0.02)],
+                    center: .center,
+                    startRadius: 2,
+                    endRadius: 44
+                )
+                BasketItemBubbles(emojis: basket.items.map(\.emoji), size: .standard)
+            }
+            .frame(height: 106)
+
+            // Info strip
+            HStack(alignment: .firstTextBaseline) {
+                VStack(alignment: .leading, spacing: 3) {
+                    Text(relativeDateString(basket.completedAt))
+                        .font(.subheadline.weight(.semibold))
+                        .foregroundStyle(.primary)
+                        .lineLimit(1)
+
+                    Text(itemCountLabel(basket.items.count))
+                        .font(.caption)
+                        .foregroundStyle(Color(.secondaryLabel))
+                }
+
+                Spacer(minLength: 0)
+            }
+            .padding(.horizontal, 14)
+            .padding(.vertical, 12)
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .background(Color("CardBackground"))
+        }
+        .clipShape(RoundedRectangle(cornerRadius: 18, style: .continuous))
+        .shadow(color: .black.opacity(0.07), radius: 8, y: 3)
+    }
+
     // MARK: - Formatting
 
-    /// "8 items" when every item is qty 1, "8 items · 12 total" when at least
-    /// one item has qty > 1. Avoids the redundant "8 items · 8 total" case.
-    private func itemSummaryLabel(count: Int, totalQuantity: Int) -> String {
-        let countLabel = String(
-            localized: "recent_baskets.item_count_format",
-            defaultValue: "\(count) items",
-            locale: locale
-        )
-        guard totalQuantity > count else { return countLabel }
-        let totalLabel = String(
-            localized: "history.total_qty_format",
-            defaultValue: "\(totalQuantity) total",
-            locale: locale
-        )
-        return "\(countLabel) · \(totalLabel)"
+    private func itemCountLabel(_ count: Int) -> String {
+        String(localized: "recent_baskets.item_count_format",
+               defaultValue: "\(count) items",
+               locale: locale)
     }
 
     private func relativeDateString(_ date: Date) -> String {
-        let formatter = DateFormatter()
-        formatter.locale = locale
-        formatter.dateStyle = .medium
-        formatter.timeStyle = .none
-        formatter.doesRelativeDateFormatting = true
-        return formatter.string(from: date)
+        let f = DateFormatter()
+        f.locale = locale
+        f.dateStyle = .medium
+        f.timeStyle = .none
+        f.doesRelativeDateFormatting = true
+        return f.string(from: date)
     }
 }

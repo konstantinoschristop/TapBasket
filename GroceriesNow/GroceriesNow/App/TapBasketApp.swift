@@ -1,6 +1,8 @@
 import SwiftUI
 import SwiftData
 import TipKit
+import GoogleMobileAds
+import UserMessagingPlatform
 
 @main
 struct TapBasketApp: App {
@@ -9,6 +11,11 @@ struct TapBasketApp: App {
             .displayFrequency(.immediate),
             .datastoreLocation(.applicationDefault)
         ])
+
+        // Start the SDK immediately and unconditionally. Per Google's docs,
+        // start() should be called at app launch regardless of consent status —
+        // consent governs personalisation, not whether the SDK runs at all.
+        MobileAds.shared.start(completionHandler: nil)
     }
 
     // MARK: - iCloud sync configuration
@@ -77,8 +84,43 @@ struct TapBasketApp: App {
         WindowGroup {
             ContentView()
                 .environment(purchaseManager)
+                .task {
+                    // Run consent flow once the UI is on screen so we have
+                    // a guaranteed root view controller for the UMP form.
+                    await Self.requestConsent()
+                }
         }
         .modelContainer(sharedModelContainer)
+    }
+
+    // MARK: - Consent flow
+
+    /// Requests consent info and presents the GDPR consent form if required.
+    /// Runs after the UI is on screen so the form has a valid presenter.
+    @MainActor
+    private static func requestConsent() async {
+        let parameters = RequestParameters()
+
+        await withCheckedContinuation { (continuation: CheckedContinuation<Void, Never>) in
+            ConsentInformation.shared.requestConsentInfoUpdate(with: parameters) { _ in
+                Task { @MainActor in
+                    guard
+                        let rootVC = UIApplication.shared.connectedScenes
+                            .compactMap({ $0 as? UIWindowScene })
+                            .flatMap({ $0.windows })
+                            .first(where: { $0.isKeyWindow })?
+                            .rootViewController
+                    else {
+                        continuation.resume()
+                        return
+                    }
+
+                    ConsentForm.loadAndPresentIfRequired(from: rootVC) { _ in
+                        continuation.resume()
+                    }
+                }
+            }
+        }
     }
 
     static let defaultQuickItems: [QuickItem] = [

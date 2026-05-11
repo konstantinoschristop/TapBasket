@@ -6,6 +6,10 @@
 	objectVersion = 77;
 	objects = {
 
+/* Begin PBXBuildFile section */
+		8AE473722FB11F1F00707ECB /* GoogleMobileAds in Frameworks */ = {isa = PBXBuildFile; productRef = 8AE473712FB11F1F00707ECB /* GoogleMobileAds */; };
+/* End PBXBuildFile section */
+
 /* Begin PBXContainerItemProxy section */
 		8A6CE2F72F674E4000C69470 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
@@ -65,6 +69,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				8AE473722FB11F1F00707ECB /* GoogleMobileAds in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -125,6 +130,7 @@
 			);
 			name = GroceriesNow;
 			packageProductDependencies = (
+				8AE473712FB11F1F00707ECB /* GoogleMobileAds */,
 			);
 			productName = GroceriesNow;
 			productReference = 8A6CE2E72F674E3E00C69470 /* GroceriesNow.app */;
@@ -207,6 +213,9 @@
 			);
 			mainGroup = 8A6CE2DE2F674E3E00C69470;
 			minimizedProjectReferenceProxies = 1;
+			packageReferences = (
+				8AE473702FB11F1F00707ECB /* XCRemoteSwiftPackageReference "swift-package-manager-google-mobile-ads" */,
+			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = 8A6CE2E82F674E3E00C69470 /* Products */;
 			projectDirPath = "";
@@ -610,6 +619,25 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		8AE473702FB11F1F00707ECB /* XCRemoteSwiftPackageReference "swift-package-manager-google-mobile-ads" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/googleads/swift-package-manager-google-mobile-ads";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 13.3.0;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		8AE473712FB11F1F00707ECB /* GoogleMobileAds */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 8AE473702FB11F1F00707ECB /* XCRemoteSwiftPackageReference "swift-package-manager-google-mobile-ads" */;
+			productName = GoogleMobileAds;
+		};
+/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = 8A6CE2DF2F674E3E00C69470 /* Project object */;
 }

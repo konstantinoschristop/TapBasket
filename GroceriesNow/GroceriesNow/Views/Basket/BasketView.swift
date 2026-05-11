@@ -39,31 +39,36 @@ struct BasketView: View {
     }
 
     var body: some View {
-        NavigationStack {
-            listContent
-                .navigationTitle(Text("basket.screen_title"))
-                .toolbar { toolbarContent }
-                .sheet(item: $noteEditorItem) { item in
-                    BasketItemNoteEditorView(
-                        itemName: item.name,
-                        initialNote: item.note,
-                        onSave: { note in
-                            manager.saveNote(note, for: item, in: modelContext)
-                        }
-                    )
-                    .presentationDetents([.medium])
-                }
-                .task(id: basketItems.count) { await prepareShareImage() }
-        }
-        .overlay {
-            if showCompletionBadge {
-                BasketCompletionOverlay()
-                    .transition(.asymmetric(
-                        insertion: .scale(scale: 0.85).combined(with: .opacity),
-                        removal: .opacity.combined(with: .scale(scale: 0.92))
-                    ))
+        listContent
+            .navigationTitle(Text("basket.screen_title"))
+            // Hide the system back button — the leading "Done" button handles dismissal.
+            .navigationBarBackButtonHidden(true)
+            .toolbar { toolbarContent }
+            .sheet(item: $noteEditorItem) { item in
+                BasketItemNoteEditorView(
+                    itemName: item.name,
+                    initialNote: item.note,
+                    onSave: { note in
+                        manager.saveNote(note, for: item, in: modelContext)
+                    }
+                )
+                .presentationDetents([.medium])
             }
-        }
+            .task(id: basketItems.count) {
+                // Defer the image render until after the zoom transition settles —
+                // starting it immediately competes for CPU/GPU time mid-animation.
+                try? await Task.sleep(for: .milliseconds(400))
+                await prepareShareImage()
+            }
+            .overlay {
+                if showCompletionBadge {
+                    BasketCompletionOverlay()
+                        .transition(.asymmetric(
+                            insertion: .scale(scale: 0.85).combined(with: .opacity),
+                            removal: .opacity.combined(with: .scale(scale: 0.92))
+                        ))
+                }
+            }
     }
 
     @ViewBuilder
@@ -83,6 +88,13 @@ struct BasketView: View {
         .onChange(of: basketItems.count) { _, count in
             SwipeToDeleteTip.basketItemCount = count
             ShareBasketTip.basketItemCount = count
+        }
+        // Banner pinned at the bottom of the basket — always visible
+        // regardless of scroll position, above the home indicator.
+        .safeAreaInset(edge: .bottom, spacing: 0) {
+            if !AdsConfiguration.hideForScreenshots {
+                InlineBannerSection()
+            }
         }
     }
 

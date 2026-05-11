@@ -184,7 +184,7 @@
         }
       }
     },
-    "Add all %lld items" : {
+    "Ad" : {
 
     },
     "Add note" : {
@@ -464,8 +464,55 @@
     "Emoji" : {
 
     },
-    "Hide this shop" : {
-
+    "history.add_all_format" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Add all %lld items"
+          }
+        }
+      }
+    },
+    "history.hide_shop" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Hide this shop"
+          }
+        }
+      }
+    },
+    "history.section.earlier" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Earlier"
+          }
+        }
+      }
+    },
+    "history.section.this_week" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "This Week"
+          }
+        }
+      }
+    },
+    "history.section.today" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Today"
+          }
+        }
+      }
     },
     "history.title" : {
       "localizations" : {
@@ -478,6 +525,7 @@
       }
     },
     "history.today_pill" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -488,6 +536,7 @@
       }
     },
     "history.total_qty_format" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -509,6 +558,7 @@
       }
     },
     "home.basket_button.label" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -589,6 +639,28 @@
     },
     "One-time purchase · No subscription · Works fully on-device" : {
 
+    },
+    "pantry.header.subtitle" : {
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Worth picking up"
+          }
+        }
+      }
+    },
+    "pantry.header.title" : {
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Pantry staples"
+          }
+        }
+      }
     },
     "Product" : {
 
@@ -2465,7 +2537,6 @@
       }
     },
     "recent_baskets.show_more_format" : {
-      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -2663,9 +2734,6 @@
 
     },
     "Shopping List" : {
-
-    },
-    "Show %lld more" : {
 
     },
     "smart_start.subtitle" : {

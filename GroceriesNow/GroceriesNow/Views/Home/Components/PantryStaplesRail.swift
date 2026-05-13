@@ -34,16 +34,16 @@ private enum Tint {
 private let pantryStaples: [PantryStaple] = [
     PantryStaple(id: "milk",      name: "Milk",      emoji: "🥛", tint: Tint.sky),
     PantryStaple(id: "bread",     name: "Bread",     emoji: "🍞", tint: Tint.cream),
-    PantryStaple(id: "eggs",      name: "Eggs",      emoji: "🥚", tint: Tint.butter),
-    PantryStaple(id: "tomatoes",  name: "Tomatoes",  emoji: "🍅", tint: Tint.peach),
-    PantryStaple(id: "onions",    name: "Onions",    emoji: "🧅", tint: Tint.lilac),
-    PantryStaple(id: "bananas",   name: "Bananas",   emoji: "🍌", tint: Tint.butter),
+    PantryStaple(id: "egg",       name: "Egg",       emoji: "🥚", tint: Tint.butter),
+    PantryStaple(id: "tomato",    name: "Tomato",    emoji: "🍅", tint: Tint.peach),
+    PantryStaple(id: "onion",     name: "Onion",     emoji: "🧅", tint: Tint.lilac),
+    PantryStaple(id: "banana",    name: "Banana",    emoji: "🍌", tint: Tint.butter),
     PantryStaple(id: "olive oil", name: "Olive oil", emoji: "🫒", tint: Tint.sage),
     PantryStaple(id: "pasta",     name: "Pasta",     emoji: "🍝", tint: Tint.cream),
-    PantryStaple(id: "apples",    name: "Apples",    emoji: "🍎", tint: Tint.peach),
+    PantryStaple(id: "apple",     name: "Apple",     emoji: "🍎", tint: Tint.peach),
     PantryStaple(id: "yogurt",    name: "Yogurt",    emoji: "🍶", tint: Tint.sky),
     PantryStaple(id: "garlic",    name: "Garlic",    emoji: "🧄", tint: Tint.lilac),
-    PantryStaple(id: "potatoes",  name: "Potatoes",  emoji: "🥔", tint: Tint.wheat),
+    PantryStaple(id: "potato",    name: "Potato",    emoji: "🥔", tint: Tint.wheat),
     PantryStaple(id: "butter",    name: "Butter",    emoji: "🧈", tint: Tint.butter),
     PantryStaple(id: "rice",      name: "Rice",      emoji: "🍚", tint: Tint.cream),
 ]
@@ -90,8 +90,8 @@ struct PantryStaplesRail: View {
     var body: some View {
         if !visibleStaples.isEmpty {
             VStack(alignment: .leading, spacing: 14) {
-                header.padding(.horizontal, 16)
-                grid.padding(.horizontal, 16)
+                header.padding(.horizontal, 20)
+                grid.padding(.horizontal, 20)
             }
             .padding(.vertical, 4)
         }
@@ -172,7 +172,7 @@ struct PantryStaplesRail: View {
                         .shadow(color: .black.opacity(0.08), radius: 1.5, y: 1)
                     Text(item.name)
                         .font(.system(size: 10, weight: .semibold))
-                        .foregroundStyle(Color(.label).opacity(0.85))
+                        .foregroundStyle(Color.black.opacity(0.78))
                         .lineLimit(1)
                         .minimumScaleFactor(0.75)
                 }
@@ -195,5 +195,10 @@ struct PantryStaplesRail: View {
             .shadow(color: .black.opacity(0.06), radius: 2, y: 1)
         }
         .buttonStyle(.spring(scale: 0.94))
+        .accessibilityLabel(Text(
+            String(localized: "pantry.staple.a11y_format",
+                   defaultValue: "Add \(item.name) to basket",
+                   comment: "VoiceOver label for a pantry-staple tile. %@ is the item name.")
+        ))
     }
 }

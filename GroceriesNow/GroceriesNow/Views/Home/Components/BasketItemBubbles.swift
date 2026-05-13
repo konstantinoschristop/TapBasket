@@ -39,7 +39,7 @@ struct BasketItemBubbles: View {
 
         var containerDiameter: CGFloat {
             switch self {
-            case .standard: 62
+            case .standard: 72
             case .compact: 44
             }
         }
@@ -49,7 +49,7 @@ struct BasketItemBubbles: View {
 
         var avatarDiameter: CGFloat {
             switch self {
-            case .standard: 18
+            case .standard: 21
             case .compact: 12
             }
         }
@@ -57,7 +57,7 @@ struct BasketItemBubbles: View {
         /// Radius of the orbit each avatar travels along at max count (4).
         var slotRadius: CGFloat {
             switch self {
-            case .standard: 20
+            case .standard: 23
             case .compact: 14
             }
         }
@@ -73,7 +73,7 @@ struct BasketItemBubbles: View {
 
         var emojiFontSize: CGFloat {
             switch self {
-            case .standard: 11
+            case .standard: 13
             case .compact: 8
             }
         }
@@ -90,7 +90,7 @@ struct BasketItemBubbles: View {
 
         var badgeFontSize: CGFloat {
             switch self {
-            case .standard: 10
+            case .standard: 12
             case .compact: 7
             }
         }
@@ -253,9 +253,9 @@ struct BasketItemBubbles: View {
     ///   4 avatars → the Size preset's fixed `avatarDiameter`
     private var dynamicAvatarDiameter: CGFloat {
         switch displayed.count {
-        case 0, 1: return size == .standard ? 38 : 26
-        case 2:    return size == .standard ? 26 : 18
-        case 3:    return size == .standard ? 21 : 14
+        case 0, 1: return size == .standard ? 44 : 26
+        case 2:    return size == .standard ? 30 : 18
+        case 3:    return size == .standard ? 25 : 14
         default:   return size.avatarDiameter
         }
     }
@@ -267,8 +267,8 @@ struct BasketItemBubbles: View {
     private var dynamicSlotRadius: CGFloat {
         switch displayed.count {
         case 0, 1: return 0
-        case 2:    return size == .standard ? 14 : 9
-        case 3:    return size == .standard ? 17 : 12
+        case 2:    return size == .standard ? 16 : 9
+        case 3:    return size == .standard ? 20 : 12
         default:   return size.slotRadius
         }
     }
@@ -276,9 +276,9 @@ struct BasketItemBubbles: View {
     /// Emoji glyph point size that grows in lock-step with the avatar circle.
     private var dynamicEmojiFontSize: CGFloat {
         switch displayed.count {
-        case 0, 1: return size == .standard ? 24 : 16
-        case 2:    return size == .standard ? 17 : 11
-        case 3:    return size == .standard ? 14 : 9
+        case 0, 1: return size == .standard ? 28 : 16
+        case 2:    return size == .standard ? 20 : 11
+        case 3:    return size == .standard ? 17 : 9
         default:   return size.emojiFontSize
         }
     }
@@ -302,26 +302,34 @@ struct BasketItemBubbles: View {
             while !Task.isCancelled {
                 try? await Task.sleep(for: .seconds(interval))
                 guard !Task.isCancelled else { return }
-                rotateOneAvatar()
+                rotateAvatars()
             }
         }
     }
 
-    /// Replace the avatar in slot `nextSlotToReplace` with the next emoji not
-    /// currently visible, then advance the round-robin pointer.
-    private func rotateOneAvatar() {
-        guard emojis.count > slotCount else { return }
-
+    /// Each cycle, swap as many slots as we can in parallel — up to
+    /// `slotCount - 1` (always keeping at least one stable for visual
+    /// continuity). With many extra items the cluster cycles through
+    /// the basket much faster than one-at-a-time.
+    private func rotateAvatars() {
         let visibleEmojis = Set(displayed.map(\.emoji))
-        guard let next = emojis.first(where: { !visibleEmojis.contains($0) }) else { return }
+        let hiddenEmojis = emojis.filter { !visibleEmojis.contains($0) }
+        guard !hiddenEmojis.isEmpty else { return }
 
-        let slot = nextSlotToReplace
-        guard let index = displayed.firstIndex(where: { $0.slot == slot }) else { return }
+        let maxSwaps = max(1, slotCount - 1)
+        let swapCount = min(hiddenEmojis.count, maxSwaps)
 
-        withAnimation(.easeInOut(duration: 0.7)) {
-            displayed[index] = Avatar(emoji: next, slot: slot)
+        var updated = displayed
+        for i in 0..<swapCount {
+            let slot = (nextSlotToReplace + i) % slotCount
+            guard let index = updated.firstIndex(where: { $0.slot == slot }) else { continue }
+            updated[index] = Avatar(emoji: hiddenEmojis[i], slot: slot)
         }
 
-        nextSlotToReplace = (nextSlotToReplace + 1) % slotCount
+        withAnimation(.easeInOut(duration: 0.7)) {
+            displayed = updated
+        }
+
+        nextSlotToReplace = (nextSlotToReplace + swapCount) % slotCount
     }
 }

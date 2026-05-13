@@ -3,8 +3,8 @@ import SwiftData
 
 /// Lightweight recommendation engine backed by SwiftData.
 ///
-/// Records per-item usage (with time-of-day slots) and pair co-occurrences at basket
-/// completion time, then surfaces suggestions using:
+/// Records pair co-occurrences at basket completion time, then surfaces
+/// suggestions using:
 ///
 ///   score = coOccurrence * 0.7 + recency * 0.3
 ///
@@ -15,28 +15,13 @@ final class RecommendationEngine {
     static let shared = RecommendationEngine()
     private init() {}
 
-    private enum TimeSlot { case morning, afternoon, evening }
-
     // MARK: - Record
 
     /// Call when a basket is completed.
-    /// Updates per-item usage counts (with time slot) and all pair co-occurrences.
+    /// Updates all pair co-occurrences for the items in the basket.
     func record(completedItemNames: [String], at date: Date, in context: ModelContext) {
         let names = Array(Set(completedItemNames.map { $0.lowercased() })).sorted()
-        guard !names.isEmpty else { return }
-
-        let slot = timeSlot(for: date)
-
-        for name in names {
-            let record = fetchOrCreateUsage(for: name, in: context)
-            record.usageCount += 1
-            record.lastUsedAt = max(record.lastUsedAt, date)
-            switch slot {
-            case .morning:   record.morningCount += 1
-            case .afternoon: record.afternoonCount += 1
-            case .evening:   record.eveningCount += 1
-            }
-        }
+        guard names.count >= 2 else { return }
 
         for i in 0..<names.count {
             for j in (i + 1)..<names.count {
@@ -196,24 +181,6 @@ final class RecommendationEngine {
         let daysSince = now.timeIntervalSince(lastOccurredAt) / 86_400
         let recency = exp(-daysSince / 30)
         return coScore * 0.7 + recency * 0.3
-    }
-
-    private func timeSlot(for date: Date) -> TimeSlot {
-        let hour = Calendar.current.component(.hour, from: date)
-        switch hour {
-        case 5..<12: return .morning
-        case 12..<17: return .afternoon
-        default:     return .evening
-        }
-    }
-
-    private func fetchOrCreateUsage(for name: String, in context: ModelContext) -> ItemUsageRecord {
-        let lower = name.lowercased()
-        let descriptor = FetchDescriptor<ItemUsageRecord>(predicate: #Predicate { $0.itemName == lower })
-        if let existing = (try? context.fetch(descriptor))?.first { return existing }
-        let record = ItemUsageRecord(itemName: lower)
-        context.insert(record)
-        return record
     }
 
     private func fetchOrCreateCoOccurrence(a: String, b: String, in context: ModelContext) -> CoOccurrenceRecord {

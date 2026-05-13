@@ -10,7 +10,9 @@ enum QuickItemCategory: String, CaseIterable, Codable {
     case drinks
     case homeCare
     case treats
-    case more
+    /// Persisted as "more" for backward-compatibility with users seeded
+    /// before the rename. New display is "Bakery"; raw value stays "more".
+    case bakery = "more"
     case custom
 
     var title: String {
@@ -23,7 +25,7 @@ enum QuickItemCategory: String, CaseIterable, Codable {
         case .drinks: String(localized: "category.drinks")
         case .homeCare: String(localized: "category.home_care")
         case .treats: String(localized: "category.treats")
-        case .more: String(localized: "category.more")
+        case .bakery: String(localized: "category.bakery")
         case .custom: String(localized: "category.custom")
         }
     }
@@ -38,7 +40,7 @@ enum QuickItemCategory: String, CaseIterable, Codable {
         case .drinks: "cup.and.saucer.fill"
         case .homeCare: "sparkles"
         case .treats: "birthday.cake.fill"
-        case .more: "square.grid.2x2.fill"
+        case .bakery: "birthday.cake"
         case .custom: "pencil.and.list.clipboard"
         }
     }
@@ -53,8 +55,32 @@ enum QuickItemCategory: String, CaseIterable, Codable {
         case .drinks: "indigo"
         case .homeCare: "teal"
         case .treats: "pink"
-        case .more: "gray"
+        case .bakery: "brown"
         case .custom: "purple"
+        }
+    }
+
+    /// Visual density for the category's home-screen presentation.
+    ///
+    /// Alternates between vertical grids, horizontal multi-row carousels,
+    /// and single chip rows so that scrolling the home feed never feels
+    /// like an endless wall of identical tiles.
+    ///
+    ///  - `.essentials`, `.proteins` — anchor categories, vertical 2-col
+    ///    grids of big tiles. Hero feel.
+    ///  - `.produce`, `.pantry`, `.homeCare`, `.custom` — long browse
+    ///    lists, horizontal 2-row carousels. Saves vertical space and
+    ///    breaks the page rhythm.
+    ///  - `.frozen`, `.drinks`, `.treats`, `.bakery` — short categories,
+    ///    a single horizontal chip row.
+    var layout: CategoryLayout {
+        switch self {
+        case .essentials, .proteins:
+            return .grid(columns: 2)
+        case .produce, .pantry, .homeCare, .custom:
+            return .carousel(rows: 2)
+        case .frozen, .drinks, .treats, .bakery:
+            return .chipRow
         }
     }
 
@@ -67,15 +93,29 @@ enum QuickItemCategory: String, CaseIterable, Codable {
         .drinks,
         .homeCare,
         .treats,
-        .more,
+        .bakery,
         .custom
     ]
+}
+
+/// How a category renders on the home screen.
+///
+/// - `grid(columns:)` — vertical `LazyVGrid` of full tiles.
+/// - `carousel(rows:)` — horizontal `LazyHGrid` of full tiles, multiple
+///   rows tall. Long categories use this to swap a tall vertical wall
+///   for a wide, swipeable shelf.
+/// - `chipRow` — horizontal scroll of compact pill chips, used for short
+///   categories where a tall grid would feel ceremonial.
+enum CategoryLayout: Equatable {
+    case grid(columns: Int)
+    case carousel(rows: Int)
+    case chipRow
 }
 
 /// CloudKit-ready: no `@Attribute(.unique)`, every stored property has a default.
 /// Uniqueness of `id` is enforced implicitly via SwiftData's primary key.
 @Model
-final class QuickItem {
+final class QuickItem: Identifiable {
     var id: UUID = UUID()
     var name: String = ""
     var emoji: String = ""

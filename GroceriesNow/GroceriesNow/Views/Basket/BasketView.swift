@@ -89,13 +89,6 @@ struct BasketView: View {
             SwipeToDeleteTip.basketItemCount = count
             ShareBasketTip.basketItemCount = count
         }
-        // Banner pinned at the bottom of the basket — always visible
-        // regardless of scroll position, above the home indicator.
-        .safeAreaInset(edge: .bottom, spacing: 0) {
-            if !AdsConfiguration.hideForScreenshots {
-                InlineBannerSection()
-            }
-        }
     }
 
     @ViewBuilder
@@ -146,6 +139,20 @@ struct BasketView: View {
                 } header: {
                     recipeSectionHeader(name: group.name, itemCount: group.items.count)
                 }
+            }
+        }
+
+        // Inline banner — sits at the natural end of the list so it
+        // never overlays an item. The user scrolls past their basket
+        // contents to reveal the ad.
+        if !AdsConfiguration.hideForScreenshots && !basketItems.isEmpty {
+            Section {
+                InlineBannerSection()
+                    .padding(.horizontal, 16)
+                    .padding(.vertical, 8)
+                    .listRowInsets(EdgeInsets())
+                    .listRowBackground(Color.clear)
+                    .listRowSeparator(.hidden)
             }
         }
     }
@@ -200,9 +207,13 @@ struct BasketView: View {
     @ToolbarContentBuilder
     private var toolbarContent: some ToolbarContent {
         ToolbarItem(placement: .topBarLeading) {
-            Button(String(localized: "action.done")) {
+            Button {
                 dismiss()
+            } label: {
+                Image(systemName: "xmark")
+                    .font(.subheadline.weight(.semibold))
             }
+            .accessibilityLabel(Text("action.done"))
         }
         ToolbarItemGroup(placement: .topBarTrailing) {
             // Primary CTA: complete basket — tinted accent, prominent

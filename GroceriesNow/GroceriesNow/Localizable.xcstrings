@@ -4,6 +4,16 @@
     "  ·  " : {
 
     },
+    "%@  ·  %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$@  ·  %2$@"
+          }
+        }
+      }
+    },
     "%@ %@" : {
       "localizations" : {
         "en" : {
@@ -37,9 +47,6 @@
         }
       }
     },
-    "%lld items" : {
-
-    },
     "%lld of %lld checked" : {
       "localizations" : {
         "en" : {
@@ -70,6 +77,7 @@
 
     },
     "action.add" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -120,9 +128,6 @@
         }
       }
     },
-    "action.close" : {
-
-    },
     "action.complete" : {
       "localizations" : {
         "en" : {
@@ -143,12 +148,32 @@
         }
       }
     },
+    "action.delete" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Delete"
+          }
+        }
+      }
+    },
     "action.done" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Done"
+          }
+        }
+      }
+    },
+    "action.edit" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Edit"
           }
         }
       }
@@ -175,6 +200,7 @@
       }
     },
     "action.undo_format" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -184,17 +210,28 @@
         }
       }
     },
-    "Ad" : {
+    "Add %@ to basket" : {
 
     },
-    "Add note" : {
-
+    "ads.sponsored" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sponsored"
+          }
+        }
+      }
     },
-    "Add to basket now" : {
-
-    },
-    "All done" : {
-
+    "ads.placeholder" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ad"
+          }
+        }
+      }
     },
     "basket_item_note.add_note" : {
       "localizations" : {
@@ -212,6 +249,27 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Product Note"
+          }
+        }
+      }
+    },
+    "basket.button.a11y_format" : {
+      "comment" : "VoiceOver label for the floating basket button. %lld is the item count.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Basket, %lld items"
+          }
+        }
+      }
+    },
+    "basket.button.a11y_hint" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Opens the basket"
           }
         }
       }
@@ -280,6 +338,66 @@
         }
       }
     },
+    "basket.row.a11y_checked" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Checked"
+          }
+        }
+      }
+    },
+    "basket.row.a11y_unchecked" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Not checked"
+          }
+        }
+      }
+    },
+    "basket.row.add_note" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Add note"
+          }
+        }
+      }
+    },
+    "basket.row.edit_note" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Edit note"
+          }
+        }
+      }
+    },
+    "basket.row.mark_checked" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mark checked"
+          }
+        }
+      }
+    },
+    "basket.row.uncheck" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Uncheck"
+          }
+        }
+      }
+    },
     "basket.screen_title" : {
       "localizations" : {
         "en" : {
@@ -301,6 +419,16 @@
         }
       }
     },
+    "basket.share.heading" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Shopping List"
+          }
+        }
+      }
+    },
     "basket.share.title" : {
       "extractionState" : "extracted_with_value",
       "localizations" : {
@@ -312,11 +440,25 @@
         }
       }
     },
-    "Cancel" : {
-
+    "basket.summary.all_done" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "All done"
+          }
+        }
+      }
     },
-    "Category" : {
-
+    "category.bakery" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bakery"
+          }
+        }
+      }
     },
     "category.custom" : {
       "localizations" : {
@@ -364,16 +506,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Household"
-          }
-        }
-      }
-    },
-    "category.more" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Bakery"
           }
         }
       }
@@ -439,6 +571,7 @@
       }
     },
     "contextual_pair.header.subtitle" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -449,6 +582,7 @@
       }
     },
     "contextual_pair.header.title" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -458,11 +592,26 @@
         }
       }
     },
-    "Edit note" : {
-
+    "featured.bought_count_format" : {
+      "comment" : "Featured-tile caption when the user has purchased this item before. %lld is the total quantity.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bought %lld×"
+          }
+        }
+      }
     },
-    "Emoji" : {
-
+    "featured.label" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Featured"
+          }
+        }
+      }
     },
     "history.add_all_format" : {
       "localizations" : {
@@ -480,6 +629,56 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Hide this shop"
+          }
+        }
+      }
+    },
+    "history.label.breakfast_run" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Breakfast run"
+          }
+        }
+      }
+    },
+    "history.label.cook_night" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cook night"
+          }
+        }
+      }
+    },
+    "history.label.drinks_run" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Drinks run"
+          }
+        }
+      }
+    },
+    "history.label.fresh_produce" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Fresh produce"
+          }
+        }
+      }
+    },
+    "history.label.pasta_night" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pasta night"
           }
         }
       }
@@ -510,6 +709,27 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Today"
+          }
+        }
+      }
+    },
+    "history.tile.a11y_format" : {
+      "comment" : "VoiceOver label for a recent-basket tile.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$@, %2$lld items"
+          }
+        }
+      }
+    },
+    "history.tile.a11y_hint" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Shows item options and a chance to add all again"
           }
         }
       }
@@ -628,17 +848,125 @@
         }
       }
     },
-    "Mark checked" : {
-
+    "inline_suggestion.a11y_dismiss" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dismiss"
+          }
+        }
+      }
     },
-    "Name" : {
-
+    "manual_add.add_to_basket" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Add to basket now"
+          }
+        }
+      }
     },
-    "New Product" : {
-
+    "manual_add.add_to_basket.hint" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Drop it straight into today's shop"
+          }
+        }
+      }
     },
-    "One-time purchase · No subscription · Works fully on-device" : {
-
+    "manual_add.custom_emoji.placeholder" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Type or paste any emoji"
+          }
+        }
+      }
+    },
+    "manual_add.name_placeholder" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Item name"
+          }
+        }
+      }
+    },
+    "manual_add.preview.label" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Preview"
+          }
+        }
+      }
+    },
+    "manual_add.preview.name_placeholder" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Your item"
+          }
+        }
+      }
+    },
+    "manual_add.section.category" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Category"
+          }
+        }
+      }
+    },
+    "manual_add.section.emoji" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Emoji"
+          }
+        }
+      }
+    },
+    "manual_add.section.name" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Name"
+          }
+        }
+      }
+    },
+    "manual_add.title.edit" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Edit Item"
+          }
+        }
+      }
+    },
+    "manual_add.title.new" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "New Product"
+          }
+        }
+      }
     },
     "pantry.header.subtitle" : {
       "extractionState" : "extracted_with_value",
@@ -662,8 +990,16 @@
         }
       }
     },
-    "Product" : {
-
+    "pantry.staple.a11y_format" : {
+      "comment" : "VoiceOver label for a pantry-staple tile. %@ is the item name.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Add %@ to basket"
+          }
+        }
+      }
     },
     "product.almond_milk" : {
       "extractionState" : "stale",
@@ -704,7 +1040,7 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Apples"
+            "value" : "Apple"
           }
         }
       }
@@ -803,7 +1139,7 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Bananas"
+            "value" : "Banana"
           }
         }
       }
@@ -979,7 +1315,7 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Carrots"
+            "value" : "Carrot"
           }
         }
       }
@@ -1298,7 +1634,7 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Eggs"
+            "value" : "Egg"
           }
         }
       }
@@ -1453,6 +1789,17 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Garlic"
+          }
+        }
+      }
+    },
+    "product.ginger" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ginger"
           }
         }
       }
@@ -1804,7 +2151,7 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Onions"
+            "value" : "Onion"
           }
         }
       }
@@ -2002,7 +2349,7 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Potatoes"
+            "value" : "Potato"
           }
         }
       }
@@ -2293,6 +2640,17 @@
         }
       }
     },
+    "product.tofu" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tofu"
+          }
+        }
+      }
+    },
     "product.toilet_paper" : {
       "extractionState" : "stale",
       "localizations" : {
@@ -2321,7 +2679,7 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Tomatoes"
+            "value" : "Tomato"
           }
         }
       }
@@ -2468,9 +2826,6 @@
           }
         }
       }
-    },
-    "Quick emoji" : {
-
     },
     "recent_baskets.empty.description" : {
       "localizations" : {
@@ -2696,6 +3051,28 @@
         }
       }
     },
+    "regulars.avatar.a11y_add_format" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Add %@ to basket"
+          }
+        }
+      }
+    },
+    "regulars.avatar.a11y_remove_format" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Remove %@ from basket"
+          }
+        }
+      }
+    },
     "regulars.bought_count_format" : {
       "extractionState" : "stale",
       "localizations" : {
@@ -2727,34 +3104,8 @@
         }
       }
     },
-    "Restore Purchase" : {
+    "Remove %@ from basket" : {
 
-    },
-    "Save" : {
-
-    },
-    "Shopping List" : {
-
-    },
-    "smart_start.subtitle" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Your usual picks"
-          }
-        }
-      }
-    },
-    "smart_start.title" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Smart Start"
-          }
-        }
-      }
     },
     "snackbar.added_item_format" : {
       "extractionState" : "stale",
@@ -2823,9 +3174,6 @@
       }
     },
     "Taplist" : {
-
-    },
-    "Taplist Pro" : {
 
     },
     "tip.add_item.message" : {
@@ -2907,18 +3255,6 @@
           }
         }
       }
-    },
-    "Top %lldx" : {
-
-    },
-    "Uncheck" : {
-
-    },
-    "Unlock AI-powered shopping lists" : {
-
-    },
-    "Unlock for %@" : {
-
     }
   },
   "version" : "1.0"

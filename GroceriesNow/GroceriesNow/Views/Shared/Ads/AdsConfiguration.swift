@@ -6,5 +6,5 @@ import Foundation
 /// so no ad placements appear in any view. Flip back to `false` before
 /// submitting to the App Store.
 enum AdsConfiguration {
-    static let hideForScreenshots = true
+    static let hideForScreenshots = false
 }

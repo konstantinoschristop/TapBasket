@@ -27,7 +27,12 @@
       "Bash(chmod +x /tmp/resize_icons.sh)",
       "Bash(/tmp/resize_icons.sh Assets.xcassets/AppIcon.appiconset)",
       "Bash(sips -g pixelWidth -g pixelHeight Assets.xcassets/AppIcon.appiconset/icon-ios-60x60@3x.png Assets.xcassets/AppIcon.appiconset/icon-ios-83.5x83.5@2x.png Assets.xcassets/AppIcon.appiconset/icon-watchos-1024x1024.png)",
-      "Bash(sips -g pixelWidth Assets.xcassets/LaunchBasket.imageset/LaunchBasket@2x.png)"
+      "Bash(sips -g pixelWidth Assets.xcassets/LaunchBasket.imageset/LaunchBasket@2x.png)",
+      "Bash(xcodebuild -project /Users/k.christopoulos/Desktop/MyProjects/TapBasket/GroceriesNow/GroceriesNow.xcodeproj -scheme GroceriesNow -destination 'generic/platform=iOS Simulator' build)",
+      "Bash(xcodebuild -project /Users/k.christopoulos/Desktop/MyProjects/TapBasket/GroceriesNow/GroceriesNow.xcodeproj -scheme GroceriesNow -destination 'generic/platform=iOS' -skipMacroValidation build)",
+      "Bash(xcrun simctl *)",
+      "Bash(xcodebuild -project /Users/k.christopoulos/Desktop/MyProjects/TapBasket/GroceriesNow/GroceriesNow.xcodeproj -scheme GroceriesNow -destination 'platform=iOS Simulator,id=D5D1142C-7F5B-465A-90B5-3AD86B7A03D7' build)",
+      "Bash(xcodebuild -project /Users/k.christopoulos/Desktop/MyProjects/TapBasket/GroceriesNow/GroceriesNow.xcodeproj -scheme GroceriesNow -showdestinations)"
     ]
   }
 }

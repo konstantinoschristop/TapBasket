@@ -34,18 +34,26 @@ struct InlineBannerSection: View {
     }
 
     var body: some View {
-        VStack(spacing: 0) {
-            Divider().opacity(0.25)
+        VStack(alignment: .leading, spacing: 6) {
+            // Tiny "Sponsored" cue — keeps the ad clearly labeled
+            // without leaning on the loud divider treatment we used
+            // to bracket the banner with.
+            Text("ads.sponsored")
+                .font(.caption2.weight(.semibold))
+                .foregroundStyle(Color(.tertiaryLabel))
+                .textCase(.uppercase)
+                .tracking(0.8)
+                .padding(.leading, 4)
 
             ZStack {
-                // Loading placeholder — visible until the ad resolves.
+                // Loading placeholder — calm warm wash, no jittery
+                // fade-in when the real ad arrives.
                 if adHeight == 0 {
-                    Color(.tertiarySystemFill)
-                        .opacity(0.15)
+                    Color("CardBackground")
                         .overlay {
-                            Text("Ad")
-                                .font(.system(size: 10, weight: .medium))
-                                .foregroundStyle(.tertiary)
+                            Text("ads.placeholder")
+                                .font(.system(size: 11, weight: .medium))
+                                .foregroundStyle(Color(.tertiaryLabel))
                         }
                 }
 
@@ -53,9 +61,11 @@ struct InlineBannerSection: View {
                     .frame(maxWidth: .infinity)
             }
             .frame(height: max(adHeight, placeholderHeight))
-            .clipped()
-
-            Divider().opacity(0.25)
+            .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
+            .overlay {
+                RoundedRectangle(cornerRadius: 14, style: .continuous)
+                    .strokeBorder(Color(.separator).opacity(0.25), lineWidth: 0.5)
+            }
         }
         .frame(maxWidth: .infinity)
         .background(

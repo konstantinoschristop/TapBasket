@@ -33,12 +33,10 @@ struct BasketSummaryHeader: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
             metrics
-            // Track only appears once the user has started checking off — an
-            // empty bar before any progress is visual clutter.
-            if progress > 0 {
-                progressTrack
-                    .transition(.opacity.combined(with: .scale(scale: 0.96, anchor: .leading)))
-            }
+            // Progress bar is always present — gives the header a stable
+            // vertical rhythm and shows the user the empty track from
+            // the start so they understand what's coming.
+            progressTrack
             caption
         }
         .animation(.taplistTransition, value: progress)
@@ -88,7 +86,7 @@ struct BasketSummaryHeader: View {
             HStack(spacing: 6) {
                 Image(systemName: "checkmark.circle.fill")
                     .foregroundStyle(Color("BrandGreen"))
-                Text("All done")
+                Text("basket.summary.all_done")
                     .foregroundStyle(Color("BrandGreen"))
                 Spacer()
             }

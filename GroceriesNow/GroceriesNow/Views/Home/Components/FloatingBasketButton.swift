@@ -18,8 +18,6 @@ struct FloatingBasketButton: View {
     /// Shared namespace for the zoom navigation transition.
     var namespace: Namespace.ID
     var onTap: () -> Void
-    var undoLabel: String?
-    var onUndo: (() -> Void)?
 
     // MARK: - Position state
 
@@ -41,7 +39,7 @@ struct FloatingBasketButton: View {
     /// Vertical position as a fraction (0 = top of range, 1 = bottom).
     @AppStorage("floatingBasket.yFraction") private var yFraction: Double = 0.78
 
-    private let diameter: CGFloat = 78
+    private let diameter: CGFloat = 88
     private let edgePadding: CGFloat = 16
     /// Bottom clearance: accounts for the home indicator on modern iPhones.
     private let bottomClearance: CGFloat = 52
@@ -50,7 +48,7 @@ struct FloatingBasketButton: View {
 
     var body: some View {
         GeometryReader { geo in
-            faceWithTransitionSource
+            face
                 .scaleEffect(scale)
                 .position(position)
                 .gesture(dragGesture(in: geo.size))
@@ -64,13 +62,6 @@ struct FloatingBasketButton: View {
                         // past that so the resume doesn't interrupt the tail of the arc.
                         try? await Task.sleep(for: .milliseconds(700))
                         await MainActor.run { isFrozen = false }
-                    }
-                }
-                .contextMenu {
-                    if let label = undoLabel, let action = onUndo {
-                        Button(role: .destructive, action: action) {
-                            Label(label, systemImage: "arrow.uturn.backward")
-                        }
                     }
                 }
                 .onAppear {
@@ -89,6 +80,14 @@ struct FloatingBasketButton: View {
         .scaleEffect(count > 0 ? 1 : 0.7)
         .animation(.taplistTransition, value: count > 0)
         .allowsHitTesting(count > 0)
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel(Text(
+            String(localized: "basket.button.a11y_format",
+                   defaultValue: "Basket, \(count) items",
+                   comment: "VoiceOver label for the floating basket button. %lld is the item count.")
+        ))
+        .accessibilityHint(Text("basket.button.a11y_hint"))
+        .accessibilityAddTraits(.isButton)
     }
 
     // MARK: - Drag gesture
@@ -145,76 +144,86 @@ struct FloatingBasketButton: View {
 
     // MARK: - Visuals
 
-    /// Applies the zoom transition source on iOS 18+; plain face on earlier OS.
+    /// The full face = circular button surface + count badge.
+    ///
+    /// The badge is in an overlay *outside* the transition source — otherwise
+    /// iOS 18's `matchedTransitionSource` wraps the entire view in its
+    /// implicit transition container (rounded-rect bounds), which clips the
+    /// offset badge and leaves a faint corner outline visible on the source.
     @ViewBuilder
-    private var faceWithTransitionSource: some View {
+    private var face: some View {
+        buttonSurface
+            .overlay(alignment: .topTrailing) {
+                countBadge
+                    .offset(x: 6, y: -6)
+            }
+    }
+
+    /// The circular button surface — this alone is the zoom transition source.
+    ///
+    /// Background uses the project's `adaptiveGlass` modifier: native iOS 26
+    /// `glassEffect` where available, `.ultraThinMaterial` on older OS. The
+    /// gradient highlight + defined rim sit on top of that glass for
+    /// dimensional cues and clear separation from content behind.
+    @ViewBuilder
+    private var buttonSurface: some View {
+        let surface = ZStack {
+            // Specular highlight at the top — adds a hint of convexity over
+            // the otherwise flat glass material.
+            Circle()
+                .fill(
+                    LinearGradient(
+                        colors: [Color.white.opacity(0.18), Color.clear],
+                        startPoint: .top,
+                        endPoint: .center
+                    )
+                )
+
+            BasketItemBubbles(emojis: emojis, size: .standard, isAnimating: !isFrozen)
+        }
+        .frame(width: diameter, height: diameter)
+        // Glass background — the visual replacement for the solid CardBackground fill.
+        .adaptiveGlass(in: Circle())
+        // Defined rim — does the work the drop shadow used to: separating the
+        // button from whatever it's floating over.
+        .overlay {
+            Circle()
+                .strokeBorder(
+                    LinearGradient(
+                        colors: [
+                            Color.white.opacity(0.70),
+                            Color(.separator).opacity(0.85)
+                        ],
+                        startPoint: .top,
+                        endPoint: .bottom
+                    ),
+                    lineWidth: 1.5
+                )
+        }
+        .contentShape(Circle())
+
         if #available(iOS 18.0, *) {
-            face.matchedTransitionSource(id: "basket", in: namespace)
+            surface.matchedTransitionSource(id: "basket", in: namespace)
         } else {
-            face
+            surface
         }
     }
 
     @ViewBuilder
-    private var face: some View {
-        ZStack(alignment: .topTrailing) {
-            ZStack {
-                // Solid base — always visible over any list content
-                Circle()
-                    .fill(Color("CardBackground"))
-
-                // Specular highlight: fades from white at top to clear at centre,
-                // giving the button a gently convex, pressable quality.
-                Circle()
-                    .fill(
-                        LinearGradient(
-                            colors: [Color.white.opacity(0.20), Color.clear],
-                            startPoint: .top,
-                            endPoint: .center
-                        )
-                    )
-
-                BasketItemBubbles(emojis: emojis, size: .standard, isAnimating: !isFrozen)
-            }
-            .frame(width: diameter, height: diameter)
-            // Gradient rim: bright at top (catches the light), subtle at bottom
-            .overlay {
-                Circle()
-                    .strokeBorder(
-                        LinearGradient(
-                            colors: [
-                                Color.white.opacity(0.45),
-                                Color(.separator).opacity(0.15)
-                            ],
-                            startPoint: .top,
-                            endPoint: .bottom
-                        ),
-                        lineWidth: 0.75
-                    )
-            }
-            // Cast shadow — tight and sharp, anchors the button to the surface
-            .shadow(color: .black.opacity(0.22), radius: 5, x: 0, y: 4)
-            // Ambient shadow — wide and soft, creates the "floating above" depth
-            .shadow(color: .black.opacity(0.12), radius: 20, x: 0, y: 10)
-            .contentShape(Circle())
-
-            // Item count badge — top-right corner
-            if count > 0 {
-                Text("\(count)")
-                    .font(.system(size: 12, weight: .bold))
-                    .monospacedDigit()
-                    .foregroundStyle(.white)
-                    .padding(.horizontal, 6)
-                    .padding(.vertical, 3)
-                    .background(Color.accentColor, in: Capsule())
-                    // White ring separates the badge from the button surface
-                    .overlay(Capsule().strokeBorder(Color.white, lineWidth: 1.5))
-                    .shadow(color: .black.opacity(0.22), radius: 3, y: 1.5)
-                    .offset(x: 6, y: -6)
-                    .contentTransition(.numericText(value: Double(count)))
-                    .animation(.spring(response: 0.3, dampingFraction: 0.7), value: count)
-                    .transition(.scale.combined(with: .opacity))
-            }
+    private var countBadge: some View {
+        if count > 0 {
+            Text("\(count)")
+                .font(.system(size: 12, weight: .bold))
+                .monospacedDigit()
+                .foregroundStyle(Color(uiColor: .systemBackground))
+                .padding(.horizontal, 6)
+                .padding(.vertical, 3)
+                .background(Color.accentColor, in: Capsule())
+                .overlay(Capsule().strokeBorder(Color(uiColor: .systemBackground), lineWidth: 1.5))
+                .shadow(color: .black.opacity(0.22), radius: 3, y: 1.5)
+                .contentTransition(.numericText(value: Double(count)))
+                .animation(.spring(response: 0.3, dampingFraction: 0.7), value: count)
+                .transition(.scale.combined(with: .opacity))
         }
     }
 }

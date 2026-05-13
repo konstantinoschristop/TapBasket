@@ -1,33 +1,7 @@
 import SwiftUI
-import UIKit
 
-// MARK: - UIKit clip breaker
-
-/// `UITableViewCell` (which backs every SwiftUI List row) sets
-/// `clipsToBounds = true` at the UIKit level. SwiftUI's `scrollClipDisabled()`
-/// only controls SwiftUI-level clipping and cannot override this. This view
-/// walks up the UIKit hierarchy on `didMoveToWindow` and disables clipping on
-/// every ancestor until it reaches the List's own `UIScrollView`, so a
-/// horizontal `ScrollView` inside a List row can visually bleed to the screen
-/// edge.
-private final class _ClipBreakerView: UIView {
-    override func didMoveToWindow() {
-        super.didMoveToWindow()
-        guard window != nil else { return }
-        var node: UIView? = superview
-        while let v = node {
-            v.clipsToBounds = false
-            if v is UIScrollView { break }
-            node = v.superview
-        }
-    }
-}
-
-private struct ListCellClipBreaker: UIViewRepresentable {
-    func makeUIView(context: Context) -> _ClipBreakerView { _ClipBreakerView() }
-    func updateUIView(_ uiView: _ClipBreakerView, context: Context) {}
-}
-
+/// Item surfaced in the Regulars row: a top-used shortcut derived from
+/// completed-basket history.
 struct TopUsedShortcutItem: Identifiable {
     let id: UUID
     let name: String
@@ -36,39 +10,41 @@ struct TopUsedShortcutItem: Identifiable {
     let category: QuickItemCategory
 }
 
+/// Horizontal row of circular avatars for the user's most-bought items.
+///
+/// Items stay visible even when added to the basket — the avatar gains an
+/// "added" state (green ring + checkmark) instead of disappearing — because
+/// Regulars are essential affordances, not one-shot suggestions.
 struct TopUsedShortcutsView: View {
     let items: [TopUsedShortcutItem]
-    /// Set of lowercased item names currently in the basket — drives the
-    /// "added" visual state per avatar. Items stay visible regardless.
+    /// Lowercased names of items currently in the basket — drives the
+    /// "added" visual state per avatar.
     let inBasketNames: Set<String>
     let onTapItem: (TopUsedShortcutItem) -> Void
     let onAddAll: () -> Void
 
     var body: some View {
         VStack(alignment: .leading, spacing: 14) {
-            header
-                .padding(.horizontal, 16)
+            header.padding(.horizontal, 20)
             avatarRow
         }
         .padding(.vertical, 4)
     }
 
     /// True when every visible regular is already in the basket — "Add all"
-    /// would do nothing, so we suppress the button.
+    /// would be a no-op, so we suppress the button.
     private var allInBasket: Bool {
         items.prefix(10).allSatisfy { inBasketNames.contains($0.name.lowercased()) }
     }
 
-    /// Header matches SmartStart and BoughtTogether: leading icon in an
-    /// accent-tinted rounded square + headline title + caption subtitle +
-    /// trailing accent capsule action. One pattern across all home widgets.
     private var header: some View {
         HStack(spacing: 12) {
             Image(systemName: "repeat.circle.fill")
                 .font(.system(size: 14, weight: .semibold))
                 .foregroundStyle(Color.accentColor)
                 .frame(width: 32, height: 32)
-                .background(Color.accentColor.opacity(0.12), in: RoundedRectangle(cornerRadius: 9, style: .continuous))
+                .background(Color.accentColor.opacity(0.12),
+                            in: RoundedRectangle(cornerRadius: 9, style: .continuous))
 
             VStack(alignment: .leading, spacing: 2) {
                 Text("regulars.header.title")
@@ -100,9 +76,6 @@ struct TopUsedShortcutsView: View {
     private var avatarRow: some View {
         ScrollView(.horizontal, showsIndicators: false) {
             HStack(alignment: .top, spacing: 14) {
-                // Up to 10 essentials. Items don't get filtered out when added —
-                // they're permanent affordances; the avatar shows an "added"
-                // state instead.
                 ForEach(items.prefix(10)) { item in
                     RegularAvatar(
                         item: item,
@@ -112,23 +85,23 @@ struct TopUsedShortcutsView: View {
                     .transition(.scale.combined(with: .opacity))
                 }
             }
-            .padding(.vertical, 4)
+            // Leading-only padding so the first avatar has breathing
+            // room; trailing edge is open so avatars scroll cleanly off
+            // the screen edge rather than stopping short.
+            .padding(.leading, 20)
+            .padding(.vertical, 10)
             .animation(.spring(response: 0.4, dampingFraction: 0.85), value: items.map(\.id))
         }
-        // No content margins — the scroll content reaches the full row width
-        // so the last avatar can scroll right up to the screen edge.
-        .scrollClipDisabled()
-        // Breaks UITableViewCell's clipsToBounds at the UIKit level so
-        // avatars can bleed visually past the row boundary to the screen edge.
-        .background(ListCellClipBreaker())
     }
 }
 
+// MARK: - RegularAvatar
+
 /// Single circular avatar in the Regulars row.
 ///
-/// Tap toggles membership in the basket (matches QuickItemTile). When the
-/// item is in the basket, a small BrandGreen checkmark badge appears in the
-/// top-right corner and the circle gains a thin green ring.
+/// Tap toggles basket membership (matches `QuickItemTile`). When the item
+/// is in the basket, a BrandGreen checkmark badge appears at top-right and
+/// the circle gains a thin green ring.
 private struct RegularAvatar: View {
     let item: TopUsedShortcutItem
     let isInBasket: Bool
@@ -141,11 +114,9 @@ private struct RegularAvatar: View {
 
     var body: some View {
         Button {
-            // Light for add, soft for remove (matches BasketHaptics + tile behavior).
             let style: UIImpactFeedbackGenerator.FeedbackStyle = isInBasket ? .soft : .light
             UIImpactFeedbackGenerator(style: style).impactOccurred()
 
-            // Visual celebration only on add — don't pulse on remove.
             if !isInBasket && !reduceMotion {
                 pulseToken &+= 1
                 showFlash = true
@@ -155,9 +126,6 @@ private struct RegularAvatar: View {
                 }
             }
 
-            // Avatar stays in the row regardless of whether we're adding or
-            // removing — no need to delay the callback to wait for an exit
-            // animation.
             onTap(item)
         } label: {
             VStack(spacing: 6) {
@@ -173,7 +141,6 @@ private struct RegularAvatar: View {
                         .font(.system(size: 32))
                 }
                 .frame(width: 64, height: 64)
-                // Brief green glow over the avatar on add
                 .overlay {
                     Circle()
                         .fill(Color("BrandGreen"))
@@ -181,13 +148,10 @@ private struct RegularAvatar: View {
                         .animation(.spring(response: 0.22, dampingFraction: 0.7), value: showFlash)
                         .allowsHitTesting(false)
                 }
-                // Expanding green ring on each tap
                 .overlay {
                     AvatarPulseRing(token: pulseToken)
                         .allowsHitTesting(false)
                 }
-                // Top-right BrandGreen checkmark badge when added — same
-                // visual language as QuickItemTile.
                 .overlay(alignment: .topTrailing) {
                     if isInBasket {
                         Image(systemName: "checkmark")
@@ -213,10 +177,22 @@ private struct RegularAvatar: View {
             }
         }
         .buttonStyle(.spring(scale: 0.92))
+        .accessibilityLabel(Text(
+            String(
+                localized: isInBasket
+                    ? "regulars.avatar.a11y_remove_format"
+                    : "regulars.avatar.a11y_add_format",
+                defaultValue: isInBasket
+                    ? "Remove \(ProductDisplayNameProvider.displayName(for: item.name)) from basket"
+                    : "Add \(ProductDisplayNameProvider.displayName(for: item.name)) to basket",
+                comment: "VoiceOver label for a regular-item avatar. %@ is the item name."
+            )
+        ))
     }
 }
 
-/// Circular green ring that expands + fades each time `token` changes.
+/// Circular green ring that expands + fades each time `token` changes —
+/// played as a celebration on every add.
 private struct AvatarPulseRing: View {
     let token: Int
 

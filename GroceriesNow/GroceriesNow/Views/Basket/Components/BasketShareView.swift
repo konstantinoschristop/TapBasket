@@ -70,7 +70,7 @@ struct BasketShareView: View {
                     HStack(spacing: 6) {
                         Text("🛒")
                             .font(.system(size: 26))
-                        Text("Shopping List")
+                        Text("basket.share.heading")
                             .font(.system(size: 22, weight: .bold, design: .rounded))
                             .foregroundColor(.white)
                     }

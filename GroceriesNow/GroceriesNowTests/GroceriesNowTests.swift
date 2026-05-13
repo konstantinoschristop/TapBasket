@@ -173,8 +173,8 @@ struct GroceriesNowTests {
 
     @Test("default expanded browse categories favor essentials, produce, home care, and custom when present")
     func defaultExpandedCategoriesFavorPrimarySections() {
-        let categoriesWithCustom: [QuickItemCategory] = [.essentials, .produce, .homeCare, .more, .custom]
-        let categoriesWithoutPriority: [QuickItemCategory] = [.proteins, .pantry, .drinks, .more]
+        let categoriesWithCustom: [QuickItemCategory] = [.essentials, .produce, .homeCare, .bakery, .custom]
+        let categoriesWithoutPriority: [QuickItemCategory] = [.proteins, .pantry, .drinks, .bakery]
 
         let expandedWithCustom = HomeBrowseState.defaultExpandedCategories(for: categoriesWithCustom)
         let expandedWithoutPriority = HomeBrowseState.defaultExpandedCategories(for: categoriesWithoutPriority)

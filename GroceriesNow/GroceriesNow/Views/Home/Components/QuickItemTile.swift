@@ -5,10 +5,17 @@ struct QuickItemTile: View {
     let isInBasket: Bool
     /// Quantity in the basket. 0 if not in basket. Used to render the ×N badge.
     let quantity: Int
+    /// True when the user can edit / delete this item — i.e. it was
+    /// added by them, regardless of which category they put it in. The
+    /// parent decides; the tile just renders the affordance.
+    let isEditable: Bool
     /// Tap action — toggles add/remove (parent decides).
     let action: () -> Void
     /// Long-press action — increments quantity by 1.
     let onLongPress: () -> Void
+    /// Edit action — non-nil only for editable items. Surfaced via the
+    /// Menu's long-press affordance.
+    let onEdit: (() -> Void)?
     let onDelete: (() -> Void)?
 
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
@@ -31,140 +38,190 @@ struct QuickItemTile: View {
     }
 
     var body: some View {
+        // Two render paths.
+        //
+        // Editable items use `Menu { … } primaryAction:` so that tap
+        // = the same toggle action and long-press = the Edit / Delete
+        // menu. This is the deterministic alternative to `.contextMenu`,
+        // which iOS 18 frequently fails to activate inside LazyV/HGrid
+        // rows (the grid intercepts the long-press first).
+        //
+        // Non-editable items keep a Button + a LongPressGesture for the
+        // +1-quantity behaviour, which is meaningless for custom items.
+        if isEditable {
+            Menu {
+                Button {
+                    onEdit?()
+                } label: {
+                    Label("action.edit", systemImage: "pencil")
+                }
+                Button(role: .destructive) {
+                    onDelete?()
+                } label: {
+                    Label("action.delete", systemImage: "trash")
+                }
+            } label: {
+                tileContent
+                    .scaleEffect(isPressed ? 0.97 : 1.0)
+                    .animation(.taplistTap, value: isPressed)
+            } primaryAction: {
+                performTap()
+            }
+            .buttonStyle(.plain)
+            .menuOrder(.fixed)
+        } else {
+            tileButton
+                .simultaneousGesture(longPressIncrement)
+        }
+    }
+
+    private var tileButton: some View {
         Button {
-            // Suppress the tap when it's actually the release after a
-            // successful long-press — otherwise +1 would be immediately
-            // followed by the toggle (= remove), wiping the increment.
-            if didLongPress {
-                didLongPress = false
-                return
-            }
-
-            // Tap = toggle. Light for add, soft for remove (matches BasketHaptics).
-            let style: UIImpactFeedbackGenerator.FeedbackStyle = isInBasket ? .soft : .light
-            UIImpactFeedbackGenerator(style: style).impactOccurred()
-
-            // Only celebrate add taps — removing shouldn't pulse.
-            if !isInBasket && !reduceMotion {
-                pulseToken &+= 1
-                showFlash = true
-                Task {
-                    try? await Task.sleep(for: .milliseconds(550))
-                    await MainActor.run { showFlash = false }
-                }
-            }
-
-            withAnimation(.taplistOrNone(.taplistTap, reduceMotion: reduceMotion)) {
-                isPressed = true
-            }
-            action()
-
-            Task {
-                try? await Task.sleep(for: .milliseconds(110))
-                await MainActor.run {
-                    withAnimation(.taplistTap) {
-                        isPressed = false
-                    }
-                }
-            }
+            performTap()
         } label: {
             tileContent
                 .scaleEffect(isPressed ? 0.97 : 1.0)
                 .animation(.taplistTap, value: isPressed)
         }
         .buttonStyle(.plain)
-        // Long-press = +1 quantity. Direct gesture (no menu) — heavier medium
-        // haptic distinguishes it from the light tap-add feedback. The visual
-        // pulse + flash play so the user sees the add land.
-        .simultaneousGesture(
-            LongPressGesture(minimumDuration: 0.4)
-                .onEnded { _ in
-                    // Mark the long-press as fired so the button's release-tap
-                    // bails instead of toggling.
-                    didLongPress = true
+    }
 
-                    UIImpactFeedbackGenerator(style: .medium).impactOccurred()
-                    if !reduceMotion {
-                        pulseToken &+= 1
-                        showFlash = true
-                        Task {
-                            try? await Task.sleep(for: .milliseconds(550))
-                            await MainActor.run { showFlash = false }
-                        }
-                    }
-                    onLongPress()
+    /// Shared tap handler — runs whether the user taps the Button
+    /// (non-editable) or triggers the Menu's primaryAction (editable).
+    private func performTap() {
+        // Suppress the tap when it's actually the release after a
+        // successful long-press — otherwise +1 would be immediately
+        // followed by the toggle (= remove), wiping the increment.
+        if didLongPress {
+            didLongPress = false
+            return
+        }
+
+        // Tap = toggle. Light for add, soft for remove (matches BasketHaptics).
+        let style: UIImpactFeedbackGenerator.FeedbackStyle = isInBasket ? .soft : .light
+        UIImpactFeedbackGenerator(style: style).impactOccurred()
+
+        // Only celebrate add taps — removing shouldn't pulse.
+        if !isInBasket && !reduceMotion {
+            pulseToken &+= 1
+            showFlash = true
+            Task {
+                try? await Task.sleep(for: .milliseconds(550))
+                await MainActor.run { showFlash = false }
+            }
+        }
+
+        withAnimation(.taplistOrNone(.taplistTap, reduceMotion: reduceMotion)) {
+            isPressed = true
+        }
+        action()
+
+        Task {
+            try? await Task.sleep(for: .milliseconds(110))
+            await MainActor.run {
+                withAnimation(.taplistTap) {
+                    isPressed = false
                 }
-        )
+            }
+        }
+    }
+
+    private var longPressIncrement: some Gesture {
+        LongPressGesture(minimumDuration: 0.4)
+            .onEnded { _ in
+                didLongPress = true
+                UIImpactFeedbackGenerator(style: .medium).impactOccurred()
+                if !reduceMotion {
+                    pulseToken &+= 1
+                    showFlash = true
+                    Task {
+                        try? await Task.sleep(for: .milliseconds(550))
+                        await MainActor.run { showFlash = false }
+                    }
+                }
+                onLongPress()
+            }
     }
 
     private var tileContent: some View {
-        VStack(spacing: 8) {
+        ZStack(alignment: .bottomTrailing) {
+            // Hero emoji — anchored bottom-right with a soft sticker shadow.
+            // Makes the tile feel like a product on a shelf rather than a
+            // generic centred label.
             Text(item.emoji)
-                .font(.system(size: 44))
+                .font(.system(size: 54))
                 .scaleEffect(isPressed ? 0.94 : 1)
+                .shadow(color: .black.opacity(0.12), radius: 3, y: 1.5)
+                .padding(.bottom, 4)
+                .padding(.trailing, 4)
 
-            Text(displayName)
-                .font(.body.weight(.semibold))
-                .foregroundStyle(.primary)
-                .lineLimit(2)
-                .multilineTextAlignment(.center)
-                .minimumScaleFactor(0.85)
+            // Label — top-leading, modest weight. The emoji is the
+            // protagonist; the label is the caption.
+            VStack(alignment: .leading) {
+                Text(displayName)
+                    .font(.footnote.weight(.semibold))
+                    .foregroundStyle(.primary)
+                    .lineLimit(2)
+                    .multilineTextAlignment(.leading)
+                    .minimumScaleFactor(0.85)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                Spacer(minLength: 0)
+            }
+            .padding(.horizontal, 12)
+            .padding(.top, 12)
         }
         .frame(maxWidth: .infinity)
-        .frame(height: 124)
-        .padding(.horizontal, 10)
+        .frame(height: 108)
         .background {
-            RoundedRectangle(cornerRadius: 18, style: .continuous)
+            // Flat warm card fill — no diagonal gradient. Calmer,
+            // more cohesive with the rest of the grid.
+            RoundedRectangle(cornerRadius: 20, style: .continuous)
                 .fill(Color("CardBackground"))
                 .shadow(color: .black.opacity(0.05), radius: 6, y: 2)
         }
         .overlay {
-            RoundedRectangle(cornerRadius: 18, style: .continuous)
-                .stroke(
-                    isInBasket ? Color("BrandGreen").opacity(0.6) : Color(.separator).opacity(0.35),
+            RoundedRectangle(cornerRadius: 20, style: .continuous)
+                .strokeBorder(
+                    isInBasket ? Color("BrandGreen").opacity(0.55) : Color(.separator).opacity(0.30),
                     lineWidth: isInBasket ? 1.5 : 0.5
                 )
         }
         .overlay {
-            // Brief green glow that pulses across the whole tile on add.
-            RoundedRectangle(cornerRadius: 18, style: .continuous)
+            // Brief green glow on add.
+            RoundedRectangle(cornerRadius: 20, style: .continuous)
                 .fill(Color("BrandGreen"))
-                .opacity(showFlash ? 0.20 : 0)
+                .opacity(showFlash ? 0.18 : 0)
                 .animation(.spring(response: 0.22, dampingFraction: 0.7), value: showFlash)
                 .allowsHitTesting(false)
         }
         .overlay {
-            // Ripple-pulse ring that expands outward when an item is added.
             AddPulseRing(token: pulseToken)
                 .allowsHitTesting(false)
         }
+        // "In basket" state: a small green dot floating top-right.
+        // Quieter and cleaner than the full checkmark badge — the dot
+        // reads at a glance without dominating the tile.
         .overlay(alignment: .topTrailing) {
-            if isInBasket {
-                Image(systemName: "checkmark")
-                    .font(.system(size: 10, weight: .bold))
-                    .foregroundStyle(.white)
-                    .frame(width: 18, height: 18)
-                    .background(Color("BrandGreen"), in: Circle())
-                    .padding(8)
+            if isInBasket && quantity <= 1 {
+                Circle()
+                    .fill(Color("BrandGreen"))
+                    .frame(width: 9, height: 9)
+                    .overlay(Circle().strokeBorder(Color("CardBackground"), lineWidth: 1.5))
+                    .padding(10)
                     .transition(.scale.combined(with: .opacity))
-                    .symbolEffect(.bounce, options: .nonRepeating, value: isInBasket)
             }
         }
-        // Quantity badge (×N) sits opposite the check so the two never collide.
-        // Only shown when qty > 1 — qty == 1 is implied by the checkmark alone.
-        .overlay(alignment: .topLeading) {
+        // Quantity badge — shown only when qty > 1 (replaces the dot).
+        .overlay(alignment: .topTrailing) {
             if quantity > 1 {
                 Text("×\(quantity)")
                     .font(.caption2.weight(.bold))
                     .monospacedDigit()
-                    // AccentColor inverts in dark mode (charcoal → white), so
-                    // the badge text needs to invert too. `Color(.systemBackground)`
-                    // is white in light, ~black in dark — always reads against
-                    // the accent capsule.
-                    .foregroundStyle(Color(.systemBackground))
+                    .foregroundStyle(.white)
                     .padding(.horizontal, 6)
-                    .padding(.vertical, 3)
-                    .background(Color.accentColor, in: Capsule())
+                    .padding(.vertical, 2)
+                    .background(Color("BrandGreen"), in: Capsule())
+                    .overlay(Capsule().strokeBorder(Color("CardBackground"), lineWidth: 1))
                     .padding(8)
                     .transition(.scale.combined(with: .opacity))
                     .contentTransition(.numericText(value: Double(quantity)))
@@ -185,7 +242,7 @@ private struct AddPulseRing: View {
     @State private var opacity: Double = 0
 
     var body: some View {
-        RoundedRectangle(cornerRadius: 18, style: .continuous)
+        RoundedRectangle(cornerRadius: 20, style: .continuous)
             .strokeBorder(Color("BrandGreen"), lineWidth: 2)
             .scaleEffect(scale)
             .opacity(opacity)

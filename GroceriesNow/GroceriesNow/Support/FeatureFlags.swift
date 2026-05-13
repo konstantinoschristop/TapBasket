@@ -10,11 +10,4 @@ enum FeatureFlags {
         get { UserDefaults.standard.object(forKey: "flag_aiRecipeEnabled") as? Bool ?? false }
         set { UserDefaults.standard.set(newValue, forKey: "flag_aiRecipeEnabled") }
     }
-
-    /// When `true`, the AI recipe feature requires a Pro purchase.
-    /// When `false`, it is free for everyone (paywall UI is never shown).
-    static var aiRecipeRequiresPro: Bool {
-        get { UserDefaults.standard.object(forKey: "flag_aiRecipeRequiresPro") as? Bool ?? true }
-        set { UserDefaults.standard.set(newValue, forKey: "flag_aiRecipeRequiresPro") }
-    }
 }

@@ -19,6 +19,14 @@ struct BasketView: View {
     @State private var isPreparingShare = false
     @State private var shareImage: UIImage?
 
+    /// Optional nickname for the *current* basket. Carries through to
+    /// the `CompletedBasket.customName` on completion and clears so the
+    /// next shop starts fresh. Persists across launches in case the
+    /// user names a shop early and adds items over multiple sessions.
+    @AppStorage("currentBasketName") private var currentBasketName: String = ""
+    @State private var isRenamingBasket: Bool = false
+    @State private var basketNameDraft: String = ""
+
     private let swipeToDeleteTip = SwipeToDeleteTip()
     private let shareBasketTip = ShareBasketTip()
 
@@ -40,9 +48,29 @@ struct BasketView: View {
 
     var body: some View {
         listContent
-            .navigationTitle(Text("basket.screen_title"))
+            // Set a navigation title for accessibility / large-title
+            // fallback, but visually it's replaced by the principal
+            // toolbar item below so the user can tap-to-rename.
+            .navigationTitle(Text(displayedBasketTitle))
+            .navigationBarTitleDisplayMode(.inline)
             // Hide the system back button — the leading "Done" button handles dismissal.
             .navigationBarBackButtonHidden(true)
+            .alert(
+                String(localized: "basket.rename_alert.title", defaultValue: "Name this shop"),
+                isPresented: $isRenamingBasket
+            ) {
+                TextField(
+                    String(localized: "basket.rename_alert.placeholder",
+                           defaultValue: "e.g. Sunday shop"),
+                    text: $basketNameDraft
+                )
+                .textInputAutocapitalization(.words)
+                Button(String(localized: "action.cancel"), role: .cancel) { }
+                Button(String(localized: "action.save")) {
+                    currentBasketName = basketNameDraft
+                        .trimmingCharacters(in: .whitespacesAndNewlines)
+                }
+            }
             .toolbar { toolbarContent }
             .sheet(item: $noteEditorItem) { item in
                 BasketItemNoteEditorView(
@@ -63,10 +91,11 @@ struct BasketView: View {
             .overlay {
                 if showCompletionBadge {
                     BasketCompletionOverlay()
-                        .transition(.asymmetric(
-                            insertion: .scale(scale: 0.85).combined(with: .opacity),
-                            removal: .opacity.combined(with: .scale(scale: 0.92))
-                        ))
+                        // Fade-only on the wrapper so the dim backdrop
+                        // doesn't scale-up to fullscreen. The popup card
+                        // itself springs in via its own internal state
+                        // animation.
+                        .transition(.opacity)
                 }
             }
     }
@@ -206,6 +235,28 @@ struct BasketView: View {
 
     @ToolbarContentBuilder
     private var toolbarContent: some ToolbarContent {
+        // Tappable title with inline pencil — opens the rename alert.
+        // Replaces the default navigation title.
+        ToolbarItem(placement: .principal) {
+            Button {
+                basketNameDraft = currentBasketName
+                isRenamingBasket = true
+            } label: {
+                HStack(spacing: 6) {
+                    Text(displayedBasketTitle)
+                        .font(.headline)
+                        .foregroundStyle(.primary)
+                        .lineLimit(1)
+                    Image(systemName: "pencil")
+                        .font(.caption2.weight(.semibold))
+                        .foregroundStyle(.secondary)
+                }
+                .contentShape(Rectangle())
+            }
+            .buttonStyle(.plain)
+            .accessibilityLabel(Text("basket.rename_alert.title"))
+        }
+
         ToolbarItem(placement: .topBarLeading) {
             Button {
                 dismiss()
@@ -273,8 +324,22 @@ struct BasketView: View {
             })
         }
 
-        shareImage = BasketExporter.renderImage(regularItems: regular, recipeGroups: groups)
+        let trimmedName = currentBasketName.trimmingCharacters(in: .whitespacesAndNewlines)
+        shareImage = BasketExporter.renderImage(
+            basketName: trimmedName.isEmpty ? nil : trimmedName,
+            regularItems: regular,
+            recipeGroups: groups
+        )
         isPreparingShare = false
+    }
+
+    /// Custom name if the user has set one, falling back to the
+    /// default "Basket" localized title.
+    private var displayedBasketTitle: String {
+        let trimmed = currentBasketName.trimmingCharacters(in: .whitespacesAndNewlines)
+        return trimmed.isEmpty
+            ? String(localized: "basket.screen_title")
+            : trimmed
     }
 
     private func completeCurrentBasket() {
@@ -289,7 +354,14 @@ struct BasketView: View {
             showCompletionBadge = true
         }
 
-        manager.completeBasket(basketItems, in: modelContext)
+        manager.completeBasket(
+            basketItems,
+            customName: currentBasketName,
+            in: modelContext
+        )
+
+        // Reset the per-basket nickname so the next shop starts blank.
+        currentBasketName = ""
 
         Task {
             try? await Task.sleep(for: .milliseconds(1600))

@@ -19,6 +19,11 @@ struct BasketCompletionOverlay: View {
     @State private var checkmarkOpacity: Double = 0
     @State private var titleOpacity: Double = 0
     @State private var subtitleOpacity: Double = 0
+    /// Card-only pop-in. Kept separate from the parent's `.transition`
+    /// (which is fade-only on the wrapper) so the dim backdrop doesn't
+    /// scale up alongside the card.
+    @State private var cardScale: CGFloat = 0.85
+    @State private var cardOpacity: Double = 0
 
     private let ringDiameter: CGFloat = 92
     private let ringLineWidth: CGFloat = 5
@@ -53,6 +58,10 @@ struct BasketCompletionOverlay: View {
                     .stroke(Color("BrandGreen").opacity(0.2), lineWidth: 1)
             }
             .shadow(color: .black.opacity(0.16), radius: 30, y: 12)
+            // Internal pop-in for the card only — backdrop stays
+            // fullscreen and just fades via the parent's transition.
+            .scaleEffect(cardScale)
+            .opacity(cardOpacity)
         }
         .allowsHitTesting(false)
         .onAppear(perform: playSequence)
@@ -103,6 +112,12 @@ struct BasketCompletionOverlay: View {
     /// Full multi-stage celebration: ring strokes around, checkmark pops with
     /// a spring, title and subtitle fade up sequentially.
     private func playFullSequence() {
+        // Card itself springs in (independent of the backdrop fade).
+        withAnimation(.spring(response: 0.42, dampingFraction: 0.78)) {
+            cardScale = 1
+            cardOpacity = 1
+        }
+
         withAnimation(.easeOut(duration: 0.55)) {
             ringProgress = 1
         }
@@ -140,6 +155,12 @@ struct BasketCompletionOverlay: View {
     /// fades in together, success haptic still fires. The user gets the
     /// completion confirmation without the disorienting motion arc.
     private func playReducedSequence() {
+        // Card fades in (no scale) under reduce-motion.
+        cardScale = 1
+        withAnimation(.easeOut(duration: 0.25)) {
+            cardOpacity = 1
+        }
+
         Task {
             // Brief delay so the haptic and visuals don't land identical.
             try? await Task.sleep(for: .milliseconds(150))

@@ -8,6 +8,11 @@ struct TopUsedShortcutItem: Identifiable {
     let emoji: String
     let totalQuantity: Int
     let category: QuickItemCategory
+    /// True when the user has explicitly pinned this item. Lets the
+    /// avatar render a subtle pin glyph and the menu offer "Unpin"
+    /// instead of "Pin". Auto-derived (history-only) shortcuts are
+    /// `false` here and look identical to before.
+    let isPinned: Bool
 }
 
 /// Horizontal row of circular avatars for the user's most-bought items.
@@ -22,9 +27,16 @@ struct TopUsedShortcutsView: View {
     let inBasketNames: Set<String>
     let onTapItem: (TopUsedShortcutItem) -> Void
     let onAddAll: () -> Void
+    /// Fired when the user taps the empty-state "+" — the parent opens
+    /// a picker so the user can pin items in bulk.
+    let onPickFavorites: () -> Void
+    /// Toggles the underlying `QuickItem.pinned` flag. Surfaced from
+    /// the avatar's long-press menu so the user can unpin a regular
+    /// without leaving the home screen.
+    let onToggleItemPin: (TopUsedShortcutItem) -> Void
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 14) {
+        VStack(alignment: .leading, spacing: 12) {
             header.padding(.horizontal, 20)
             avatarRow
         }
@@ -32,25 +44,24 @@ struct TopUsedShortcutsView: View {
     }
 
     /// True when every visible regular is already in the basket — "Add all"
-    /// would be a no-op, so we suppress the button.
+    /// would be a no-op, so we suppress the button. Also true (vacuously)
+    /// when there are no items at all, so the pill hides in the empty state.
     private var allInBasket: Bool {
-        items.prefix(10).allSatisfy { inBasketNames.contains($0.name.lowercased()) }
+        guard !items.isEmpty else { return true }
+        return items.prefix(10).allSatisfy { inBasketNames.contains($0.name.lowercased()) }
     }
 
+    /// Quieter editorial header — single line, no accented icon-square.
+    /// Subtitle drops to `.secondary` so the row reads as a labelled
+    /// shelf rather than a hero card. "Add all" stays as the only
+    /// active visual in the right rail.
     private var header: some View {
         HStack(spacing: 12) {
-            Image(systemName: "repeat.circle.fill")
-                .font(.system(size: 14, weight: .semibold))
-                .foregroundStyle(Color.accentColor)
-                .frame(width: 32, height: 32)
-                .background(Color.accentColor.opacity(0.12),
-                            in: RoundedRectangle(cornerRadius: 9, style: .continuous))
-
             VStack(alignment: .leading, spacing: 2) {
                 Text("regulars.header.title")
-                    .font(.headline)
-                    .foregroundStyle(Color(.label))
-                Text("regulars.header.subtitle")
+                    .font(.subheadline.weight(.semibold))
+                    .foregroundStyle(.primary)
+                Text(items.isEmpty ? "regulars.empty.subtitle" : "regulars.header.subtitle")
                     .font(.caption)
                     .foregroundStyle(.secondary)
             }
@@ -60,38 +71,98 @@ struct TopUsedShortcutsView: View {
             if !allInBasket {
                 Button(action: onAddAll) {
                     Text("action.add_all")
-                        .font(.subheadline.weight(.semibold))
+                        .font(.footnote.weight(.semibold))
                         .foregroundStyle(Color.accentColor)
-                        .padding(.horizontal, 12)
-                        .padding(.vertical, 6)
-                        .background(Color.accentColor.opacity(0.12), in: Capsule())
+                        .padding(.horizontal, 10)
+                        .padding(.vertical, 5)
+                        .background(Color.accentColor.opacity(0.10), in: Capsule())
                 }
                 .buttonStyle(.spring(scale: 0.94))
-                .transition(.scale.combined(with: .opacity))
+                .transition(.opacity)
             }
         }
         .animation(.taplistTransition, value: allInBasket)
     }
 
+    /// Avatar row.
+    ///
+    /// Two presentations:
+    ///   - **Empty state** — single inline plus cell + Spacer. The
+    ///     2-row scrollable grid would just hold a tall blank space
+    ///     under the plus and read as a placeholder; collapsing to
+    ///     one row makes the empty state feel intentional.
+    ///   - **Populated** — `LazyHGrid` with the plus as the first
+    ///     cell, sized and styled to match a `RegularAvatar` so the
+    ///     row reads as one cohesive shelf. The plus scrolls with
+    ///     the row instead of pinning to the leading edge, which
+    ///     reduces its visual weight and removes the awkward
+    ///     full-height sidebar.
+    @ViewBuilder
     private var avatarRow: some View {
-        ScrollView(.horizontal, showsIndicators: false) {
+        if items.isEmpty {
             HStack(alignment: .top, spacing: 14) {
-                ForEach(items.prefix(10)) { item in
-                    RegularAvatar(
-                        item: item,
-                        isInBasket: inBasketNames.contains(item.name.lowercased()),
-                        onTap: onTapItem
-                    )
-                    .transition(.scale.combined(with: .opacity))
-                }
+                plusCell
+                Spacer(minLength: 0)
             }
-            // Leading-only padding so the first avatar has breathing
-            // room; trailing edge is open so avatars scroll cleanly off
-            // the screen edge rather than stopping short.
-            .padding(.leading, 20)
-            .padding(.vertical, 10)
-            .animation(.spring(response: 0.4, dampingFraction: 0.85), value: items.map(\.id))
+            .padding(.horizontal, 20)
+            .padding(.vertical, 6)
+        } else {
+            ScrollView(.horizontal, showsIndicators: false) {
+                LazyHGrid(
+                    rows: [
+                        GridItem(.fixed(96), spacing: 8),
+                        GridItem(.fixed(96), spacing: 8)
+                    ],
+                    alignment: .top,
+                    spacing: 14
+                ) {
+                    plusCell
+
+                    ForEach(items.prefix(14)) { item in
+                        RegularAvatar(
+                            item: item,
+                            isInBasket: inBasketNames.contains(item.name.lowercased()),
+                            onTap: onTapItem,
+                            onTogglePin: onToggleItemPin
+                        )
+                        .transition(.scale.combined(with: .opacity))
+                    }
+                }
+                .padding(.horizontal, 20)
+                .padding(.vertical, 6)
+                .animation(.spring(response: 0.4, dampingFraction: 0.85), value: items.map(\.id))
+            }
         }
+    }
+
+    /// Plus cell — sized and shaped exactly like a `RegularAvatar` so
+    /// it slots into the LazyHGrid without breaking the row's rhythm.
+    /// Pulses only while the section is empty; once the user has any
+    /// pinned items, the cell sits quietly alongside them.
+    private var plusCell: some View {
+        Button(action: onPickFavorites) {
+            VStack(spacing: 6) {
+                ZStack {
+                    Circle()
+                        .fill(Color.accentColor.opacity(0.08))
+                    Circle()
+                        .strokeBorder(Color(.separator).opacity(0.25), lineWidth: 0.5)
+                    Image(systemName: "plus")
+                        .font(.system(size: 22, weight: .semibold))
+                        .foregroundStyle(Color.accentColor.opacity(items.isEmpty ? 1 : 0.85))
+                        .symbolEffect(.pulse, options: .repeating, isActive: items.isEmpty)
+                }
+                .frame(width: 64, height: 64)
+
+                Text(items.isEmpty ? "regulars.plus.empty_label" : "regulars.plus.label")
+                    .font(.caption.weight(.medium))
+                    .foregroundStyle(.secondary)
+                    .lineLimit(1)
+                    .frame(width: 72)
+            }
+        }
+        .buttonStyle(.spring(scale: 0.94))
+        .accessibilityLabel(Text("regulars.plus.a11y_label"))
     }
 }
 
@@ -99,13 +170,16 @@ struct TopUsedShortcutsView: View {
 
 /// Single circular avatar in the Regulars row.
 ///
-/// Tap toggles basket membership (matches `QuickItemTile`). When the item
-/// is in the basket, a BrandGreen checkmark badge appears at top-right and
-/// the circle gains a thin green ring.
+/// Tap toggles basket membership (matches `QuickItemTile`). Long-press
+/// surfaces a `Menu` so the user can pin / unpin the item without
+/// leaving the home screen. Pinned items get a small accent pin glyph
+/// at the top-left so the user can distinguish their explicit picks
+/// from auto-derived (history-based) regulars at a glance.
 private struct RegularAvatar: View {
     let item: TopUsedShortcutItem
     let isInBasket: Bool
     let onTap: (TopUsedShortcutItem) -> Void
+    let onTogglePin: (TopUsedShortcutItem) -> Void
 
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
@@ -113,32 +187,32 @@ private struct RegularAvatar: View {
     @State private var pulseToken = 0
 
     var body: some View {
-        Button {
-            let style: UIImpactFeedbackGenerator.FeedbackStyle = isInBasket ? .soft : .light
-            UIImpactFeedbackGenerator(style: style).impactOccurred()
-
-            if !isInBasket && !reduceMotion {
-                pulseToken &+= 1
-                showFlash = true
-                Task {
-                    try? await Task.sleep(for: .milliseconds(550))
-                    await MainActor.run { showFlash = false }
-                }
+        Menu {
+            Button {
+                onTogglePin(item)
+            } label: {
+                Label(
+                    item.isPinned
+                        ? String(localized: "action.unpin", defaultValue: "Unpin")
+                        : String(localized: "action.pin", defaultValue: "Pin"),
+                    systemImage: item.isPinned ? "pin.slash" : "pin"
+                )
             }
-
-            onTap(item)
         } label: {
             VStack(spacing: 6) {
                 ZStack {
+                    // Single neutral surface. In-basket carries a barely-
+                    // there BrandGreen wash instead of a coloured ring —
+                    // the avatar reads as "settled" instead of decorated.
                     Circle()
                         .fill(Color("CardBackground"))
                     Circle()
-                        .strokeBorder(
-                            isInBasket ? Color("BrandGreen").opacity(0.6) : Color(.separator).opacity(0.25),
-                            lineWidth: isInBasket ? 1.5 : 0.5
-                        )
+                        .fill(Color("BrandGreen").opacity(isInBasket ? 0.07 : 0))
+                    Circle()
+                        .strokeBorder(Color(.separator).opacity(0.25), lineWidth: 0.5)
                     Text(item.emoji)
                         .font(.system(size: 32))
+                        .opacity(isInBasket ? 0.88 : 1)
                 }
                 .frame(width: 64, height: 64)
                 .overlay {
@@ -152,22 +226,26 @@ private struct RegularAvatar: View {
                     AvatarPulseRing(token: pulseToken)
                         .allowsHitTesting(false)
                 }
-                .overlay(alignment: .topTrailing) {
-                    if isInBasket {
-                        Image(systemName: "checkmark")
-                            .font(.system(size: 9, weight: .bold))
-                            .foregroundStyle(.white)
-                            .frame(width: 18, height: 18)
-                            .background(Color("BrandGreen"), in: Circle())
-                            .overlay {
-                                Circle().strokeBorder(Color("CardBackground"), lineWidth: 1.5)
-                            }
-                            .offset(x: 2, y: -2)
-                            .transition(.scale.combined(with: .opacity))
-                            .symbolEffect(.bounce, options: .nonRepeating, value: isInBasket)
+                .overlay(alignment: .topLeading) {
+                    if item.isPinned {
+                        // Quieter pin marker: tinted glyph on the card
+                        // surface, no coloured fill, no white ring. Reads
+                        // as a hint, not a badge.
+                        Image(systemName: "pin.fill")
+                            .font(.system(size: 8, weight: .bold))
+                            .foregroundStyle(Color.accentColor.opacity(0.85))
+                            .padding(3)
+                            .background(Color("CardBackground"), in: Circle())
+                            .offset(x: -1, y: -1)
+                            .transition(.opacity)
                     }
                 }
+                // No persistent in-basket checkmark badge. The temporary
+                // AvatarPulseRing + the subtle wash are enough state cue;
+                // a permanent badge would re-introduce the visual noise
+                // the rest of the grid is shedding.
                 .animation(.taplistCelebrate, value: isInBasket)
+                .animation(.taplistCelebrate, value: item.isPinned)
 
                 Text(ProductDisplayNameProvider.displayName(for: item.name))
                     .font(.caption.weight(.medium))
@@ -175,8 +253,23 @@ private struct RegularAvatar: View {
                     .lineLimit(1)
                     .frame(width: 72)
             }
+        } primaryAction: {
+            let style: UIImpactFeedbackGenerator.FeedbackStyle = isInBasket ? .soft : .light
+            UIImpactFeedbackGenerator(style: style).impactOccurred()
+
+            if !isInBasket && !reduceMotion {
+                pulseToken &+= 1
+                showFlash = true
+                Task {
+                    try? await Task.sleep(for: .milliseconds(550))
+                    await MainActor.run { showFlash = false }
+                }
+            }
+
+            onTap(item)
         }
-        .buttonStyle(.spring(scale: 0.92))
+        .buttonStyle(.plain)
+        .menuOrder(.fixed)
         .accessibilityLabel(Text(
             String(
                 localized: isInBasket

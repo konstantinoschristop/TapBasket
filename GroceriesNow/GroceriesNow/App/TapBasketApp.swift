@@ -140,7 +140,8 @@ struct TapBasketApp: App {
         QuickItem(name: "Peppers", emoji: "🫑", sortOrder: 16, category: .produce),
         QuickItem(name: "Onion", emoji: "🧅", sortOrder: 17, category: .produce),
         QuickItem(name: "Garlic", emoji: "🧄", sortOrder: 18, category: .produce),
-        QuickItem(name: "Ginger", emoji: "🫚", sortOrder: 19, category: .produce),
+        // Ginger removed from seed — monthly-ish cooking ingredient,
+        // catalog covers it (Ginger + Ginger powder).
         QuickItem(name: "Mushrooms", emoji: "🍄", sortOrder: 20, category: .produce),
         QuickItem(name: "Avocado", emoji: "🥑", sortOrder: 21, category: .produce),
         QuickItem(name: "Apple", emoji: "🍎", sortOrder: 22, category: .produce),
@@ -150,9 +151,8 @@ struct TapBasketApp: App {
         QuickItem(name: "Lemon", emoji: "🍋", sortOrder: 26, category: .produce),
         QuickItem(name: "Strawberries", emoji: "🍓", sortOrder: 27, category: .produce),
         QuickItem(name: "Blueberries", emoji: "🫐", sortOrder: 28, category: .produce),
-        QuickItem(name: "Pineapple", emoji: "🍍", sortOrder: 29, category: .produce),
-        QuickItem(name: "Kiwi", emoji: "🥝", sortOrder: 30, category: .produce),
-        QuickItem(name: "Coconut", emoji: "🥥", sortOrder: 31, category: .produce),
+        // Pineapple / Kiwi / Coconut removed from seed — niche fruits,
+        // occasional purchases. Catalog covers all three.
 
         QuickItem(name: "Chicken", emoji: "🍗", sortOrder: 32, category: .proteins),
         QuickItem(name: "Ground Meat", emoji: "🥩", sortOrder: 33, category: .proteins),
@@ -164,7 +164,8 @@ struct TapBasketApp: App {
         QuickItem(name: "Ham", emoji: "🥓", sortOrder: 39, category: .proteins),
         QuickItem(name: "Tofu", emoji: "🥡", sortOrder: 40, category: .proteins),
         QuickItem(name: "Beans", emoji: "🫘", sortOrder: 41, category: .proteins),
-        QuickItem(name: "Lentils", emoji: "🫘", sortOrder: 42, category: .proteins),
+        // Lentils removed from seed — catalog has Lentils + Red/Green
+        // lentils for users who buy them regularly.
         QuickItem(name: "Nuts", emoji: "🥜", sortOrder: 43, category: .proteins),
 
         QuickItem(name: "Rice", emoji: "🍚", sortOrder: 44, category: .pantry),
@@ -175,7 +176,9 @@ struct TapBasketApp: App {
         QuickItem(name: "Coffee", emoji: "☕️", sortOrder: 49, category: .pantry),
         QuickItem(name: "Tea", emoji: "🍵", sortOrder: 50, category: .pantry),
         QuickItem(name: "Cereal", emoji: "🥣", sortOrder: 51, category: .pantry),
-        QuickItem(name: "Biscuits", emoji: "🍪", sortOrder: 52, category: .pantry),
+        // Biscuits removed from seed — ambiguous term (UK=cookies,
+        // US=dinner roll). "Cookies" lives in treats; "Biscuits" lives
+        // in the bakery catalog. Cleaner without it on the home grid.
         QuickItem(name: "Honey", emoji: "🍯", sortOrder: 53, category: .pantry),
         QuickItem(name: "Jam", emoji: "🍓", sortOrder: 54, category: .pantry),
         QuickItem(name: "Peanut Butter", emoji: "🥜", sortOrder: 55, category: .pantry),
@@ -194,7 +197,9 @@ struct TapBasketApp: App {
         QuickItem(name: "Sparkling Water", emoji: "🥤", sortOrder: 66, category: .drinks),
         QuickItem(name: "Juice", emoji: "🧃", sortOrder: 67, category: .drinks),
         QuickItem(name: "Soda", emoji: "🥤", sortOrder: 68, category: .drinks),
-        QuickItem(name: "Oat Milk", emoji: "🥛", sortOrder: 69, category: .drinks),
+        // Oat Milk removed from seed — was mis-categorised (milk
+        // variants belong in essentials, not drinks). Catalog has Oat
+        // milk under essentials alongside almond/soy/coconut milks.
         QuickItem(name: "Beer", emoji: "🍺", sortOrder: 70, category: .drinks),
         QuickItem(name: "Wine", emoji: "🍷", sortOrder: 71, category: .drinks),
 
@@ -222,9 +227,37 @@ struct TapBasketApp: App {
         QuickItem(name: "Cake", emoji: "🍰", sortOrder: 91, category: .bakery)
     ]
 
+    /// Maps a user-typed name variant to the canonical seed name so
+    /// the migration in `seedQuickItemsIfNeeded` can group both forms
+    /// under a single entry and delete duplicates.
+    ///
+    /// Direction is `user-form` → `seed-default-form`. The seed uses
+    /// inconsistent plurality (singular for "Egg", "Tomato", "Apple";
+    /// plural for "Mushrooms", "Grapes", "Strawberries"), and the
+    /// catalog uses the opposite form for several of these, so users
+    /// who add items via catalog can end up with both. This map
+    /// canonicalises them after the fact.
     static let seededAliasMap: [String: String] = [
+        // Singular ↔ plural pairs where the seed uses one form and
+        // the catalog uses the other.
         "oranges": "orange",
-        "lemons": "lemon"
+        "lemons": "lemon",
+        "eggs": "egg",
+        "tomatoes": "tomato",
+        "potatoes": "potato",
+        "carrots": "carrot",
+        "onions": "onion",
+        "apples": "apple",
+        "bananas": "banana",
+        "mushroom": "mushrooms",
+        "grape": "grapes",
+        "strawberry": "strawberries",
+        "blueberry": "blueberries",
+        "sausages": "sausage",
+        "mince": "ground meat",
+        "minced meat": "ground meat",
+        "shrimps": "shrimp",
+        "prawns": "shrimp"
     ]
 
     static func canonicalSeedName(for name: String) -> String {

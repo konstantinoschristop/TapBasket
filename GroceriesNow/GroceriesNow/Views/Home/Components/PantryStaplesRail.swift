@@ -89,7 +89,7 @@ struct PantryStaplesRail: View {
 
     var body: some View {
         if !visibleStaples.isEmpty {
-            VStack(alignment: .leading, spacing: 14) {
+            VStack(alignment: .leading, spacing: 12) {
                 header.padding(.horizontal, 20)
                 grid.padding(.horizontal, 20)
             }
@@ -99,21 +99,16 @@ struct PantryStaplesRail: View {
 
     // MARK: Header
 
-    /// Matches the Regulars header silhouette: accent-tinted icon square +
-    /// stacked title/caption + trailing "Add all" capsule action.
+    /// Quiet editorial header — matches the new Regulars silhouette.
+    /// Pantry staples are cold-start scaffolding for new users; once
+    /// the row is no longer dominant, the rest of the home screen can
+    /// settle into its proper hierarchy.
     private var header: some View {
         HStack(spacing: 12) {
-            Image(systemName: "cart.fill")
-                .font(.system(size: 14, weight: .semibold))
-                .foregroundStyle(Color.accentColor)
-                .frame(width: 32, height: 32)
-                .background(Color.accentColor.opacity(0.12),
-                            in: RoundedRectangle(cornerRadius: 9, style: .continuous))
-
             VStack(alignment: .leading, spacing: 2) {
                 Text(String(localized: "pantry.header.title", defaultValue: "Pantry staples"))
-                    .font(.headline)
-                    .foregroundStyle(Color(.label))
+                    .font(.subheadline.weight(.semibold))
+                    .foregroundStyle(.primary)
                 Text(String(localized: "pantry.header.subtitle", defaultValue: "Worth picking up"))
                     .font(.caption)
                     .foregroundStyle(.secondary)
@@ -123,14 +118,14 @@ struct PantryStaplesRail: View {
 
             Button(action: onAddAll) {
                 Text(String(localized: "action.add_all", defaultValue: "Add all"))
-                    .font(.subheadline.weight(.semibold))
+                    .font(.footnote.weight(.semibold))
                     .foregroundStyle(Color.accentColor)
-                    .padding(.horizontal, 12)
-                    .padding(.vertical, 6)
-                    .background(Color.accentColor.opacity(0.12), in: Capsule())
+                    .padding(.horizontal, 10)
+                    .padding(.vertical, 5)
+                    .background(Color.accentColor.opacity(0.10), in: Capsule())
             }
             .buttonStyle(.spring(scale: 0.94))
-            .transition(.scale.combined(with: .opacity))
+            .transition(.opacity)
         }
     }
 
@@ -157,10 +152,10 @@ struct PantryStaplesRail: View {
             onTap(item)
         } label: {
             ZStack(alignment: .topTrailing) {
-                // Tinted background — brighter top-left, deeper bottom-right
-                // gives the widget an implied light source.
+                // Tinted background — opacity dropped to 0.92 so the
+                // colour reads as ambient rather than chip-saturated.
                 RadialGradient(
-                    colors: [item.tint, item.tint.opacity(0.75)],
+                    colors: [item.tint.opacity(0.92), item.tint.opacity(0.70)],
                     center: UnitPoint(x: 0.3, y: 0.25),
                     startRadius: 4,
                     endRadius: 100
@@ -169,7 +164,7 @@ struct PantryStaplesRail: View {
                 VStack(spacing: 3) {
                     Text(item.emoji)
                         .font(.system(size: 34))
-                        .shadow(color: .black.opacity(0.08), radius: 1.5, y: 1)
+                        .shadow(color: .black.opacity(0.06), radius: 1.5, y: 1)
                     Text(item.name)
                         .font(.system(size: 10, weight: .semibold))
                         .foregroundStyle(Color.black.opacity(0.78))
@@ -179,20 +174,20 @@ struct PantryStaplesRail: View {
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
                 .padding(.horizontal, 6)
 
-                // Subtle "+" affordance — distinguishes these from passive
-                // info widgets and signals they're tappable to add.
+                // Quieter "+" affordance — smaller, lower-contrast disc
+                // so the grid doesn't carry 8 simultaneous corner badges.
                 Image(systemName: "plus")
-                    .font(.system(size: 9, weight: .bold))
-                    .foregroundStyle(.white)
-                    .frame(width: 16, height: 16)
-                    .background(Color.black.opacity(0.20), in: Circle())
-                    .padding(6)
+                    .font(.system(size: 8, weight: .bold))
+                    .foregroundStyle(.white.opacity(0.85))
+                    .frame(width: 14, height: 14)
+                    .background(Color.black.opacity(0.14), in: Circle())
+                    .padding(5)
             }
             .aspectRatio(1, contentMode: .fit)
             .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
-            // Tint-flavoured shadow keeps the grid cohesive across colours.
-            .shadow(color: item.tint.opacity(0.5), radius: 6, y: 3)
-            .shadow(color: .black.opacity(0.06), radius: 2, y: 1)
+            // Softer tint-flavoured shadow — the grid sits inside the
+            // page instead of hovering above it.
+            .shadow(color: item.tint.opacity(0.30), radius: 4, y: 2)
         }
         .buttonStyle(.spring(scale: 0.94))
         .accessibilityLabel(Text(

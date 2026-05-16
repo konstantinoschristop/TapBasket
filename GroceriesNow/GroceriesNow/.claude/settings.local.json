@@ -32,7 +32,8 @@
       "Bash(xcodebuild -project /Users/k.christopoulos/Desktop/MyProjects/TapBasket/GroceriesNow/GroceriesNow.xcodeproj -scheme GroceriesNow -destination 'generic/platform=iOS' -skipMacroValidation build)",
       "Bash(xcrun simctl *)",
       "Bash(xcodebuild -project /Users/k.christopoulos/Desktop/MyProjects/TapBasket/GroceriesNow/GroceriesNow.xcodeproj -scheme GroceriesNow -destination 'platform=iOS Simulator,id=D5D1142C-7F5B-465A-90B5-3AD86B7A03D7' build)",
-      "Bash(xcodebuild -project /Users/k.christopoulos/Desktop/MyProjects/TapBasket/GroceriesNow/GroceriesNow.xcodeproj -scheme GroceriesNow -showdestinations)"
+      "Bash(xcodebuild -project /Users/k.christopoulos/Desktop/MyProjects/TapBasket/GroceriesNow/GroceriesNow.xcodeproj -scheme GroceriesNow -showdestinations)",
+      "Bash(python3 -c \"import json; d=json.load\\(open\\('/Users/k.christopoulos/Desktop/MyProjects/TapBasket/GroceriesNow/GroceriesNow/Support/products.json'\\)\\); print\\(f'Total: {len\\(d\\)} entries'\\); cats={}; [cats.update\\({p[\\\\\"category\\\\\"]: cats.get\\(p[\\\\\"category\\\\\"],0\\)+1}\\) for p in d]; print\\('\\\\n'.join\\(f'  {c}: {n}' for c,n in sorted\\(cats.items\\(\\)\\)\\)\\)\")"
     ]
   }
 }

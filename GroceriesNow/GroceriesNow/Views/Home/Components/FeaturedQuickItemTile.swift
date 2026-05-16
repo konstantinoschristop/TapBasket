@@ -18,6 +18,7 @@ struct FeaturedQuickItemTile: View {
     var metaText: String? = nil
     let action: () -> Void
     let onLongPress: () -> Void
+    let onTogglePin: () -> Void
     /// Edit / delete callbacks for user-created items. Surfaced via
     /// the Menu's long-press affordance. Pass `nil` if not editable.
     var onEdit: (() -> Void)? = nil
@@ -26,9 +27,11 @@ struct FeaturedQuickItemTile: View {
     /// Pass `nil` when used in a vertical grid where it should fill
     /// the row.
     var width: CGFloat? = nil
-    /// Explicit height; defaults to a tall card that contrasts the
-    /// 108pt standard tile.
-    var height: CGFloat = 160
+    /// Explicit height; defaults to a card that's clearly taller than
+    /// the 108pt standard tile without dominating the screen. Tightened
+    /// from 160 → 136 (-15%) so featured slots guide scanning rather
+    /// than swallow it.
+    var height: CGFloat = 136
 
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
@@ -42,12 +45,31 @@ struct FeaturedQuickItemTile: View {
     }
 
     var body: some View {
-        // Editable items use `Menu` with a `primaryAction:` so tap fires
-        // the same toggle action, and long-press shows Edit / Delete —
-        // deterministic alternative to `.contextMenu`, which iOS 18
-        // frequently fails to activate inside Lazy grids.
-        if isEditable {
-            Menu {
+        // Same Menu + primaryAction pattern as the standard tile.
+        // Tap → toggle; long-press → menu with pin / add-one-more /
+        // edit / delete (last two only for editable items).
+        Menu {
+            Button {
+                onTogglePin()
+            } label: {
+                Label(
+                    item.pinned
+                        ? String(localized: "action.unpin", defaultValue: "Unpin")
+                        : String(localized: "action.pin", defaultValue: "Pin"),
+                    systemImage: item.pinned ? "pin.slash" : "pin"
+                )
+            }
+
+            if isInBasket {
+                Button {
+                    onLongPress()
+                } label: {
+                    Label(String(localized: "action.add_one_more", defaultValue: "Add one more"),
+                          systemImage: "plus")
+                }
+            }
+
+            if isEditable {
                 Button {
                     onEdit?()
                 } label: {
@@ -58,30 +80,16 @@ struct FeaturedQuickItemTile: View {
                 } label: {
                     Label("action.delete", systemImage: "trash")
                 }
-            } label: {
-                content
-                    .scaleEffect(isPressed ? 0.97 : 1.0)
-                    .animation(.taplistTap, value: isPressed)
-            } primaryAction: {
-                performTap()
             }
-            .buttonStyle(.plain)
-            .menuOrder(.fixed)
-        } else {
-            tileButton
-                .simultaneousGesture(longPressIncrement)
-        }
-    }
-
-    private var tileButton: some View {
-        Button {
-            performTap()
         } label: {
             content
                 .scaleEffect(isPressed ? 0.97 : 1.0)
                 .animation(.taplistTap, value: isPressed)
+        } primaryAction: {
+            performTap()
         }
         .buttonStyle(.plain)
+        .menuOrder(.fixed)
     }
 
     private func performTap() {
@@ -112,44 +120,33 @@ struct FeaturedQuickItemTile: View {
         }
     }
 
-    private var longPressIncrement: some Gesture {
-        LongPressGesture(minimumDuration: 0.4)
-            .onEnded { _ in
-                didLongPress = true
-                UIImpactFeedbackGenerator(style: .medium).impactOccurred()
-                if !reduceMotion {
-                    pulseToken &+= 1
-                    showFlash = true
-                    Task {
-                        try? await Task.sleep(for: .milliseconds(550))
-                        await MainActor.run { showFlash = false }
-                    }
-                }
-                onLongPress()
-            }
-    }
-
     private var content: some View {
         ZStack(alignment: .bottomTrailing) {
-            // Hero emoji — much bigger than the standard tile so the
-            // featured slot reads as "the headline".
+            // Hero emoji — still the headline, but quieter than the old
+            // 88pt monolith. 76pt holds its own next to a tighter card
+            // without competing with adjacent category content.
             Text(item.emoji)
-                .font(.system(size: 88))
+                .font(.system(size: 76))
                 .scaleEffect(isPressed ? 0.94 : 1)
-                .shadow(color: .black.opacity(0.16), radius: 4, y: 2)
+                .shadow(color: .black.opacity(0.14), radius: 3.5, y: 1.5)
                 .padding(.bottom, 6)
                 .padding(.trailing, 6)
 
             // Label + small "Featured" / "Bought 8x" cue on top-left.
+            // The caption is intentionally tiny + uppercase + tracked
+            // so it reads as editorial metadata rather than UI chrome,
+            // but `.semibold` keeps it legible at this size. Item name
+            // stays the dominant element via larger weight + primary
+            // ink contrast.
             VStack(alignment: .leading, spacing: 4) {
                 Text(metaText ?? String(localized: "featured.label"))
-                    .font(.caption2.weight(.bold))
-                    .foregroundStyle(Color.accentColor.opacity(0.85))
+                    .font(.caption2.weight(.semibold))
+                    .foregroundStyle(.secondary)
                     .textCase(.uppercase)
-                    .tracking(0.6)
+                    .tracking(0.5)
 
                 Text(displayName)
-                    .font(.title3.weight(.bold))
+                    .font(.title3.weight(.semibold))
                     .foregroundStyle(.primary)
                     .lineLimit(2)
                     .multilineTextAlignment(.leading)
@@ -157,39 +154,37 @@ struct FeaturedQuickItemTile: View {
                 Spacer(minLength: 0)
             }
             .padding(.horizontal, 14)
-            .padding(.top, 14)
+            .padding(.top, 12)
         }
         .frame(width: width, height: height)
         .frame(maxWidth: width == nil ? .infinity : nil)
         .background {
-            // Warmer two-stop gradient than the standard tile — a
-            // subtle accent wash gives the featured slot a different
-            // tonal signature.
+            // Warmer two-stop gradient with a quieter accent terminus —
+            // signature stays, dominance drops. In-basket gets the same
+            // barely-there BrandGreen wash used on standard tiles, so
+            // the featured slot reads from the same calm vocabulary.
             RoundedRectangle(cornerRadius: 22, style: .continuous)
                 .fill(
                     LinearGradient(
                         colors: [
                             Color("CardBackground"),
-                            Color.accentColor.opacity(0.06)
+                            Color.accentColor.opacity(0.045)
                         ],
                         startPoint: .topLeading,
                         endPoint: .bottomTrailing
                     )
                 )
-                .shadow(color: .black.opacity(0.08), radius: 10, y: 4)
+                .overlay {
+                    RoundedRectangle(cornerRadius: 22, style: .continuous)
+                        .fill(Color("BrandGreen").opacity(isInBasket ? 0.055 : 0))
+                }
+                .shadow(color: .black.opacity(0.07), radius: 8, y: 3)
         }
         .overlay {
+            // Uniform hairline at all times — no border swap on state
+            // change. The card stays a calm surface.
             RoundedRectangle(cornerRadius: 22, style: .continuous)
-                .stroke(
-                    LinearGradient(
-                        colors: isInBasket
-                            ? [Color("BrandGreen").opacity(0.6), Color("BrandGreen").opacity(0.25)]
-                            : [Color.white.opacity(0.55), Color(.separator).opacity(0.30)],
-                        startPoint: .top,
-                        endPoint: .bottom
-                    ),
-                    lineWidth: isInBasket ? 1.5 : 0.75
-                )
+                .strokeBorder(Color(.separator).opacity(0.30), lineWidth: 0.5)
         }
         .overlay {
             RoundedRectangle(cornerRadius: 22, style: .continuous)
@@ -198,16 +193,8 @@ struct FeaturedQuickItemTile: View {
                 .animation(.spring(response: 0.22, dampingFraction: 0.7), value: showFlash)
                 .allowsHitTesting(false)
         }
-        .overlay(alignment: .topTrailing) {
-            if isInBasket && quantity <= 1 {
-                Circle()
-                    .fill(Color("BrandGreen"))
-                    .frame(width: 10, height: 10)
-                    .overlay(Circle().strokeBorder(Color("CardBackground"), lineWidth: 1.5))
-                    .padding(10)
-                    .transition(.scale.combined(with: .opacity))
-            }
-        }
+        // Quantity badge — shown only when qty > 1. Below that the
+        // background tint carries the in-basket signal.
         .overlay(alignment: .topTrailing) {
             if quantity > 1 {
                 Text("×\(quantity)")

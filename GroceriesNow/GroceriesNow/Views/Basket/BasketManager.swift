@@ -29,13 +29,27 @@ struct BulkAddResult {
     var hasChanges: Bool { totalAffectedCount > 0 }
 }
 
-struct RecentBasketSummary: Identifiable {
+struct RecentBasketSummary: Identifiable, Equatable {
     let id: UUID
     let completedAt: Date
     let items: [RecentBasketItem]
+    /// User-supplied nickname. When set, this overrides the auto-label
+    /// in the history sheet's tile face.
+    let customName: String?
+    /// Starred baskets float to the top of their section in history and
+    /// gain a small star marker — the lightweight "bundle" surface.
+    let isStarred: Bool
 
     var title: String {
         items.map { "\($0.emoji) \($0.name) ×\($0.quantity)" }.joined(separator: ", ")
+    }
+
+    static func == (lhs: RecentBasketSummary, rhs: RecentBasketSummary) -> Bool {
+        lhs.id == rhs.id
+            && lhs.completedAt == rhs.completedAt
+            && lhs.customName == rhs.customName
+            && lhs.isStarred == rhs.isStarred
+            && lhs.items.count == rhs.items.count
     }
 }
 
@@ -45,6 +59,12 @@ struct RecentBasketItem: Identifiable {
     let emoji: String
     let quantity: Int
     let note: String?
+}
+
+private extension String {
+    /// Returns `nil` when the string is empty after trimming, so a
+    /// blank rename doesn't masquerade as a real customName.
+    var nonEmpty: String? { isEmpty ? nil : self }
 }
 
 @Observable
@@ -142,10 +162,18 @@ final class BasketManager {
         try? modelContext.save()
     }
 
-    func completeBasket(_ items: [BasketItem], in modelContext: ModelContext) {
+    func completeBasket(
+        _ items: [BasketItem],
+        customName: String? = nil,
+        in modelContext: ModelContext
+    ) {
         guard !items.isEmpty else { return }
 
-        let completedBasket = CompletedBasket()
+        let completedBasket = CompletedBasket(
+            customName: customName?
+                .trimmingCharacters(in: .whitespacesAndNewlines)
+                .nonEmpty
+        )
         modelContext.insert(completedBasket)
 
         for item in items {
@@ -290,7 +318,10 @@ final class BasketManager {
             return RecentBasketSummary(
                 id: basket.id,
                 completedAt: basket.completedAt,
-                items: basketItems
+                items: basketItems,
+                customName: basket.customName?.trimmingCharacters(in: .whitespacesAndNewlines)
+                    .nonEmpty,
+                isStarred: basket.isStarred
             )
         }
     }

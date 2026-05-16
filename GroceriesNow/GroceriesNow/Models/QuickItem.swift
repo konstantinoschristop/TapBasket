@@ -121,6 +121,10 @@ final class QuickItem: Identifiable {
     var emoji: String = ""
     var sortOrder: Int = 0
     var categoryRawValue: String = QuickItemCategory.custom.rawValue
+    /// User-pinned favourites surface at the top of the Regulars row
+    /// regardless of how often they've been bought. Default `false` so
+    /// existing data sails through the SwiftData lightweight migration.
+    var pinned: Bool = false
 
     var category: QuickItemCategory {
         get { QuickItemCategory(rawValue: categoryRawValue) ?? .custom }
@@ -132,12 +136,14 @@ final class QuickItem: Identifiable {
         name: String,
         emoji: String,
         sortOrder: Int,
-        category: QuickItemCategory = .custom
+        category: QuickItemCategory = .custom,
+        pinned: Bool = false
     ) {
         self.id = id
         self.name = name
         self.emoji = emoji
         self.sortOrder = sortOrder
         self.categoryRawValue = category.rawValue
+        self.pinned = pinned
     }
 }

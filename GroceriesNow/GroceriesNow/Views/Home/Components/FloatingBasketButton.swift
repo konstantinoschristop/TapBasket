@@ -39,7 +39,11 @@ struct FloatingBasketButton: View {
     /// Vertical position as a fraction (0 = top of range, 1 = bottom).
     @AppStorage("floatingBasket.yFraction") private var yFraction: Double = 0.78
 
-    private let diameter: CGFloat = 88
+    /// 80pt is roughly −10% from the prior 88pt — the bubble still
+    /// reads as a hero affordance but stops competing with content
+    /// while you scan the grid. Edge padding stays the same so the
+    /// resting position visually anchors at the same offset.
+    private let diameter: CGFloat = 80
     private let edgePadding: CGFloat = 16
     /// Bottom clearance: accounts for the home indicator on modern iPhones.
     private let bottomClearance: CGFloat = 52
@@ -49,7 +53,11 @@ struct FloatingBasketButton: View {
     var body: some View {
         GeometryReader { geo in
             face
-                .scaleEffect(scale)
+                .scaleEffect(scale * (isDragging ? 1.04 : 1))
+                // Idle opacity sits below 1 so the button feels ambient
+                // while the user is scanning the grid. Drag wakes it
+                // fully — the basket is "alive when needed".
+                .opacity(count > 0 ? (isDragging ? 1.0 : 0.92) : 0)
                 .position(position)
                 .gesture(dragGesture(in: geo.size))
                 .onTapGesture {
@@ -64,6 +72,7 @@ struct FloatingBasketButton: View {
                         await MainActor.run { isFrozen = false }
                     }
                 }
+                .animation(.spring(response: 0.35, dampingFraction: 0.78), value: isDragging)
                 .onAppear {
                     guard !placed else { return }
                     position = anchorPoint(in: geo.size)
@@ -76,7 +85,6 @@ struct FloatingBasketButton: View {
                     }
                 }
         }
-        .opacity(count > 0 ? 1 : 0)
         .scaleEffect(count > 0 ? 1 : 0.7)
         .animation(.taplistTransition, value: count > 0)
         .allowsHitTesting(count > 0)
@@ -185,19 +193,21 @@ struct FloatingBasketButton: View {
         // Glass background — the visual replacement for the solid CardBackground fill.
         .adaptiveGlass(in: Circle())
         // Defined rim — does the work the drop shadow used to: separating the
-        // button from whatever it's floating over.
+        // button from whatever it's floating over. Softened from a 1.5pt
+        // gradient stroke to a quieter 1pt rim so the button reads as
+        // ambient glass rather than a chrome-edged badge.
         .overlay {
             Circle()
                 .strokeBorder(
                     LinearGradient(
                         colors: [
-                            Color.white.opacity(0.70),
-                            Color(.separator).opacity(0.85)
+                            Color.white.opacity(0.55),
+                            Color(.separator).opacity(0.55)
                         ],
                         startPoint: .top,
                         endPoint: .bottom
                     ),
-                    lineWidth: 1.5
+                    lineWidth: 1
                 )
         }
         .contentShape(Circle())
@@ -219,8 +229,8 @@ struct FloatingBasketButton: View {
                 .padding(.horizontal, 6)
                 .padding(.vertical, 3)
                 .background(Color.accentColor, in: Capsule())
-                .overlay(Capsule().strokeBorder(Color(uiColor: .systemBackground), lineWidth: 1.5))
-                .shadow(color: .black.opacity(0.22), radius: 3, y: 1.5)
+                .overlay(Capsule().strokeBorder(Color(uiColor: .systemBackground), lineWidth: 1.2))
+                .shadow(color: .black.opacity(0.14), radius: 2, y: 1)
                 .contentTransition(.numericText(value: Double(count)))
                 .animation(.spring(response: 0.3, dampingFraction: 0.7), value: count)
                 .transition(.scale.combined(with: .opacity))

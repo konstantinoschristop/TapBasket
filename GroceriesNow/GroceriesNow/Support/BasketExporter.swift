@@ -19,11 +19,19 @@ struct RecipeGroupSnapshot: Sendable {
 @MainActor
 enum BasketExporter {
     /// Returns a fully composited, opaque UIImage ready to hand to UIActivityViewController.
+    ///
+    /// `basketName` is the user's custom name for the current basket (or nil/empty
+    /// for the default "Shopping List" heading in the rendered image).
     static func renderImage(
+        basketName: String?,
         regularItems: [BasketItemSnapshot],
         recipeGroups: [RecipeGroupSnapshot]
     ) -> UIImage? {
-        let view = BasketShareView(regularItems: regularItems, recipeGroups: recipeGroups)
+        let view = BasketShareView(
+            basketName: basketName,
+            regularItems: regularItems,
+            recipeGroups: recipeGroups
+        )
         let renderer = ImageRenderer(content: view)
         renderer.proposedSize = .init(width: 390, height: nil) // phone width, natural height
         renderer.scale = 3 // @3x — sharp on all devices and when saved to Photos

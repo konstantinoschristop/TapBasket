@@ -13,6 +13,9 @@ struct QuickItemTile: View {
     let action: () -> Void
     /// Long-press action — increments quantity by 1.
     let onLongPress: () -> Void
+    /// Pin / unpin toggle. Always available — non-editable seed items
+    /// are still pinnable.
+    let onTogglePin: () -> Void
     /// Edit action — non-nil only for editable items. Surfaced via the
     /// Menu's long-press affordance.
     let onEdit: (() -> Void)?
@@ -38,18 +41,33 @@ struct QuickItemTile: View {
     }
 
     var body: some View {
-        // Two render paths.
-        //
-        // Editable items use `Menu { … } primaryAction:` so that tap
-        // = the same toggle action and long-press = the Edit / Delete
-        // menu. This is the deterministic alternative to `.contextMenu`,
-        // which iOS 18 frequently fails to activate inside LazyV/HGrid
-        // rows (the grid intercepts the long-press first).
-        //
-        // Non-editable items keep a Button + a LongPressGesture for the
-        // +1-quantity behaviour, which is meaningless for custom items.
-        if isEditable {
-            Menu {
+        // Every tile uses a `Menu { … } primaryAction:` so tap fires
+        // the toggle and long-press surfaces the menu. Menu contents
+        // adapt to the item: pin/unpin always, "Add one more" when
+        // the item is already in the basket, edit/delete for items
+        // the user created.
+        Menu {
+            Button {
+                onTogglePin()
+            } label: {
+                Label(
+                    item.pinned
+                        ? String(localized: "action.unpin", defaultValue: "Unpin")
+                        : String(localized: "action.pin", defaultValue: "Pin"),
+                    systemImage: item.pinned ? "pin.slash" : "pin"
+                )
+            }
+
+            if isInBasket {
+                Button {
+                    onLongPress()
+                } label: {
+                    Label(String(localized: "action.add_one_more", defaultValue: "Add one more"),
+                          systemImage: "plus")
+                }
+            }
+
+            if isEditable {
                 Button {
                     onEdit?()
                 } label: {
@@ -60,34 +78,19 @@ struct QuickItemTile: View {
                 } label: {
                     Label("action.delete", systemImage: "trash")
                 }
-            } label: {
-                tileContent
-                    .scaleEffect(isPressed ? 0.97 : 1.0)
-                    .animation(.taplistTap, value: isPressed)
-            } primaryAction: {
-                performTap()
             }
-            .buttonStyle(.plain)
-            .menuOrder(.fixed)
-        } else {
-            tileButton
-                .simultaneousGesture(longPressIncrement)
-        }
-    }
-
-    private var tileButton: some View {
-        Button {
-            performTap()
         } label: {
             tileContent
                 .scaleEffect(isPressed ? 0.97 : 1.0)
                 .animation(.taplistTap, value: isPressed)
+        } primaryAction: {
+            performTap()
         }
         .buttonStyle(.plain)
+        .menuOrder(.fixed)
     }
 
-    /// Shared tap handler — runs whether the user taps the Button
-    /// (non-editable) or triggers the Menu's primaryAction (editable).
+    /// Tap handler — runs from the Menu's `primaryAction`.
     private func performTap() {
         // Suppress the tap when it's actually the release after a
         // successful long-press — otherwise +1 would be immediately
@@ -126,23 +129,6 @@ struct QuickItemTile: View {
         }
     }
 
-    private var longPressIncrement: some Gesture {
-        LongPressGesture(minimumDuration: 0.4)
-            .onEnded { _ in
-                didLongPress = true
-                UIImpactFeedbackGenerator(style: .medium).impactOccurred()
-                if !reduceMotion {
-                    pulseToken &+= 1
-                    showFlash = true
-                    Task {
-                        try? await Task.sleep(for: .milliseconds(550))
-                        await MainActor.run { showFlash = false }
-                    }
-                }
-                onLongPress()
-            }
-    }
-
     private var tileContent: some View {
         ZStack(alignment: .bottomTrailing) {
             // Hero emoji — anchored bottom-right with a soft sticker shadow.
@@ -173,18 +159,23 @@ struct QuickItemTile: View {
         .frame(maxWidth: .infinity)
         .frame(height: 108)
         .background {
-            // Flat warm card fill — no diagonal gradient. Calmer,
-            // more cohesive with the rest of the grid.
+            // Flat warm card fill. In-basket state gets a barely-there
+            // BrandGreen wash on top of the card so the tile looks
+            // "settled" rather than ringed. Idle tiles read as neutral
+            // surfaces; only the live add-pulse uses a saturated border.
             RoundedRectangle(cornerRadius: 20, style: .continuous)
                 .fill(Color("CardBackground"))
+                .overlay {
+                    RoundedRectangle(cornerRadius: 20, style: .continuous)
+                        .fill(Color("BrandGreen").opacity(isInBasket ? 0.055 : 0))
+                }
                 .shadow(color: .black.opacity(0.05), radius: 6, y: 2)
         }
         .overlay {
+            // Single uniform hairline at all times — the grid reads as
+            // one calm surface instead of vibrating between idle/active.
             RoundedRectangle(cornerRadius: 20, style: .continuous)
-                .strokeBorder(
-                    isInBasket ? Color("BrandGreen").opacity(0.55) : Color(.separator).opacity(0.30),
-                    lineWidth: isInBasket ? 1.5 : 0.5
-                )
+                .strokeBorder(Color(.separator).opacity(0.30), lineWidth: 0.5)
         }
         .overlay {
             // Brief green glow on add.
@@ -198,20 +189,9 @@ struct QuickItemTile: View {
             AddPulseRing(token: pulseToken)
                 .allowsHitTesting(false)
         }
-        // "In basket" state: a small green dot floating top-right.
-        // Quieter and cleaner than the full checkmark badge — the dot
-        // reads at a glance without dominating the tile.
-        .overlay(alignment: .topTrailing) {
-            if isInBasket && quantity <= 1 {
-                Circle()
-                    .fill(Color("BrandGreen"))
-                    .frame(width: 9, height: 9)
-                    .overlay(Circle().strokeBorder(Color("CardBackground"), lineWidth: 1.5))
-                    .padding(10)
-                    .transition(.scale.combined(with: .opacity))
-            }
-        }
-        // Quantity badge — shown only when qty > 1 (replaces the dot).
+        // Quantity badge — shown only when qty > 1. Below quantity 2
+        // the tile relies on the subtle background tint to signal
+        // membership; no persistent corner indicator.
         .overlay(alignment: .topTrailing) {
             if quantity > 1 {
                 Text("×\(quantity)")

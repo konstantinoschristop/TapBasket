@@ -19,27 +19,6 @@ private struct LastAddRecord {
     }
 }
 
-/// State for the ephemeral post-add suggestion pill. Captures the item
-/// that triggered the suggestion + the recommended partner so the pill
-/// has everything it needs without re-querying on render.
-private struct SuggestionPayload {
-    let addedName: String           // canonical (basket-item) name of the just-added item
-    let addedDisplayName: String    // localized display
-    let addedEmoji: String
-    let suggestion: PartnerSuggestion?
-
-    struct PartnerSuggestion {
-        /// Canonical (lowercased) name as returned by `RecommendationEngine`.
-        let canonical: String
-        let displayName: String
-        let emoji: String
-        /// Stable key for `RecommendationEngine.recordIgnored` so the
-        /// engine can decay this pair's score when the pill is dismissed
-        /// without being acted on.
-        let suggestionID: String
-    }
-}
-
 private struct QuickItemSection: Identifiable {
     let category: QuickItemCategory
     let items: [QuickItem]
@@ -71,14 +50,10 @@ struct MainGridView: View {
     /// completed basket. Auto-dismisses ~2.5s later.
     @State private var loggedPillVisible = false
     @State private var loggedPillDismissTask: Task<Void, Never>?
-    /// Ephemeral post-add suggestion pill. Set whenever the user adds
-    /// an item; cleared when the user acts on it, dismisses it, or the
-    /// auto-dismiss timer fires.
-    @State private var pendingSuggestion: SuggestionPayload? = nil
-    @State private var suggestionDismissTask: Task<Void, Never>?
     @State private var cachedCategoryUsage: [QuickItemCategory: Int] = [:]
     @State private var showRecipeSheet = false
     @State private var showRecentBasketsSheet = false
+    @State private var showFavoritesPicker = false
     /// Set to a custom `QuickItem` to present the edit sheet pre-filled
     /// with that item's name / emoji / category.
     @State private var editingQuickItem: QuickItem? = nil
@@ -142,6 +117,37 @@ struct MainGridView: View {
         return quickItems.contains { $0.name.caseInsensitiveCompare(trimmedSearch) == .orderedSame }
     }
 
+    /// Up to 5 ranked autocomplete suggestions from the bundled product
+    /// catalog. Excludes products the user already has as a `QuickItem`
+    /// so the user's own matches always win the top slot and we never
+    /// surface a duplicate. Empty when the user isn't searching. The
+    /// limit is intentionally tight — search should feel scannable in
+    /// one glance, not require scrolling.
+    ///
+    /// Exclusion compares by `ProductDisplayNameProvider.canonicalKey`
+    /// rather than raw lowercased name, so the catalog's "Eggs" gets
+    /// hidden when the user already has the seed's "Egg" (both
+    /// resolve to `product.eggs`). The catalog API still excludes by
+    /// raw lowercased name; we request more than we need and
+    /// post-filter to enforce canonical equivalence.
+    private var catalogSuggestions: [Product] {
+        guard isSearching else { return [] }
+        let existingCanonicals = Set(quickItems.map {
+            ProductDisplayNameProvider.canonicalKey(for: $0.name)
+        })
+        return ProductCatalog.shared.suggestions(
+            for: trimmedSearch,
+            excluding: [],
+            limit: 10
+        ).filter { product in
+            !existingCanonicals.contains(
+                ProductDisplayNameProvider.canonicalKey(for: product.name)
+            )
+        }
+        .prefix(5)
+        .map { $0 }
+    }
+
     private var purchaseHints: [PurchaseHint] {
         basketManager.topPurchaseHints(from: completedEntries)
     }
@@ -158,26 +164,91 @@ struct MainGridView: View {
 
     private var topShortcutItems: [TopUsedShortcutItem] {
         let shortcuts = basketManager.topUsedShortcuts(from: completedEntries)
-        guard !shortcuts.isEmpty else { return [] }
-
         let itemsByName = Dictionary(
             quickItems.map { ($0.name.lowercased(), $0) },
             uniquingKeysWith: { first, _ in first }
         )
 
-        // Note: we deliberately don't filter out items already in the basket.
-        // Regulars are essential affordances — they belong on the home screen
-        // permanently. The avatar shows an "added" state instead.
-        return shortcuts.compactMap { shortcut -> TopUsedShortcutItem? in
-            guard let item = itemsByName[shortcut.itemName.lowercased()] else { return nil }
-            return TopUsedShortcutItem(
+        // Dedup key: lowercased *display* name. Two distinct
+        // `QuickItem` rows can resolve to the same display label
+        // (e.g. a legacy "Eggs" + a new "Egg" both render as "Egg")
+        // and we don't want them appearing twice in Regulars. Pinned
+        // items get first dibs on each key; history-derived shortcuts
+        // skip any key already claimed.
+        func displayKey(_ canonicalName: String) -> String {
+            ProductDisplayNameProvider.displayName(for: canonicalName).lowercased()
+        }
+
+        var seen = Set<String>()
+        var result: [TopUsedShortcutItem] = []
+
+        // Pinned items lead.
+        for item in quickItems where item.pinned {
+            let key = displayKey(item.name)
+            guard seen.insert(key).inserted else { continue }
+            result.append(TopUsedShortcutItem(
                 id: item.id,
-                name: ProductDisplayNameProvider.displayName(for: item.name),
+                name: item.name,
+                emoji: item.emoji,
+                totalQuantity: 0,
+                category: item.category,
+                isPinned: true
+            ))
+        }
+
+        // History-derived next. Note: we deliberately don't filter
+        // out items already in the basket — Regulars are essential
+        // affordances; the avatar shows an "added" state instead.
+        for shortcut in shortcuts {
+            guard let item = itemsByName[shortcut.itemName.lowercased()] else { continue }
+            let key = displayKey(item.name)
+            guard seen.insert(key).inserted else { continue }
+            result.append(TopUsedShortcutItem(
+                id: item.id,
+                name: item.name,
                 emoji: item.emoji,
                 totalQuantity: shortcut.totalQuantity,
-                category: item.category
-            )
+                category: item.category,
+                isPinned: false
+            ))
         }
+
+        return result
+    }
+
+    /// Items the user has bought before that are *not* currently
+    /// surfaced in Regulars (deduped by display key) and *not*
+    /// currently in the basket. Powers the "More you've bought" row
+    /// once the user is established enough that Pantry staples have
+    /// stopped earning their keep. Capped at 6 — this is a quiet
+    /// secondary surface, never a wall of items.
+    private var basketSuggestions: [QuickItem] {
+        let shortcuts = basketManager.topUsedShortcuts(from: completedEntries, limit: 40)
+        let itemsByName = Dictionary(
+            quickItems.map { ($0.name.lowercased(), $0) },
+            uniquingKeysWith: { first, _ in first }
+        )
+
+        func displayKey(_ canonical: String) -> String {
+            ProductDisplayNameProvider.displayName(for: canonical).lowercased()
+        }
+
+        // Anything already visible in Regulars (or currently in the
+        // basket) gets skipped — Suggestions only surfaces items the
+        // user can't see elsewhere on the home screen right now.
+        var seen = Set<String>()
+        seen.formUnion(topShortcutItems.map { displayKey($0.name) })
+        seen.formUnion(basketItemNames.map { displayKey($0) })
+
+        var result: [QuickItem] = []
+        for shortcut in shortcuts {
+            guard let item = itemsByName[shortcut.itemName.lowercased()] else { continue }
+            let key = displayKey(item.name)
+            guard seen.insert(key).inserted else { continue }
+            result.append(item)
+            if result.count >= 6 { break }
+        }
+        return result
     }
 
     var body: some View {
@@ -185,11 +256,6 @@ struct MainGridView: View {
             scrollContent
                 .overlay(alignment: .top) {
                     loggedPill
-                }
-                .overlay(alignment: .bottom) {
-                    suggestionPill
-                        .padding(.bottom, 16)
-                        .padding(.horizontal, 20)
                 }
                 .overlay {
                     FloatingBasketButton(
@@ -268,13 +334,23 @@ struct MainGridView: View {
                 }
             }
             #endif
+            .sheet(isPresented: $showFavoritesPicker) {
+                PickFavoritesSheet(
+                    items: quickItems,
+                    onTogglePin: { togglePin($0) }
+                )
+                .presentationDetents([.large])
+                .presentationDragIndicator(.visible)
+            }
             .sheet(isPresented: $showRecentBasketsSheet) {
                 RecentBasketsSheet(
                     baskets: recentBasketSummaries,
                     inBasketNames: basketItemNames,
                     onAddBasket: addRecentBasketFromHome,
                     onAddItem: addRecentItemFromHome,
-                    onHideBasket: hideRecentBasketFromHome
+                    onHideBasket: hideRecentBasketFromHome,
+                    onToggleStar: toggleBasketStar,
+                    onRename: renameCompletedBasket
                 )
                 .presentationDetents([.medium, .large])
                 .presentationDragIndicator(.visible)
@@ -299,25 +375,6 @@ struct MainGridView: View {
     /// the basket has been logged to history. Doesn't block taps — purely
     /// visual reinforcement so the celebration doesn't evaporate when the
     /// basket sheet dismisses.
-    /// Ephemeral capsule shown at the bottom of the home screen after an
-    /// add: confirms the action and, if the recommendation engine has a
-    /// suggestion, offers it as a one-tap follow-up. Auto-dismisses
-    /// after ~2.5s; an ignored suggestion is penalised in the engine.
-    @ViewBuilder
-    private var suggestionPill: some View {
-        if let payload = pendingSuggestion {
-            InlineSuggestionPill(
-                addedEmoji: payload.addedEmoji,
-                addedName: payload.addedDisplayName,
-                suggestionEmoji: payload.suggestion?.emoji,
-                suggestionName: payload.suggestion?.displayName,
-                onTapSuggestion: { acceptSuggestion(payload) },
-                onDismiss: { dismissSuggestion(payload, asIgnored: true) }
-            )
-            .transition(.move(edge: .bottom).combined(with: .opacity))
-        }
-    }
-
     @ViewBuilder
     private var loggedPill: some View {
         if loggedPillVisible {
@@ -345,22 +402,50 @@ struct MainGridView: View {
     private var scrollContent: some View {
         List {
             if isSearching {
-                if filteredQuickItems.isEmpty {
-                    Section {
-                        emptySearchContent
-                            .listRowBackground(Color.clear)
-                            .listRowInsets(EdgeInsets())
-                    }
-                } else {
+                // User's own matches first — always the top slot when
+                // present so existing items win over catalog autocomplete.
+                if !filteredQuickItems.isEmpty {
                     Section {
                         ForEach(filteredQuickItems) { item in
                             itemRow(for: item)
                         }
                     }
-                    if shouldShowManualAddButton {
-                        Section { manualAddButton }
-                            .listRowBackground(Color.clear)
+                }
+
+                // Catalog autocomplete: products the user doesn't have
+                // yet that match the query. Tap → creates the QuickItem
+                // and adds to basket in one shot.
+                if !catalogSuggestions.isEmpty {
+                    Section {
+                        ForEach(catalogSuggestions) { product in
+                            catalogSuggestionRow(for: product)
+                        }
+                    } header: {
+                        // Tiny tertiary caption — gives the section
+                        // structure without taking a row's height of
+                        // its own. Consistent with the rest of the
+                        // app's quieter section headers.
+                        Text(String(localized: "search.catalog.header",
+                                    defaultValue: "Suggestions"))
+                            .font(.caption2.weight(.semibold))
+                            .foregroundStyle(.tertiary)
+                            .textCase(.uppercase)
+                            .tracking(0.5)
                     }
+                }
+
+                // Fallback empty state — only when nothing matches in
+                // either the user's items OR the catalog.
+                if filteredQuickItems.isEmpty && catalogSuggestions.isEmpty {
+                    Section {
+                        emptySearchContent
+                            .listRowBackground(Color.clear)
+                            .listRowInsets(EdgeInsets())
+                    }
+                }
+
+                if shouldShowManualAddButton {
+                    Section { manualAddButton }
                 }
             } else {
                 Section {
@@ -371,32 +456,53 @@ struct MainGridView: View {
                         .listRowInsets(EdgeInsets(top: 4, leading: 20, bottom: 0, trailing: 20))
                 }
 
-                if !topShortcutItems.isEmpty {
+                // Regulars row is always visible. Empty state shows a
+                // pulsing "+" that opens the bulk-pin picker — calmer
+                // than hiding the section entirely, and discoverable.
+                Section {
+                    TopUsedShortcutsView(
+                        items: topShortcutItems,
+                        inBasketNames: basketItemNames,
+                        onTapItem: toggleShortcutItemInBasket,
+                        onAddAll: addAllRegulars,
+                        onPickFavorites: { showFavoritesPicker = true },
+                        onToggleItemPin: togglePinForShortcut
+                    )
+                    .listRowInsets(EdgeInsets(top: 4, leading: 0, bottom: 8, trailing: 0))
+                    .listRowBackground(Color.clear)
+                    .listRowSeparator(.hidden)
+                }
+
+                // Cold-start: Pantry staples (universal items everyone
+                // tends to buy). Once the user has built up enough
+                // Regulars + pins to be "established", this slot
+                // switches to a personalised "More you've bought" row
+                // sourced from their purchase history.
+                if topShortcutItems.count < 6 {
                     Section {
-                        TopUsedShortcutsView(
-                            items: topShortcutItems,
+                        PantryStaplesRail(
                             inBasketNames: basketItemNames,
-                            onTapItem: toggleShortcutItemInBasket,
-                            onAddAll: addAllRegulars
+                            onTap: addPantryStaple,
+                            onAddAll: addAllPantryStaples
                         )
-                        .listRowInsets(EdgeInsets(top: 4, leading: 0, bottom: 8, trailing: 0))
+                        .listRowInsets(EdgeInsets(top: 0, leading: 0, bottom: 8, trailing: 0))
                         .listRowBackground(Color.clear)
                         .listRowSeparator(.hidden)
                     }
-                }
-
-                // Universal "anyone would buy" rail — sits below the
-                // personalised Regulars row. Items already in the basket
-                // fade out of the loop.
-                Section {
-                    PantryStaplesRail(
-                        inBasketNames: basketItemNames,
-                        onTap: addPantryStaple,
-                        onAddAll: addAllPantryStaples
-                    )
-                    .listRowInsets(EdgeInsets(top: 0, leading: 0, bottom: 8, trailing: 0))
-                    .listRowBackground(Color.clear)
-                    .listRowSeparator(.hidden)
+                } else if !basketSuggestions.isEmpty {
+                    Section {
+                        BasketSuggestionsRow(
+                            items: basketSuggestions,
+                            inBasketNames: basketItemNames,
+                            quantitiesByName: basketQuantitiesByName,
+                            onTap: toggleQuickItemInBasket,
+                            onIncrement: incrementQuickItemInBasket,
+                            onTogglePin: togglePin
+                        )
+                        .listRowInsets(EdgeInsets(top: 0, leading: 0, bottom: 8, trailing: 0))
+                        .listRowBackground(Color.clear)
+                        .listRowSeparator(.hidden)
+                    }
                 }
 
                 ForEach(Array(sectionedQuickItems.enumerated()), id: \.element.id) { index, section in
@@ -437,6 +543,12 @@ struct MainGridView: View {
             }
         }
         .listStyle(.plain)
+        // Compact section spacing tightens the gap between the user's
+        // matches, the catalog suggestions header, and the manual-add
+        // row so the search list reads as one stack instead of stacked
+        // cards. Doesn't affect the home browse list, which renders
+        // its own custom spacing per-section.
+        .listSectionSpacing(.compact)
         .scrollContentBackground(.hidden)
         .background(Color("LaunchBackground"))
         .animation(.spring(response: 0.25, dampingFraction: 0.85), value: basketItems.count)
@@ -450,11 +562,12 @@ struct MainGridView: View {
             isInBasket: basketItemNames.contains(item.name.lowercased()),
             quantity: basketQuantitiesByName[item.name.lowercased()] ?? 0,
             isEditable: editable,
-            // Tap toggles: add if out, remove if in. Long-press increments
-            // (the rare case). The tile suppresses the tap-on-release after
-            // a successful long-press so the toggle never fires accidentally.
+            // Tap toggles. The long-press affordance is now a system
+            // `Menu` (pin / add-one-more / edit / delete); the increment
+            // is reachable from there for the rare "I want 2 milks" case.
             action: { toggleQuickItemInBasket(item) },
             onLongPress: { incrementQuickItemInBasket(item) },
+            onTogglePin: { togglePin(item) },
             onEdit: editable ? { editingQuickItem = item } : nil,
             onDelete: editable ? { deleteUserQuickItem(item) } : nil
         )
@@ -466,7 +579,8 @@ struct MainGridView: View {
             isInBasket: basketItemNames.contains(item.name.lowercased()),
             quantity: basketQuantitiesByName[item.name.lowercased()] ?? 0,
             action: { toggleQuickItemInBasket(item) },
-            onLongPress: { incrementQuickItemInBasket(item) }
+            onLongPress: { incrementQuickItemInBasket(item) },
+            onTogglePin: { togglePin(item) }
         )
     }
 
@@ -485,7 +599,10 @@ struct MainGridView: View {
         case .grid(let columns):
             VStack(spacing: 12) {
                 if let featured {
-                    featuredTile(for: featured, width: nil, height: 150)
+                    // 136 matches `FeaturedQuickItemTile`'s new default
+                    // (-15% from the old 160) so the featured slot
+                    // guides scanning instead of dominating it.
+                    featuredTile(for: featured, width: nil, height: 136)
                 }
                 if !rest.isEmpty {
                     LazyVGrid(
@@ -519,10 +636,9 @@ struct MainGridView: View {
                         }
                     }
                 }
-                // Leading-only inset so the first tile has breathing
-                // room from the screen edge, but tiles scroll cleanly
-                // *off* the trailing edge instead of stopping short.
-                .padding(.leading, 20)
+                // Symmetric inset so both the first and last tile have
+                // breathing room from the screen edges.
+                .padding(.horizontal, 20)
                 .padding(.vertical, 6)
             }
             .scrollClipDisabled()
@@ -532,7 +648,7 @@ struct MainGridView: View {
                 HStack(spacing: 8) {
                     ForEach(items) { chipFor($0) }
                 }
-                .padding(.leading, 20)
+                .padding(.horizontal, 20)
                 .padding(.vertical, 4)
             }
             .padding(.vertical, 6)
@@ -551,6 +667,7 @@ struct MainGridView: View {
             metaText: featuredMetaText(for: item),
             action: { toggleQuickItemInBasket(item) },
             onLongPress: { incrementQuickItemInBasket(item) },
+            onTogglePin: { togglePin(item) },
             onEdit: editable ? { editingQuickItem = item } : nil,
             onDelete: editable ? { deleteUserQuickItem(item) } : nil,
             width: width,
@@ -632,25 +749,43 @@ struct MainGridView: View {
             )
 
             manualAddButton
-                .buttonStyle(.borderedProminent)
-                .padding(.horizontal)
+                .padding(.horizontal, 20)
         }
         .padding(.top, 40)
     }
 
+    /// Row-style accent button for "Create '<query>'". Matches the
+    /// rhythm of `itemRow` / `catalogSuggestionRow` so it sits inside
+    /// the search list as one more option rather than a chunky
+    /// bordered pill at the bottom.
     private var manualAddButton: some View {
         Button {
             showManualAddSheet = true
         } label: {
-            Label {
-                Text(String(localized: "action.create_format", defaultValue: "Create \"%@\"", locale: locale).replacingOccurrences(of: "%@", with: trimmedSearch))
-                    .fontWeight(.semibold)
-                    .frame(maxWidth: .infinity)
-            } icon: {
-                Image(systemName: "plus.circle.fill")
+            HStack(spacing: 12) {
+                Image(systemName: "plus")
+                    .font(.title3.weight(.semibold))
+                    .foregroundStyle(Color.accentColor)
+                    .frame(width: 28, alignment: .center)
+
+                Text(
+                    String(
+                        localized: "action.create_format",
+                        defaultValue: "Create \"%@\"",
+                        locale: locale
+                    )
+                    .replacingOccurrences(of: "%@", with: trimmedSearch)
+                )
+                .foregroundStyle(Color.accentColor)
+                .fontWeight(.medium)
+                .lineLimit(1)
+
+                Spacer(minLength: 8)
             }
+            .padding(.vertical, 6)
+            .contentShape(Rectangle())
         }
-        .buttonStyle(.bordered)
+        .buttonStyle(.plain)
         .disabled(trimmedSearch.isEmpty)
     }
 
@@ -669,7 +804,13 @@ struct MainGridView: View {
     }
 
     private var shouldShowManualAddButton: Bool {
-        isSearching && !hasExactNameMatch && !filteredQuickItems.isEmpty
+        // Surface "Create X" whenever the search has content to show
+        // (own items OR catalog suggestions) but nothing exact matches —
+        // so the user can always create a fully custom variant the
+        // catalog doesn't carry.
+        isSearching
+            && !hasExactNameMatch
+            && (!filteredQuickItems.isEmpty || !catalogSuggestions.isEmpty)
     }
 
     private func recomputeCategoryUsage() {
@@ -684,14 +825,11 @@ struct MainGridView: View {
     }
 
     private func sectionSort(lhs: QuickItemSection, rhs: QuickItemSection) -> Bool {
-        if lhs.category == .custom, rhs.category != .custom {
-            return true
-        }
-
-        if rhs.category == .custom, lhs.category != .custom {
-            return false
-        }
-
+        // Sort categories by usage so the user's most-bought lanes
+        // lead. Ties fall back to the canonical browse order. `.custom`
+        // no longer gets a leading slot — items added via the catalog
+        // / manual flow land in their real category, so there's no
+        // benefit to prioritising `.custom` here.
         if lhs.usageCount == rhs.usageCount {
             return fallbackOrder(for: lhs.category) < fallbackOrder(for: rhs.category)
         }
@@ -721,53 +859,79 @@ struct MainGridView: View {
     private func itemRow(for item: QuickItem) -> some View {
         let quantity = basketQuantitiesByName[item.name.lowercased()] ?? 0
         let isInBasket = quantity > 0
+        let displayName = ProductDisplayNameProvider.displayName(for: item.name)
 
         return Button {
             addQuickItemToBasket(item)
         } label: {
-            HStack(spacing: 14) {
+            HStack(spacing: 12) {
                 Text(item.emoji)
-                    .font(.title2)
-                    .frame(width: 36, alignment: .center)
+                    .font(.title3)
+                    .frame(width: 28, alignment: .center)
 
-                VStack(alignment: .leading, spacing: 2) {
-                    Text(ProductDisplayNameProvider.displayName(for: item.name))
-                        .foregroundStyle(.primary)
+                Text(displayName)
+                    .foregroundStyle(.primary)
+                    .opacity(isInBasket ? 0.55 : 1)
 
-                    if let hint = hintText(for: item) {
-                        Text(hint)
-                            .font(.caption)
-                            .foregroundStyle(.tertiary)
-                    }
-                }
+                Spacer(minLength: 8)
 
-                Spacer()
-
-                // In-basket badge — same vocabulary as QuickItemTile and the
-                // Regulars avatars: BrandGreen checkmark with optional ×N
-                // counter when the user taps to add more than one.
+                // Quiet trailing meta — no loud checkmark badge. In-basket
+                // is signalled by the dimmed name + a tertiary inline
+                // caption (with ×N when the user has stacked more than
+                // one). History hint shows when not yet added.
                 if isInBasket {
-                    HStack(spacing: 5) {
-                        if quantity > 1 {
-                            Text("×\(quantity)")
-                                .font(.caption.weight(.semibold))
-                                .foregroundStyle(Color("BrandGreen"))
-                                .monospacedDigit()
-                                .contentTransition(.numericText(value: Double(quantity)))
-                        }
-                        Image(systemName: "checkmark")
-                            .font(.system(size: 10, weight: .bold))
-                            .foregroundStyle(.white)
-                            .frame(width: 20, height: 20)
-                            .background(Color("BrandGreen"), in: Circle())
-                            .symbolEffect(.bounce, options: .nonRepeating, value: quantity)
-                    }
-                    .transition(.scale.combined(with: .opacity))
+                    Text(quantity > 1
+                         ? String(localized: "search.row.in_basket_count_format",
+                                  defaultValue: "in basket · ×\(quantity)")
+                         : String(localized: "search.row.in_basket",
+                                  defaultValue: "in basket"))
+                        .font(.caption)
+                        .foregroundStyle(.tertiary)
+                        .monospacedDigit()
+                        .contentTransition(.numericText(value: Double(quantity)))
+                } else if let hint = hintText(for: item) {
+                    Text(hint)
+                        .font(.caption)
+                        .foregroundStyle(.tertiary)
                 }
             }
             .padding(.vertical, 6)
             .contentShape(Rectangle())
             .animation(.spring(response: 0.3, dampingFraction: 0.7), value: quantity)
+        }
+        .buttonStyle(.plain)
+    }
+
+    /// One row in the search "Suggestions" section. Same visual
+    /// vocabulary as `itemRow` so the search list reads as one cohesive
+    /// stack — the structural difference (user's items vs. catalog) is
+    /// carried by the section header, not by row chrome. Trailing
+    /// category caption hints "this is from the catalog" without
+    /// needing a coloured accent disc.
+    private func catalogSuggestionRow(for product: Product) -> some View {
+        let category = QuickItemCategory(rawValue: product.category) ?? .custom
+        return Button {
+            // Add to user's library and basket in one shot. The
+            // existing helper dedupes by name (case-insensitive) so
+            // this is safe even if the catalog and the user race.
+            saveManualQuickItem(product.name, product.emoji, category, true)
+        } label: {
+            HStack(spacing: 12) {
+                Text(product.emoji)
+                    .font(.title3)
+                    .frame(width: 28, alignment: .center)
+
+                Text(product.name)
+                    .foregroundStyle(.primary)
+
+                Spacer(minLength: 8)
+
+                Text(category.title)
+                    .font(.caption)
+                    .foregroundStyle(.tertiary)
+            }
+            .padding(.vertical, 6)
+            .contentShape(Rectangle())
         }
         .buttonStyle(.plain)
     }
@@ -805,7 +969,15 @@ struct MainGridView: View {
         let trimmedName = name.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !trimmedName.isEmpty else { return }
 
-        if let existingItem = quickItems.first(where: { $0.name.caseInsensitiveCompare(trimmedName) == .orderedSame }) {
+        // Dedup by *canonical* product key, not by raw name. "Egg" and
+        // "Eggs" collapse to the same `product.eggs` key, so tapping
+        // the catalog's "Eggs" suggestion when the seed already gave
+        // the user "Egg" reuses the existing row instead of creating
+        // a second entry that just looks identical in the UI.
+        let canonicalKey = ProductDisplayNameProvider.canonicalKey(for: trimmedName)
+        if let existingItem = quickItems.first(where: {
+            ProductDisplayNameProvider.canonicalKey(for: $0.name) == canonicalKey
+        }) {
             if addToBasket {
                 addQuickItemToBasket(existingItem)
             }
@@ -933,6 +1105,14 @@ struct MainGridView: View {
         toggleQuickItemInBasket(item)
     }
 
+    /// Resolves a shortcut back to its underlying `QuickItem` and flips
+    /// the `pinned` flag. Used by the avatar's long-press menu so the
+    /// user can unpin a regular without leaving the home screen.
+    private func togglePinForShortcut(_ shortcut: TopUsedShortcutItem) {
+        guard let item = quickItems.first(where: { $0.id == shortcut.id }) else { return }
+        togglePin(item)
+    }
+
     /// "Add all" affordance on the pantry rail. Adds every staple that isn't
     /// already in the basket. Bulk add, so we clear the undo-record afterwards
     /// (single-item undo isn't meaningful for a many-item add).
@@ -979,93 +1159,6 @@ struct MainGridView: View {
             previousQuantity: previousQuantity,
             addedAt: Date()
         )
-        scheduleSuggestionPill(for: item)
-    }
-
-    // MARK: - Inline suggestion pill
-
-    /// Fetches a partner suggestion for the just-added item, packages
-    /// it for the pill, and starts the auto-dismiss timer. Safe to call
-    /// every single-item add; resolves to a confirmation-only pill (no
-    /// suggestion chunk) when the engine has nothing relevant.
-    private func scheduleSuggestionPill(for item: QuickItem) {
-        // Exclude everything currently in the basket *and* the item we
-        // just added, so the engine doesn't suggest something the user
-        // already has.
-        var excluded = basketItemNames
-        excluded.insert(item.name.lowercased())
-
-        let partnerCanonical = RecommendationEngine.shared.bestSuggestion(
-            for: item.name,
-            excluding: excluded,
-            in: modelContext
-        )
-
-        let partner: SuggestionPayload.PartnerSuggestion? = partnerCanonical.flatMap { canonical in
-            // Try to resolve the partner to an existing QuickItem so we
-            // can use its emoji; fall back to a generic if not found.
-            let resolved = quickItems.first {
-                $0.name.lowercased() == canonical.lowercased()
-            }
-            let displayName = ProductDisplayNameProvider.displayName(for: resolved?.name ?? canonical)
-            let emoji = resolved?.emoji ?? "🛒"
-            let sortedPair = [item.name.lowercased(), canonical.lowercased()].sorted()
-            return .init(
-                canonical: canonical,
-                displayName: displayName,
-                emoji: emoji,
-                suggestionID: sortedPair.joined(separator: "|")
-            )
-        }
-
-        let payload = SuggestionPayload(
-            addedName: item.name,
-            addedDisplayName: ProductDisplayNameProvider.displayName(for: item.name),
-            addedEmoji: item.emoji,
-            suggestion: partner
-        )
-
-        withAnimation(.spring(response: 0.4, dampingFraction: 0.85)) {
-            pendingSuggestion = payload
-        }
-
-        suggestionDismissTask?.cancel()
-        suggestionDismissTask = Task { @MainActor in
-            try? await Task.sleep(for: .milliseconds(2500))
-            guard !Task.isCancelled else { return }
-            dismissSuggestion(payload, asIgnored: true)
-        }
-    }
-
-    /// Adds the suggested partner via the standard `addQuickItemToBasket`
-    /// path, then dismisses the pill. The recursive call re-triggers
-    /// `recordLastAdd`, which would schedule *another* pill — that's
-    /// fine: the new pill replaces the current one and chains the
-    /// shopping flow naturally.
-    private func acceptSuggestion(_ payload: SuggestionPayload) {
-        guard let partner = payload.suggestion else { return }
-        suggestionDismissTask?.cancel()
-        withAnimation(.spring(response: 0.4, dampingFraction: 0.85)) {
-            pendingSuggestion = nil
-        }
-        if let match = quickItems.first(where: {
-            $0.name.caseInsensitiveCompare(partner.canonical) == .orderedSame
-        }) {
-            addQuickItemToBasket(match)
-        }
-    }
-
-    /// Hides the pill. When `asIgnored` is true, also tells the engine
-    /// to decay this pair's score so the same suggestion isn't surfaced
-    /// repeatedly when the user keeps not engaging with it.
-    private func dismissSuggestion(_ payload: SuggestionPayload, asIgnored: Bool) {
-        suggestionDismissTask?.cancel()
-        if asIgnored, let partner = payload.suggestion {
-            RecommendationEngine.shared.recordIgnored(suggestionID: partner.suggestionID)
-        }
-        withAnimation(.spring(response: 0.4, dampingFraction: 0.85)) {
-            pendingSuggestion = nil
-        }
     }
 
     /// Triggered by `BasketView.onCompletion`. Briefly surfaces a "Logged"
@@ -1112,6 +1205,24 @@ struct MainGridView: View {
         )
     }
 
+    /// Toggles `isStarred` on the underlying `CompletedBasket`. Starred
+    /// baskets float to the top of their section in history — a tiny,
+    /// lightweight "recurring shop" surface.
+    private func toggleBasketStar(_ basket: RecentBasketSummary) {
+        guard let stored = completedBaskets.first(where: { $0.id == basket.id }) else { return }
+        UIImpactFeedbackGenerator(style: .light).impactOccurred()
+        stored.isStarred.toggle()
+        try? modelContext.save()
+    }
+
+    /// Stores a user-supplied nickname on the underlying `CompletedBasket`.
+    /// An empty string clears the name and reinstates the auto-label.
+    private func renameCompletedBasket(_ basket: RecentBasketSummary, to newName: String) {
+        guard let stored = completedBaskets.first(where: { $0.id == basket.id }) else { return }
+        stored.customName = newName.isEmpty ? nil : newName
+        try? modelContext.save()
+    }
+
     private func hintText(for item: QuickItem) -> String? {
         guard let hint = basketManager.purchaseHint(for: item.name, from: purchaseHints) else {
             return nil
@@ -1133,6 +1244,16 @@ struct MainGridView: View {
     /// the original seed catalogue counts as user-created.
     private func isUserCreated(_ item: QuickItem) -> Bool {
         !Self.defaultSeedNames.contains(item.name.lowercased())
+    }
+
+    /// Flips `item.pinned`. Pinned items surface at the top of the
+    /// Regulars row regardless of purchase frequency.
+    private func togglePin(_ item: QuickItem) {
+        UIImpactFeedbackGenerator(style: .light).impactOccurred()
+        withAnimation(.spring(response: 0.32, dampingFraction: 0.82)) {
+            item.pinned.toggle()
+        }
+        try? modelContext.save()
     }
 
     /// Removes a user-created item and any matching basket row. Refuses

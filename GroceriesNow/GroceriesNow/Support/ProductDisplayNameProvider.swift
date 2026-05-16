@@ -220,4 +220,20 @@ struct ProductDisplayNameProvider {
         guard let key = seededProductKeys[normalizedName] else { return canonicalName }
         return String(localized: String.LocalizationValue(key))
     }
+
+    /// A stable dedup key for "are these two names the same product?".
+    ///
+    /// Returns the localization key (e.g. `"product.eggs"`) when the
+    /// name is recognised — so `"Egg"`, `"Eggs"`, and any case variants
+    /// all collapse to the same key. For unrecognised names, returns
+    /// the lowercased input, so two raw catalog/manual names still
+    /// dedup against themselves.
+    ///
+    /// Used to prevent the same product appearing as two `QuickItem`
+    /// rows that happen to share a display name but differ in raw
+    /// `name` storage (e.g. seed "Egg" + catalog "Eggs").
+    static func canonicalKey(for name: String) -> String {
+        let normalizedName = name.lowercased()
+        return seededProductKeys[normalizedName] ?? normalizedName
+    }
 }

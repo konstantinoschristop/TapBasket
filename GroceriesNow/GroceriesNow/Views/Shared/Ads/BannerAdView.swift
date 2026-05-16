@@ -42,8 +42,23 @@ struct BannerAdView: UIViewRepresentable {
             .flatMap(\.windows)
             .first(where: \.isKeyWindow)?
             .rootViewController
-        banner.load(Request())
+        banner.load(Self.nonPersonalizedRequest())
         return banner
+    }
+
+    /// Build a GMA ad request that explicitly opts out of personalised
+    /// ads. We don't request `NSUserTrackingUsageDescription` (no ATT
+    /// prompt) and our `PrivacyInfo.xcprivacy` declares
+    /// `NSPrivacyTracking: false`, so the SDK should already serve
+    /// non-personalised creatives — this sets `npa = 1` as an
+    /// explicit, defensive signal so the behaviour is locked in
+    /// regardless of upstream SDK defaults.
+    private static func nonPersonalizedRequest() -> Request {
+        let request = Request()
+        let extras = Extras()
+        extras.additionalParameters = ["npa": "1"]
+        request.register(extras)
+        return request
     }
 
     func updateUIView(_ uiView: BannerView, context: Context) {}

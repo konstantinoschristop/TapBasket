@@ -4,8 +4,6 @@
 <dict>
 	<key>GADApplicationIdentifier</key>
 	<string>ca-app-pub-5275868523622377~1213034571</string>
-	<key>NSUserTrackingUsageDescription</key>
-	<string>Allow tracking so Taplist can show you ads that are more relevant to you. You can decline and still use the app normally with non-personalised ads.</string>
 	<key>SKAdNetworkItems</key>
 	<array>
 		<dict><key>SKAdNetworkIdentifier</key><string>cstr6suwn9.skadnetwork</string></dict>

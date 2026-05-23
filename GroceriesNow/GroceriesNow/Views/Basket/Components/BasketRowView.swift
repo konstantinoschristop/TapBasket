@@ -12,6 +12,8 @@ struct BasketRowView: View {
     let onIncrement: () -> Void
     let onDecrement: () -> Void
     let onEditNote: () -> Void
+    let onSaveForLater: () -> Void
+    let onDelete: () -> Void
 
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
@@ -119,6 +121,28 @@ struct BasketRowView: View {
             }
             .tint(Color.accentColor)
         }
+        // Trailing edge carries the two "I'm done with this row in
+        // its current state" actions. Delete is declared first so
+        // it's the full-swipe target (matches iOS Mail / Reminders
+        // conventions — destructive on full swipe). Save sits to
+        // the left of Delete on a partial swipe.
+        .swipeActions(edge: .trailing, allowsFullSwipe: true) {
+            Button(role: .destructive) {
+                onDelete()
+            } label: {
+                Label(String(localized: "action.delete", defaultValue: "Delete"),
+                      systemImage: "trash")
+            }
+
+            Button {
+                onSaveForLater()
+            } label: {
+                Label(String(localized: "basket.row.save_for_later",
+                             defaultValue: "Save"),
+                      systemImage: "bookmark")
+            }
+            .tint(Color.accentColor)
+        }
         .contextMenu {
             Button { onEditNote() } label: {
                 Label(hasNote
@@ -131,6 +155,15 @@ struct BasketRowView: View {
                       ? String(localized: "basket.row.uncheck", defaultValue: "Uncheck")
                       : String(localized: "basket.row.mark_checked", defaultValue: "Mark checked"),
                       systemImage: item.isChecked ? "circle" : "checkmark.circle")
+            }
+            Button { onSaveForLater() } label: {
+                Label(String(localized: "basket.row.save_for_later",
+                             defaultValue: "Save for later"),
+                      systemImage: "bookmark")
+            }
+            Button(role: .destructive) { onDelete() } label: {
+                Label(String(localized: "action.delete", defaultValue: "Delete"),
+                      systemImage: "trash")
             }
         }
     }

@@ -162,6 +162,99 @@ final class BasketManager {
         try? modelContext.save()
     }
 
+    // MARK: - Saved for later
+
+    /// How long a saved-for-later item lives before the cleanup pass
+    /// purges it. Two weeks is generous for the "I'll grab it next
+    /// shop" use case without letting stale memory pile up.
+    static let savedForLaterExpiry: TimeInterval = 14 * 24 * 60 * 60
+
+    /// Move a basket item to the "Saved for later" pool. Carries the
+    /// item's quantity and note across so restoring it later returns
+    /// the user to the same state they had before they changed their
+    /// mind.
+    ///
+    /// If a saved entry with the same name already exists (e.g. the
+    /// user saved-then-removed-again later), its `savedAt` is
+    /// refreshed instead of creating a second row.
+    func saveForLater(_ item: BasketItem, in modelContext: ModelContext) {
+        let descriptor = FetchDescriptor<SavedForLaterItem>()
+        let existing = (try? modelContext.fetch(descriptor)) ?? []
+        let key = item.name.lowercased()
+
+        if let match = existing.first(where: { $0.name.lowercased() == key }) {
+            // Refresh the saved entry — most recent intent wins.
+            match.quantity = item.quantity
+            match.note = item.note
+            match.emoji = item.emoji
+            match.savedAt = .now
+        } else {
+            modelContext.insert(SavedForLaterItem(
+                name: item.name,
+                emoji: item.emoji,
+                quantity: item.quantity,
+                note: item.note,
+                savedAt: .now
+            ))
+        }
+
+        modelContext.delete(item)
+        try? modelContext.save()
+    }
+
+    /// Restore a saved item back into the live basket. If the basket
+    /// already has a matching line, the quantities are merged (and any
+    /// existing note is preserved) — same dedup pattern as adding via
+    /// catalog or shortcut. The saved row is consumed either way.
+    func restoreSaved(
+        _ saved: SavedForLaterItem,
+        in modelContext: ModelContext,
+        basketItems: [BasketItem]
+    ) {
+        let key = saved.name.lowercased()
+        if let existing = basketItems.first(where: { $0.name.lowercased() == key }) {
+            existing.quantity += saved.quantity
+            existing.isChecked = false
+            // Prefer the existing note; only adopt the saved one if
+            // the live basket item has none.
+            if (existing.note?.isEmpty ?? true), let savedNote = saved.note, !savedNote.isEmpty {
+                existing.note = savedNote
+            }
+        } else {
+            modelContext.insert(BasketItem(
+                name: saved.name,
+                emoji: saved.emoji,
+                quantity: saved.quantity,
+                note: saved.note
+            ))
+        }
+
+        modelContext.delete(saved)
+        try? modelContext.save()
+    }
+
+    /// Permanently forget a saved item. Used by the trailing-swipe
+    /// delete inside the "Saved for later" section.
+    func deleteSaved(_ saved: SavedForLaterItem, in modelContext: ModelContext) {
+        modelContext.delete(saved)
+        try? modelContext.save()
+    }
+
+    /// Sweep saved items older than `savedForLaterExpiry` from the
+    /// store. Called on basket-view appear so the cleanup happens
+    /// once per session without any background work.
+    func purgeExpiredSaved(in modelContext: ModelContext) {
+        let cutoff = Date(timeIntervalSinceNow: -Self.savedForLaterExpiry)
+        let descriptor = FetchDescriptor<SavedForLaterItem>(
+            predicate: #Predicate { $0.savedAt < cutoff }
+        )
+        guard let expired = try? modelContext.fetch(descriptor), !expired.isEmpty else { return }
+        for item in expired {
+            modelContext.delete(item)
+        }
+        try? modelContext.save()
+    }
+
     func completeBasket(
         _ items: [BasketItem],
         customName: String? = nil,

@@ -91,12 +91,13 @@ struct TopUsedShortcutsView: View {
     ///     2-row scrollable grid would just hold a tall blank space
     ///     under the plus and read as a placeholder; collapsing to
     ///     one row makes the empty state feel intentional.
-    ///   - **Populated** — `LazyHGrid` with the plus as the first
-    ///     cell, sized and styled to match a `RegularAvatar` so the
-    ///     row reads as one cohesive shelf. The plus scrolls with
-    ///     the row instead of pinning to the leading edge, which
-    ///     reduces its visual weight and removes the awkward
-    ///     full-height sidebar.
+    ///   - **Populated** — `LazyHGrid` with the items first and the
+    ///     plus as the **trailing** cell. Column-major filling means
+    ///     the first item (the highest-priority pinned regular) lands
+    ///     at top-left where the eye starts scanning. The "+" sits at
+    ///     the end of the row as a quieter "add more" affordance —
+    ///     still on-screen for short rows, scrollable-to for longer
+    ///     ones.
     @ViewBuilder
     private var avatarRow: some View {
         if items.isEmpty {
@@ -116,8 +117,6 @@ struct TopUsedShortcutsView: View {
                     alignment: .top,
                     spacing: 14
                 ) {
-                    plusCell
-
                     ForEach(items.prefix(14)) { item in
                         RegularAvatar(
                             item: item,
@@ -127,6 +126,8 @@ struct TopUsedShortcutsView: View {
                         )
                         .transition(.scale.combined(with: .opacity))
                     }
+
+                    plusCell
                 }
                 .padding(.horizontal, 20)
                 .padding(.vertical, 6)

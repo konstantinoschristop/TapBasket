@@ -435,12 +435,78 @@
         }
       }
     },
+    "basket.row.save_for_later" : {
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Save"
+          }
+        }
+      }
+    },
     "basket.row.uncheck" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Uncheck"
+          }
+        }
+      }
+    },
+    "basket.saved.header.title" : {
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Saved for later"
+          }
+        }
+      }
+    },
+    "basket.saved.row.a11y_restore_format" : {
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Restore %@ to basket"
+          }
+        }
+      }
+    },
+    "basket.saved.row.forget" : {
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Forget"
+          }
+        }
+      }
+    },
+    "basket.saved.row.timestamp_format" : {
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Saved %@"
+          }
+        }
+      }
+    },
+    "basket.saved.row.timestamp_qty_format" : {
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$@ · was ×%2$lld"
           }
         }
       }
@@ -837,6 +903,17 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Star"
+          }
+        }
+      }
+    },
+    "history.sync.last_synced_format" : {
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Synced %@"
           }
         }
       }

@@ -32,13 +32,39 @@ struct TapBasketApp: App {
     // Until both steps are done the app falls back to local-only storage.
     // Models are already CloudKit-compatible (no `@Attribute(.unique)`, every
     // stored property has a default), so flipping this on is a one-liner.
-    private static let enableCloudKitSync = false
+    /// CloudKit sync is on so the user's baskets, regulars, custom
+    /// items, completed-shop history, and saved-for-later pool roam
+    /// across their devices (and survive an app delete + reinstall).
+    ///
+    /// Requires the **iCloud** capability with CloudKit enabled in
+    /// the Xcode target's Signing & Capabilities, listing container
+    /// `iCloud.com.taplist.app`, plus **Background Modes** with
+    /// "Remote notifications" so silent CloudKit pushes can wake the
+    /// app to merge changes. If either capability is missing at
+    /// runtime, `ModelContainer.init` throws and the catch block
+    /// gracefully falls back to a local-only store so the app still
+    /// launches — no data loss, just no cross-device sync.
+    ///
+    /// `@AppStorage` keys (`currentBasketName`, floating-basket
+    /// position, collapsed-category state) intentionally do NOT sync
+    /// — they're per-device UI state and the right values can differ
+    /// between iPhone and iPad screens.
+    private static let enableCloudKitSync = true
     private static let cloudKitContainerID = "iCloud.com.taplist.app"
 
+    @MainActor
     var sharedModelContainer: ModelContainer = {
+        // Wake the sync-status observer *before* the CloudKit
+        // container kicks off so the very first import/export events
+        // (which can fire during container init when an existing
+        // iCloud account already has records) aren't dropped on the
+        // floor.
+        _ = SyncStatus.shared
+
         let schema = Schema([
             QuickItem.self,
             BasketItem.self,
+            SavedForLaterItem.self,
             CompletedBasket.self,
             CompletedBasketEntry.self,
             CoOccurrenceRecord.self
@@ -357,6 +383,15 @@ struct TapBasketApp: App {
 
     static func preferredExistingItem(from items: [QuickItem]) -> QuickItem? {
         items.sorted { lhs, rhs in
+            // Pin state wins — the user's explicit favourite-toggle
+            // is the highest-signal field on the row. Matters most on
+            // the second device's first launch, where the local seed
+            // can create an unpinned duplicate of an item that's
+            // simultaneously being pulled in from CloudKit with
+            // pinned=true. Without this, the tiebreak below is
+            // effectively random and the pin can be silently dropped.
+            if lhs.pinned != rhs.pinned { return lhs.pinned && !rhs.pinned }
+
             if lhs.category == .custom, rhs.category != .custom { return false }
             if lhs.category != .custom, rhs.category == .custom { return true }
             if lhs.sortOrder == rhs.sortOrder {

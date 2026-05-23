@@ -155,9 +155,21 @@ struct RecentBasketsSheet: View {
 
                     if hasMore { showMoreButton.padding(.top, 8) }
 
-                    // Inline banner at the end of the sheet — never
-                    // overlays a basket tile, matches the basket view's
-                    // bottom-of-list placement.
+                    // Quiet "iCloud · Synced X ago" caption — sits
+                    // directly after the user's content as a natural
+                    // "end of your data" marker, so it answers
+                    // "are these in sync with my other devices?" at
+                    // exactly the moment the user finishes scanning.
+                    // Hidden until the first successful sync event so
+                    // a fresh install doesn't read as a sync failure.
+                    if let lastSyncedAt = SyncStatus.shared.lastSyncedAt {
+                        syncFooter(lastSyncedAt: lastSyncedAt)
+                    }
+
+                    // Inline banner at the end of the sheet — comes
+                    // *after* the sync caption so the ad sits clearly
+                    // outside the user's own content. Matches the
+                    // basket view's bottom-of-list placement.
                     if !AdsConfiguration.hideForScreenshots {
                         InlineBannerSection()
                             .padding(.horizontal, 16)
@@ -169,6 +181,30 @@ struct RecentBasketsSheet: View {
             }
             .background(Color("LaunchBackground"))
         }
+    }
+
+    /// Tertiary caption rendered at the bottom of the sheet.
+    /// Observation auto-tracks the `SyncStatus.lastSyncedAt` access
+    /// so the row re-renders when sync events arrive — the relative
+    /// formatter does drift between events, but the next render
+    /// after any sync activity corrects it and we're not chasing
+    /// second-by-second precision in a historical view.
+    private func syncFooter(lastSyncedAt: Date) -> some View {
+        HStack(spacing: 6) {
+            Image(systemName: "icloud")
+                .font(.caption2)
+
+            Text(String(
+                localized: "history.sync.last_synced_format",
+                defaultValue: "Synced \(lastSyncedAt.formatted(.relative(presentation: .named, unitsStyle: .wide)))"
+            ))
+            .font(.caption)
+        }
+        .foregroundStyle(Color(.tertiaryLabel))
+        .frame(maxWidth: .infinity, alignment: .center)
+        .padding(.top, 16)
+        .padding(.horizontal, 16)
+        .accessibilityElement(children: .combine)
     }
 
     // MARK: - Section label

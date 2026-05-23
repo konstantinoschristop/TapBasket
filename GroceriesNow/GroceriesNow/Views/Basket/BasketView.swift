@@ -7,6 +7,9 @@ struct BasketView: View {
     @Environment(\.modelContext) private var modelContext
     @Environment(\.locale) private var locale
     @Query(sort: [SortDescriptor(\BasketItem.name, order: .forward)]) private var basketItems: [BasketItem]
+    /// Saved-for-later pool. Most recently saved first — newest
+    /// reminders rise to the top of the section.
+    @Query(sort: [SortDescriptor(\SavedForLaterItem.savedAt, order: .reverse)]) private var savedForLaterItems: [SavedForLaterItem]
 
     let manager: BasketManager
     /// Fired once the completion overlay has finished playing. Parent uses this
@@ -113,6 +116,9 @@ struct BasketView: View {
         .onAppear {
             SwipeToDeleteTip.basketItemCount = basketItems.count
             ShareBasketTip.basketItemCount = basketItems.count
+            // One-shot per session: drop saved items older than 14
+            // days so the section can't accumulate stale memory.
+            manager.purgeExpiredSaved(in: modelContext)
         }
         .onChange(of: basketItems.count) { _, count in
             SwipeToDeleteTip.basketItemCount = count
@@ -171,6 +177,26 @@ struct BasketView: View {
             }
         }
 
+        // Saved-for-later — quiet section below the live basket. Lets
+        // the user park "changed my mind, but maybe next time" items
+        // without losing them. Auto-expires after 14 days via the
+        // launch-time purge in `BasketManager`.
+        if !savedForLaterItems.isEmpty {
+            Section {
+                ForEach(savedForLaterItems) { saved in
+                    savedForLaterRow(saved)
+                        .listRowBackground(Color("CardBackground"))
+                        .listRowSeparatorTint(Color.accentColor.opacity(0.12))
+                        .transition(.asymmetric(
+                            insertion: .opacity.combined(with: .move(edge: .top)),
+                            removal: .opacity.combined(with: .scale(scale: 0.95))
+                        ))
+                }
+            } header: {
+                savedForLaterHeader(itemCount: savedForLaterItems.count)
+            }
+        }
+
         // Inline banner — sits at the natural end of the list so it
         // never overlays an item. The user scrolls past their basket
         // contents to reveal the ad.
@@ -184,6 +210,109 @@ struct BasketView: View {
                     .listRowSeparator(.hidden)
             }
         }
+    }
+
+    /// Quiet header for the "Saved for later" section — same
+    /// silhouette as the recipe header (small accent glyph + title +
+    /// count) so the section reads as a peer rather than an
+    /// attention-seeking secondary surface.
+    private func savedForLaterHeader(itemCount: Int) -> some View {
+        HStack(alignment: .firstTextBaseline, spacing: 8) {
+            Image(systemName: "bookmark")
+                .font(.caption.weight(.semibold))
+                .foregroundStyle(Color.accentColor)
+
+            Text(String(localized: "basket.saved.header.title",
+                        defaultValue: "Saved for later"))
+                .font(.subheadline.weight(.semibold))
+                .foregroundStyle(Color(.label))
+                .textCase(nil)
+
+            Text("\(itemCount)")
+                .font(.caption.weight(.medium))
+                .foregroundStyle(Color(.tertiaryLabel))
+                .monospacedDigit()
+                .textCase(nil)
+
+            Spacer()
+        }
+        .padding(.vertical, 2)
+    }
+
+    /// Row inside the saved section. Tap to restore. Leading tint
+    /// stays neutral — this isn't a primary surface, just a quiet
+    /// memory. Trailing swipe forgets the item permanently.
+    private func savedForLaterRow(_ saved: SavedForLaterItem) -> some View {
+        Button {
+            withAnimation(.spring(response: 0.32, dampingFraction: 0.85)) {
+                manager.restoreSaved(saved, in: modelContext, basketItems: basketItems)
+            }
+            UIImpactFeedbackGenerator(style: .light).impactOccurred()
+        } label: {
+            HStack(spacing: 12) {
+                Text(saved.emoji)
+                    .font(.title3)
+                    .frame(width: 28, alignment: .center)
+
+                VStack(alignment: .leading, spacing: 2) {
+                    Text(ProductDisplayNameProvider.displayName(for: saved.name))
+                        .font(.body)
+                        .foregroundStyle(Color(.label))
+                        .lineLimit(1)
+
+                    Text(savedCaption(for: saved))
+                        .font(.caption)
+                        .foregroundStyle(Color(.tertiaryLabel))
+                        .lineLimit(1)
+                }
+
+                Spacer(minLength: 8)
+
+                Image(systemName: "arrow.uturn.backward")
+                    .font(.footnote.weight(.semibold))
+                    .foregroundStyle(Color.accentColor)
+                    .frame(width: 24, height: 24)
+                    .background(Color.accentColor.opacity(0.10), in: Circle())
+                    .accessibilityHidden(true)
+            }
+            .padding(.vertical, 6)
+            .padding(.horizontal, 4)
+            .contentShape(Rectangle())
+        }
+        .buttonStyle(.plain)
+        .accessibilityLabel(Text(
+            String(localized: "basket.saved.row.a11y_restore_format",
+                   defaultValue: "Restore \(ProductDisplayNameProvider.displayName(for: saved.name)) to basket")
+        ))
+        .swipeActions(edge: .trailing, allowsFullSwipe: true) {
+            Button(role: .destructive) {
+                withAnimation(.spring(response: 0.32, dampingFraction: 0.85)) {
+                    manager.deleteSaved(saved, in: modelContext)
+                }
+            } label: {
+                Label(String(localized: "basket.saved.row.forget",
+                             defaultValue: "Forget"),
+                      systemImage: "trash")
+            }
+        }
+    }
+
+    /// "Saved 2 days ago · was ×3" / "Saved today" — the quantity
+    /// suffix is suppressed when it'd just say "×1" (the common case),
+    /// so the caption stays short by default.
+    private func savedCaption(for saved: SavedForLaterItem) -> String {
+        let relative = saved.savedAt.formatted(
+            .relative(presentation: .named, unitsStyle: .wide)
+        )
+        let head = String(
+            localized: "basket.saved.row.timestamp_format",
+            defaultValue: "Saved \(relative)"
+        )
+        guard saved.quantity > 1 else { return head }
+        return String(
+            localized: "basket.saved.row.timestamp_qty_format",
+            defaultValue: "\(head) · was ×\(saved.quantity)"
+        )
     }
 
     private func recipeSectionHeader(name: String, itemCount: Int) -> some View {
@@ -215,7 +344,18 @@ struct BasketView: View {
                 onToggleChecked: { manager.toggle(item, in: modelContext) },
                 onIncrement: { manager.increment(item, in: modelContext) },
                 onDecrement: { manager.decrement(item, in: modelContext) },
-                onEditNote: { noteEditorItem = item }
+                onEditNote: { noteEditorItem = item },
+                onSaveForLater: {
+                    withAnimation(.spring(response: 0.32, dampingFraction: 0.85)) {
+                        manager.saveForLater(item, in: modelContext)
+                    }
+                    UIImpactFeedbackGenerator(style: .light).impactOccurred()
+                },
+                onDelete: {
+                    withAnimation(.spring(response: 0.32, dampingFraction: 0.85)) {
+                        manager.delete(item, in: modelContext)
+                    }
+                }
             )
             .listRowBackground(Color("CardBackground"))
             .listRowSeparatorTint(Color.accentColor.opacity(0.12))
@@ -223,13 +363,6 @@ struct BasketView: View {
                 insertion: .scale(scale: 0.92).combined(with: .opacity).combined(with: .move(edge: .leading)),
                 removal: .opacity.combined(with: .scale(scale: 0.95))
             ))
-        }
-        .onDelete { offsets in
-            withAnimation(.spring(response: 0.32, dampingFraction: 0.85)) {
-                for index in offsets {
-                    manager.delete(items[index], in: modelContext)
-                }
-            }
         }
     }
 
